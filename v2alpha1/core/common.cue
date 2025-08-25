@@ -8,11 +8,11 @@ import (
 
 #Object: {
 	apiVersion: #DefaultAPIVersion
-	kind:       string & strings.MaxRunes(256)
+	kind:       string & strings.MinRunes(1) & strings.MaxRunes(254)
 	// combinedVersion: string | "\(apiVersion)/\(kind)"
 	metadata: {
-		name:       string & strings.MaxRunes(256)
-		namespace?: string & strings.MaxRunes(256)
+		name:       string & strings.MinRunes(1) & strings.MaxRunes(254)
+		namespace?: string & strings.MinRunes(1) & strings.MaxRunes(254)
 		annotations?: [string]: string | int | bool
 		labels?: [string]:      string | int | bool
 		...

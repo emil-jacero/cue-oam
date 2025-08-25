@@ -18,7 +18,7 @@ import (
 
 	metadata: {
 		// The name of the component, must be globally unique.
-		name:       string & strings.MaxRunes(254)
+		name:       string
 		namespace?: string
 		annotations?: [string]: string | int | bool
 		labels?: [string]:      string | int | bool
