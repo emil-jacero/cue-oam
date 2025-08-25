@@ -5,7 +5,7 @@ package core
 import (
 	"strings"
 
-	// v2alpha1compose "jacero.io/oam/v2alpha1/transformer/compose"
+	v2alpha1compose "jacero.io/oam/v2alpha1/transformer/compose"
 )
 
 // Application represents a collection of components, traits, and scopes
@@ -50,17 +50,7 @@ import (
 	// Outputs from all components are merged into these outputs.
 	outputs: {
 		// Docker Compose template outputs
-		// compose?: v2alpha1compose.#Compose
-		compose?: {...}
-		// if compose != _|_ {
-		// 	for component in components {
-		// 		if component.outputs.compose != _|_ {
-		// 			for value in component.outputs.compose {
-		// 				compose: value
-		// 			}
-		// 		}
-		// 	}
-		// }
+		compose?: v2alpha1compose.#Compose
 
 		// Kubernetes resource outputs
 		kubernetes?: {...} // Kubernetes resource outputs

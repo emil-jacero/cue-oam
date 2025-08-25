@@ -5,7 +5,7 @@ package core
 import (
 	"strings"
 
-	// v2alpha1compose "jacero.io/oam/v2alpha1/transformer/compose"
+	v2alpha1compose "jacero.io/oam/v2alpha1/transformer/compose"
 )
 
 #Component: #Object & {
@@ -50,8 +50,7 @@ import (
 	// The "main" output is the primary output of the component, and MUST be named "main".
 	outputs: {
 		// Docker Compose template outputs
-		// compose?: v2alpha1compose.#Compose
-		compose?: {...}
+		compose?: v2alpha1compose.#Compose
 
 		// Kubernetes resource outputs
 		kubernetes?: {...} // Kubernetes resource outputs
