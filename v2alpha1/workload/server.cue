@@ -27,9 +27,5 @@ import (
 		arch?:   string & "i386" | "amd64" | "arm" | "arm64"
 		// The containers that are part of the workload
 		containers: [...v2alpha1schema.#ContainerSpec]
-		// // storage defines optional storage volumes that can be mounted into the containers.
-		// volumes?: [...v2alpha1schema.#StorageSpec]
-		// // ports defines the ports that are exposed by the workload.
-		// ports?: [...v2alpha1schema.#Port]
 	}
 }
