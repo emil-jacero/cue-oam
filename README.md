@@ -1,6 +1,6 @@
 # cue-oam
 
-Project to experiment with Open Application Model and a docker compose implementation using pure CUE transformers.
+Project to experiment with [Open Application Model](https://oam.dev) and a docker compose implementation using pure [CUE](https://cuelang.org) transformers.
 
 ## Why?
 
