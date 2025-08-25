@@ -26,6 +26,7 @@
   - [ ] Implement Service transformation
   - [ ] Add ConfigMap/Secret support
   - [ ] Implement PVC transformation
+  - [ ] Implement ownerReferences for related resources
 - [ ] **Flux Transformer**
   - [ ] Define Flux Kustomization schema
   - [ ] Define Flux HelmRelease schema
