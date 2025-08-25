@@ -39,3 +39,19 @@ A _trait_ is a discretionary runtime overlay that augments a component workload 
 Application scopes are used to group components together into logical applications by providing different forms of application boundaries with common group behaviors.
 
 Example: A common network scope, configuring a proxy (e.g. Traefik or Envoy) to automatically expose the correct ports and/or domain and path.
+
+## How to use?
+
+- **Evaluate application**
+
+  ```bash
+  cd v2alpha1/applications
+  cue eval .
+  ```
+
+- **Render Docker Compose from application**
+
+  ```bash
+  cd v2alpha1/applications
+  cue export -e "#CodeServer.outputs.compose" --out yaml
+  ```
