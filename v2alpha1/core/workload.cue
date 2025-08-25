@@ -1,7 +1,5 @@
 package core
 
-import "strings"
-
 #WorkloadTypes: string & "server" | "worker" | "task" | "database"
 
 #WorkloadType: #Object & {

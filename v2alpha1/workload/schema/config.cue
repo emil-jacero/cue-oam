@@ -1,8 +1,6 @@
 package schema
 
 import (
-	"strings"
-
 	v2alpha1core "jacero.io/oam/v2alpha1/core"
 )
 

@@ -3,8 +3,6 @@ package core
 // TODO: Add component labels automatically to the workload
 
 import (
-	"strings"
-
 	v2alpha1compose "jacero.io/oam/v2alpha1/transformer/compose"
 )
 

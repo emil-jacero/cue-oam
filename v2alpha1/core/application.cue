@@ -3,8 +3,6 @@ package core
 // TODO: Add application labels automatically to the components
 
 import (
-	"strings"
-
 	v2alpha1compose "jacero.io/oam/v2alpha1/transformer/compose"
 )
 

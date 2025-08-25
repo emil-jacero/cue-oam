@@ -9,8 +9,8 @@ import (
 #Storage: {
 	v2alpha1core.#Object
 
-	metadata: name:       string & strings.MaxRunes(256)
-	metadata: namespace?: string & strings.MaxRunes(256)
+	metadata: name:       _
+	metadata: namespace?: _
 
 	spec: #VolumeSpec & {
 		type: #PersistenceTypes
