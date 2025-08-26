@@ -36,6 +36,8 @@ import (
 
 	// securityContext?: {}
 
+	restartPolicy?: #RestartPolicy
+
 	lifecycle?: {
 		postStart?:  #LifecycleHandler
 		preStop?:    #LifecycleHandler

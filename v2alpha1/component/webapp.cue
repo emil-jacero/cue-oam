@@ -29,6 +29,7 @@ import (
 				tag:        _ | *"latest"
 				digest:     _ | *""
 			}
+			restartPolicy: _ | *"Always"
 			// command: _ | *[]
 			// args: _ | *[]
 			// env: _ | *[{name: "ENV", value: "production"}]
@@ -63,11 +64,22 @@ import (
 		compose: {
 			name: _ | *"\(metadata.name)"
 			services: {
-				"\(config.containers[0].name)": {
+				config.mainContainer.name: {
 					hostname:   config.mainContainer.name
 					container_name: config.mainContainer.name
 					domainname: config.domainName
 					image:      config.mainContainer.image.reference
+
+					if config.mainContainer.restartPolicy == "Always" {
+						restart: "always"
+					}
+					if config.mainContainer.restartPolicy == "OnFailure" {
+						restart: "on-failure"
+					}
+					if config.mainContainer.restartPolicy == "Never" {
+						restart: "no"
+					}
+
 					if config.mainContainer.command != _|_ {
 						command: config.mainContainer.command
 					}
