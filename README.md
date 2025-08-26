@@ -4,6 +4,9 @@ A pure [CUE](https://cuelang.org) implementation of the [Open Application Model]
 
 This project demonstrates how to use CUE's powerful type system and transformations to implement OAM abstractions that can target multiple deployment platforms without external tooling.
 
+> [!NOTE]
+> The API and schema is under heavy development and could therefore have a lot of breaking changes!
+
 ## Why?
 
 I wanted to find out if it is possible to utilize CUE fully to define, compose and transform configuration into any platform (e.g Docker Compose or Kubernetes).
@@ -89,14 +92,18 @@ Example: A common network scope, configuring a proxy (e.g. Traefik or Envoy) to 
 ```shell
 cue-oam/
 ├── v2alpha1/
-│   ├── core/           # Core OAM schemas
-│   ├── workload/       # Workload type definitions
-│   ├── component/      # Reusable components
-│   ├── application/    # Application instances
-│   ├── transformer/    # Platform transformers
-│   └── scope/          # Application scopes (WIP)
-├── cue.mod/           # CUE module configuration
-└── hack/              # Testing utilities
+│   ├── core/            # Core OAM schemas
+│   ├── workload/        # Core workload type definitions. Maintained by the project.
+│   ├── component/       # Core component definitions. Maintained by the project.
+│   ├── scope/           # Core application scopes (WIP)
+│   ├── trait/           # Core application traits (WIP)
+│   ├── transformer/     # Platform transformers
+│   └── examples/        # Example implementations
+│       ├── application/ # Example application definitions
+│       ├── component/   # Example component definitions
+│       ├── workload/    # Example workload type definitions
+├── cue.mod/             # CUE module configuration
+└── hack/                # Testing utilities
 ```
 
 ## Contributing

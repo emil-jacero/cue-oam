@@ -2,7 +2,7 @@ package application
 
 import (
 	v2alpha1core "jacero.io/oam/v2alpha1/core"
-	v2alpha1component "jacero.io/oam/v2alpha1/component"
+	v2alpha1component "jacero.io/oam/v2alpha1/examples/component"
 )
 
 #CodeServer: v2alpha1core.#Application & {
@@ -14,7 +14,7 @@ import (
 	}
 
 	components: [
-		v2alpha1component.#WebApp & {
+		v2alpha1component.#WebService & {
 			config: {
 				domainName: "example.com"
 				mainContainer: {

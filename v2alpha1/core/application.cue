@@ -11,25 +11,25 @@ import (
 // It is the top-level resource in the OAM model, encapsulating all the necessary elements
 // to define and deploy an application.
 #Application: #Object & {
-	apiVersion: "application.oam.dev/v2alpha1"
-	kind:       "Application"
+	#apiVersion: "application.oam.dev/v2alpha1"
+	#kind:       "Application"
 
-	metadata: {
+	#metadata: {
 		// The name of the component, must be globally unique.
 		name:       string
 		namespace?: string
 		annotations?: [string]: string | int | bool
 		labels?: [string]:      string | int | bool
 
-		labels?: "application.oam.dev/name": metadata.name
-		labels?: "application.oam.dev/type": metadata.type
+		labels?: "application.oam.dev/name": #metadata.name
+		labels?: "application.oam.dev/type": #metadata.type
 
 		// A description of the component, used for documentation
-		annotations?: "definition.oam.dev/description": metadata.description
+		annotations?: "definition.oam.dev/description": #metadata.description
 	}
 
 	// Extended metadata and attributes for the component.
-	metadata: {
+	#metadata: {
 		// The parameter's type. One of boolean, number, string, or null
 		// as defined in the JSON specification and the JSON Schema
 		// Validation spec

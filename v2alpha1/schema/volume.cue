@@ -86,24 +86,14 @@ import (
 
 	// configMap represents a ConfigMap that should populate this volume.
 	if type == "configMap" {
-		// Items to map from the ConfigMap.
-		items?: [...#KeyToPath]
-		// Mode bits to use on this volume, must be a value between 0000 and 0777.
-		defaultMode?: int & >=0o000 & <=0o777
-		// Optional specify whether the ConfigMap or its keys must be defined
-		optional?: bool
+		// configMap is the ConfigMap to treat as a volume.
+		configMap: #ConfigMap
 	}
 
 	// secret represents a Secret that should populate this volume.
 	if type == "secret" {
-		// secretName of the secret in the same namespace as the pod.
-		secretName: string & strings.MaxRunes(256)
-		// Items to map from the Secret.
-		items?: [...#KeyToPath]
-		// Mode bits to use on this volume, must be a value between 0000 and 0777.
-		defaultMode?: int & >=0o000 & <=0o777
-		// Optional specify whether the ConfigMap or its keys must be defined
-		optional?: bool
+		// secret is the secret to treat as a volume.
+		secret: #Secret
 	}
 
 	// hostPath represents a pre-existing file or directory on the host machine that is directly exposed to the container.

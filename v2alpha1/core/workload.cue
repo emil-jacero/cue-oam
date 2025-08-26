@@ -3,27 +3,27 @@ package core
 #WorkloadTypes: string & "server" | "worker" | "task" | "database"
 
 #WorkloadType: #Object & {
-	apiVersion: "workload.oam.dev/v2alpha1"
-	kind:       "Workload"
+	#apiVersion: "workload.oam.dev/v2alpha1"
+	#kind:       "Workload"
 
-	metadata: {
+	#metadata: {
 		// The name of the workload, must be globally unique.
 		name:       string
 		namespace?: string
 		annotations?: [string]: string | int | bool
 		labels?: [string]:      string | int | bool
 
-		labels?: "workload.oam.dev/name": metadata.name
-		labels?: "workload.oam.dev/type": metadata.type
+		labels?: "workload.oam.dev/name": #metadata.name
+		labels?: "workload.oam.dev/type": #metadata.type
 
-		annotations?: "definition.oam.dev/description": metadata.description
-		for k, v in metadata.attributes {
+		annotations?: "definition.oam.dev/description": #metadata.description
+		for k, v in #metadata.attributes {
 			annotations?: "workload.oam.dev/\(k)": v
 		}
 	}
 
 	// Extended metadata and attributes for the workload.
-	metadata: {
+	#metadata: {
 		// The type of workload, e.g. "server", "worker", "task"
 		type: #WorkloadTypes
 

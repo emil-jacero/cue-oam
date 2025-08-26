@@ -5,8 +5,9 @@ import (
 )
 
 #Secret: v2alpha1core.#Object & {
-    apiVersion: "schema.oam.dev/v2alpha1"
-    kind: "Secret"
+    #apiVersion: "schema.oam.dev/v2alpha1"
+    #kind: "Secret"
+
     // The type of the secret, used to determine how to interpret the data.
     // Default is "Opaque".
     type: string | *"Opaque" | "kubernetes.io/dockerconfigjson" | "kubernetes.io/ssh-auth" | "kubernetes.io/tls"

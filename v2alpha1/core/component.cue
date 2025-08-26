@@ -7,25 +7,25 @@ import (
 )
 
 #Component: #Object & {
-	apiVersion: "component.oam.dev/v2alpha1"
-	kind:       "Component"
+	#apiVersion: "component.oam.dev/v2alpha1"
+	#kind:       "Component"
 
-	metadata: {
+	#metadata: {
 		// The name of the component, must be globally unique.
 		name:       string
 		namespace?: string
 		annotations?: [string]: string | int | bool
 		labels?: [string]:      string | int | bool
 
-		labels?: "component.oam.dev/name": metadata.name
-		labels?: "component.oam.dev/type": metadata.type
+		labels?: "component.oam.dev/name": #metadata.name
+		labels?: "component.oam.dev/type": #metadata.type
 
 		// A description of the component, used for documentation
-		annotations?: "definition.oam.dev/description": metadata.description
+		annotations?: "definition.oam.dev/description": #metadata.description
 	}
 
 	// Extended metadata and attributes for the component.
-	metadata: {
+	#metadata: {
 		// Type of the component, which can be used to categorize the component.
 		type: string
 
@@ -37,7 +37,7 @@ import (
 	}
 
 	// The workload that this component represents.
-	workload: #WorkloadType
+	#workload: #WorkloadType
 
 	// Config are used to define the properties of the component, which can be used by the component owner to configure the outputs.
 	// They are defined by the component owner, with optional defaults.

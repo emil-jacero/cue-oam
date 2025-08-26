@@ -87,38 +87,20 @@ import (
 	...
 }
 
+// EnvVarSource represents a source for environment variables.
+// For example, a secret or config map key.
+// TODO: Add support for targeting specific fields in a resource or remapping keys.
 #EnvVarSource: {
 	// Selects a key of a ConfigMap.
-	configMapKeyRef?: {
-		name?:     string
-		key:       string & strings.MaxRunes(63)
-		optional?: bool
-	}
+	configMap?: #ConfigMap
 	// Selects a key of a secret in the pod's namespace
-	secretKeyRef?: {
-		name?:     string
-		key:       string & strings.MaxRunes(63)
-		optional?: bool
-	}
-	// Selects a field of the pod: supports metadata.name, metadata.namespace, `metadata.labels['<KEY>']`,
-	// `metadata.annotations['<KEY>']`, spec.nodeName, spec.serviceAccountName, status.hostIP, status.podIP, status.podIPs.
-	fieldRef?: {
-		apiVersion?: string
-		fieldPath:   string & strings.MaxRunes(1024)
-	}
-	// Selects a resource of the container: only resources limits and requests (limits.cpu, limits.memory,
-	// limits.ephemeral-storage, requests.cpu, requests.memory and requests.ephemeral-storage) are currently supported.
-	resourceFieldRef?: {
-		containerName?: string
-		divisor:        #StorageQuantity
-		resource:       string & strings.MaxRunes(63)
-	}
+	secretKeyRef?: #Secret
 }
 
 #EnvVar: {
 	name:   string & strings.MaxRunes(63)
 	value?: string & strings.MaxRunes(1024)
-	// valueFrom?: #EnvVarSource
+	valueFrom?: #EnvVarSource
 }
 
 #LifecycleHandler: {

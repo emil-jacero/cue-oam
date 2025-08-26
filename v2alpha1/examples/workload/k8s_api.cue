@@ -2,7 +2,7 @@ package workload
 
 import (
 	core "jacero.io/oam/v2alpha1/core"
-	v2alpha1schema "jacero.io/oam/v2alpha1/workload/schema"
+	v2alpha1schema "jacero.io/oam/v2alpha1/schema"
 )
 
 // Pod is a workload type that runs a containerized application.

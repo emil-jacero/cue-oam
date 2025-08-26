@@ -2,24 +2,24 @@ package component
 
 import (
 	v2alpha1core "jacero.io/oam/v2alpha1/core"
-	v2alpha1workload "jacero.io/oam/v2alpha1/workload"
-	v2alpha1schema "jacero.io/oam/v2alpha1/workload/schema"
+	v2alpha1schema "jacero.io/oam/v2alpha1/schema"
 	v2alpha1compose "jacero.io/oam/v2alpha1/transformer/compose"
+	v2alpha1workload "jacero.io/oam/v2alpha1/examples/workload"
 )
 
-#WebApp: v2alpha1core.#Component & {
+#WebService: v2alpha1core.#Component & {
 
-	metadata: {
-		name:        "webapp.component.oam.dev"
-		description: "A test component for the web application workload."
-		type:        "webapp"
+	#metadata: {
+		name:        "webservice.component.oam.dev"
+		description: "A test component for the web service workload."
+		type:        "webservice"
 	}
 
-	workload: v2alpha1workload.#Server
+	#workload: v2alpha1workload.#Server
 
 	// Config are used to define the properties of the component,
 	/// which can be used by the component owner to configure the outputs.
-	config: workload.schema & {
+	config: #workload.schema & {
 		domainName: _ | *"example.com"
 		containers: [mainContainer]
 		mainContainer: v2alpha1schema.#ContainerSpec & {
@@ -62,9 +62,9 @@ import (
 	}
 	outputs: {
 		compose: {
-			name: _ | *"\(metadata.name)"
+			name: _ | *"\(#metadata.name)"
 			services: {
-				config.mainContainer.name: {
+				"\(config.mainContainer.name)": {
 					hostname:   config.mainContainer.name
 					container_name: config.mainContainer.name
 					domainname: config.domainName
@@ -99,20 +99,20 @@ import (
 								reservations: {
 									if config.mainContainer.resources.requests != _|_ {
 										if config.mainContainer.resources.requests.cpu != _|_ {
-											cpus: (v2alpha1compose.#CPUToCompose & {input: config.mainContainer.resources.requests.cpu}).output
+											cpus: (v2alpha1compose.#CPUToCompose & {input: config.mainContainer.resources.requests.cpu}).result
 										}
 										if config.mainContainer.resources.requests.memory != _|_ {
-											memory: (v2alpha1compose.#K8sMemoryToCompose & {input: config.mainContainer.resources.requests.memory}).output
+											memory: (v2alpha1compose.#K8sMemoryToCompose & {input: config.mainContainer.resources.requests.memory}).result
 										}
 									}
 								}
 								limits: {
 									if config.mainContainer.resources.limits != _|_ {
 										if config.mainContainer.resources.limits.cpu != _|_ {
-											cpus: (v2alpha1compose.#CPUToCompose & {input: config.mainContainer.resources.limits.cpu}).output
+											cpus: (v2alpha1compose.#CPUToCompose & {input: config.mainContainer.resources.limits.cpu}).result
 										}
 										if config.mainContainer.resources.limits.memory != _|_ {
-											memory: (v2alpha1compose.#K8sMemoryToCompose & {input: config.mainContainer.resources.limits.memory}).output
+											memory: (v2alpha1compose.#K8sMemoryToCompose & {input: config.mainContainer.resources.limits.memory}).result
 										}
 									}
 								}
@@ -177,7 +177,7 @@ import (
 									type:   "tmpfs"
 									device: "tmpfs"
 									if volume.size != _|_ {
-										o: "size=\((v2alpha1compose.#QuantityToCompose & {input: volume.size}).output)"
+										o: "size=\((v2alpha1compose.#QuantityToCompose & {input: volume.size}).result)"
 									}
 								}
 							}
@@ -188,7 +188,7 @@ import (
 								driver: "local"
 								if volume.size != _|_ {
 									driver_opts: {
-										size: (v2alpha1compose.#QuantityToCompose & {input: volume.size}).output
+										size: (v2alpha1compose.#QuantityToCompose & {input: volume.size}).result
 									}
 								}
 							}
