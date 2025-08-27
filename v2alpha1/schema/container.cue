@@ -138,10 +138,10 @@ import (
 #RestartPolicy: string | *"Always" | "OnFailure" | "Never"
 
 // RestartPolicyToDockerMap is a mapping of the restart policy to the Docker Compose equivalent.
-#RestartPolicyToDockerMap: {
-	"Always":    "any"
+#RestartPolicyK8sToDockerMap: {
+	"Always":    "always"
 	"OnFailure": "on-failure"
-	"Never":     "none"
+	"Never":     "no"
 }
 
 // Health Probe describes how a probing operation is to be

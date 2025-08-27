@@ -1,6 +1,6 @@
 package core
 
-// TODO: Add component labels automatically to the workload
+// TODO: Add component labels automatically to the output resources
 
 import (
 	"strings"
@@ -59,7 +59,7 @@ import (
 
 	// A set of templates that this component produces.
 	// Templates are used to define the results of the component, which can be used by applications.
-	templates: {
+	template: {
 		// Docker Compose template
 		compose?: v2alpha1compose.#Compose
 		// compose?: {...}

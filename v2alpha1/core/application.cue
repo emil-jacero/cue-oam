@@ -1,6 +1,6 @@
 package core
 
-// TODO: Add application labels automatically to the components
+// TODO: Add application labels automatically to the output resources
 
 import (
 	"strings"
@@ -43,8 +43,8 @@ import (
 	components: [...#ApplicationComponent]
 
 	// A set of outputs that this application produces.
-	// Outputs from all components are merged into these outputs.
-	outputs: {
+	// Template results from all components are merged into these outputs.
+	output: {
 		// Docker Compose template outputs
 		compose?: v2alpha1compose.#Compose
 		// compose?: {...}

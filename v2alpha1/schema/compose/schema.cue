@@ -1007,7 +1007,7 @@ import "list"
 	// Policy for pulling images. Options include: 'always', 'never',
 	// 'if_not_present', 'missing', 'build', or time-based refresh
 	// policies.
-	pull_policy?: =~"always|never|build|if_not_present|missing|refresh|daily|weekly|every_([0-9]+[wdhms])+"
+	pull_policy?: #PullPolicy
 
 	// Time after which to refresh the image. Used with
 	// pull_policy=refresh.
@@ -1018,7 +1018,7 @@ import "list"
 
 	// Restart policy for the service container. Options include:
 	// 'no', 'always', 'on-failure', and 'unless-stopped'.
-	restart?: string
+	restart?: #RestartPolicy
 
 	// Runtime to use for this container, e.g., 'runc'.
 	runtime?: string
@@ -1262,3 +1262,7 @@ import "list"
 
 	{[=~"^x-" & !~"^(name|driver|driver_opts|external|labels)$"]: _}
 })
+
+#RestartPolicy: string & "no" | "always" | "on-failure" | "unless-stopped"
+
+#PullPolicy: string & =~"always|never|build|if_not_present|missing|refresh|daily|weekly|every_([0-9]+[wdhms])+"

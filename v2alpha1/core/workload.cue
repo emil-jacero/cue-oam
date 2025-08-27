@@ -1,5 +1,7 @@
 package core
 
+// TODO: Add workload labels automatically to the output resources
+
 #WorkloadTypes: string & "server" | "worker" | "task" | "database"
 
 #Workload: #Object & {

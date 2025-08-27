@@ -73,7 +73,7 @@ import (
 			}
 		},
 	]
-	outputs: {
+	output: {
 		_name: string
 		// Auto-generated if not specified.
 		if metadata.name != "" && metadata.namespace != "" {
@@ -83,9 +83,9 @@ import (
 			_name: "\(metadata.name)"
 		}
 		for component in components {
-			if component.templates.compose != _|_ {
+			if component.template.compose != _|_ {
 				compose: name: _name
-				compose: component.templates.compose
+				compose: component.template.compose
 			}
 		}
 	}

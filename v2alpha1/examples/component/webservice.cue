@@ -62,7 +62,7 @@ import (
 			}
 		}
 	}
-	templates: {
+	template: {
 		compose: {
 			name: _ | *"\(#metadata.name)"
 			services: {
@@ -71,16 +71,9 @@ import (
 					container_name: config.mainContainer.name
 					domainname:     config.domainName
 					image:          config.mainContainer.image.reference
+					pull_policy:    (v2alpha1compose.#ToServicePullPolicy & {input: config.mainContainer.image.pullPolicy}).result
 
-					if config.mainContainer.restartPolicy == "Always" {
-						restart: "always"
-					}
-					if config.mainContainer.restartPolicy == "OnFailure" {
-						restart: "on-failure"
-					}
-					if config.mainContainer.restartPolicy == "Never" {
-						restart: "no"
-					}
+					restart: (v2alpha1compose.#ToServiceRestartPolicy & {input: config.mainContainer.restartPolicy}).result
 
 					if config.mainContainer.command != _|_ {
 						command: config.mainContainer.command
@@ -89,12 +82,12 @@ import (
 						args: config.mainContainer.args
 					}
 					if config.mainContainer.env != _|_ {
-						environment: (v2alpha1compose.#ToEnv & {input: config.mainContainer.env}).result
+						environment: (v2alpha1compose.#ToServiceEnv & {input: config.mainContainer.env}).result
 					}
 
 					if config.mainContainer.resources != _|_ {
-						// Cannot use v2alpha1compose.#ToDeployResources atm: https://github.com/cue-lang/cue/issues/4037
-						// deploy: resources: (v2alpha1compose.#ToDeployResources & {input: config.mainContainer.resources}).result
+						// Cannot use v2alpha1compose.#ToServiceDeployResources atm: https://github.com/cue-lang/cue/issues/4037
+						// deploy: resources: (v2alpha1compose.#ToServiceDeployResources & {input: config.mainContainer.resources}).result
 						deploy: resources: {
 							if config.mainContainer.resources.requests != _|_ {
 								reservations: {
@@ -119,7 +112,7 @@ import (
 						}
 					}
 					if config.mainContainer.ports != _|_ {
-						ports: (v2alpha1compose.#ToPorts & {input: config.mainContainer.ports}).result
+						ports: (v2alpha1compose.#ToServicePorts & {input: config.mainContainer.ports}).result
 					}
 					if config.mainContainer.volumes != _|_ {
 						volumes: (v2alpha1compose.#ToServiceVolumes & {input: config.mainContainer.volumes}).result

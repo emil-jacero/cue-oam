@@ -8,9 +8,24 @@ import (
 	v2alpha1compose "jacero.io/oam/v2alpha1/schema/compose"
 )
 
-#ToRestartPolicy: {
-	I=input!: string
-	result: _ | *{
+#ToServicePullPolicy: {
+	I=input!: v2alpha1schema.#PullPolicy
+	result: v2alpha1compose.#PullPolicy & {
+		if I == "IfNotPresent" {
+			"if_not_present"
+		}
+		if I == "Always" {
+			"always"
+		}
+		if I == "Never" {
+			"never"
+		}
+	}
+}
+
+#ToServiceRestartPolicy: {
+	I=input!: v2alpha1schema.#RestartPolicy
+	result: v2alpha1compose.#RestartPolicy & {
 		if I == "Always" {
 			"always"
 		}
@@ -23,7 +38,7 @@ import (
 	}
 }
 
-#ToEnv: {
+#ToServiceEnv: {
 	I=input!: [...v2alpha1schema.#EnvVar]
 	result: v2alpha1compose.#list_or_dict & {
 		for value in I{
@@ -32,7 +47,7 @@ import (
 	}
 }
 
-#ToDeployResources: {
+#ToServiceDeployResources: {
 	I=input!: v2alpha1schema.#ResourceRequirements
 	// v2alpha1compose.#deployment.resources & 
 	result: {
@@ -59,7 +74,7 @@ import (
 	}
 }
 
-#ToPorts: {
+#ToServicePorts: {
 	I=input!: [...v2alpha1schema.#Port]
 	result: [
 		for port in I {
@@ -135,11 +150,6 @@ import (
 				"\(volume.name)": {
 					name:   "\(P)-\(volume.name)"
 					driver: "local"
-					if volume.size != _|_ {
-						driver_opts: {
-							size: (#QuantityToCompose & {input: volume.size}).result
-						}
-					}
 				}
 			}
 		}

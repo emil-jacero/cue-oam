@@ -1,6 +1,12 @@
 package core
 
-import "strings"
+// TODO: Add trait labels automatically to the output resources
+
+import (
+	"strings"
+
+	v2alpha1compose "jacero.io/oam/v2alpha1/schema/compose"
+)
 
 #TraitTypes: string & "scaling" | "networking" | "storage" | "security" | "monitoring"
 
@@ -22,7 +28,7 @@ import "strings"
 
 	// Extended metadata and attributes for the trait.
 	#metadata: {
-		type: string
+		type: #TraitTypes
 
 		// A description of the trait.
 		description?: string
@@ -33,8 +39,13 @@ import "strings"
 
 	config: {...}
 
-	templates: {
-		compose: {}
+	// Patch the component with the trait's configuration.
+	patch: {
+		// Docker Compose template
+		compose?: v2alpha1compose.#Compose
+
+		// Kubernetes resource template
+		kubernetes?: {...}
 		...
 	}
 }

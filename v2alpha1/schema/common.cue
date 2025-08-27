@@ -58,7 +58,7 @@ import (
 
 	// PullPolicy defines the pull policy for the image.
 	// By default, it is set to IfNotPresent.
-	pullPolicy: *"IfNotPresent" | "Always" | "Never"
+	pullPolicy: #PullPolicy | *"IfNotPresent"
 
 	// Reference is the image address computed from repository, tag and digest
 	// in the format [REPOSITORY]:[TAG]@[DIGEST].
@@ -80,6 +80,8 @@ import (
 		reference: "\(repository):latest"
 	}
 }
+
+#PullPolicy: string & "IfNotPresent" | "Always" | "Never"
 
 // Validates k8s-style resource quantities (e.g. "1Gi", "500Mi").
 #StorageQuantity: =~"^[0-9]+(\\.[0-9]+)?(Ki|Mi|Gi|Ti|Pi|Ei)?$"

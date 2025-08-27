@@ -17,11 +17,11 @@ import (
 		type:        "database"
 	}
 
-	workloadType: v2alpha1workload.#Server
+	workload: v2alpha1workload.#Server
 
 	// Config are used to define the properties of the component,
 	/// which can be used by the component owner to configure the outputs.
-	config: workloadType.schema & {
+	config: workload.schema & {
 		// The type of database. For example postgres.
 		type: _ | *"mysql" | "postgres" | "mongodb"
 		if type == "postgres" {
@@ -44,7 +44,7 @@ import (
 		volume: v2alpha1schema.#Volume
 	}
 
-	templates: {
+	template: {
 		compose: {}
 	}
 }
