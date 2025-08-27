@@ -6,8 +6,7 @@ import (
 	v2alpha1core "jacero.io/oam/v2alpha1/core"
 )
 
-#Storage: {
-	v2alpha1core.#Object
+#Storage: v2alpha1core.#Object & {
 
 	metadata: name:       _
 	metadata: namespace?: _
@@ -31,28 +30,27 @@ import (
 // It is a generalized specification to help unify platforms like Kubernetes and Docker Compose.
 #Volume: #VolumeSpec & {
 	// The name of the storage volume.
-	name: string & strings.MaxRunes(254)
+	name!: string & strings.MaxRunes(254)
 }
 
 // VolumeSpec defines the schema for a volume in a workload.
 // It is a generalized specification to help unify platforms like Kubernetes and Docker Compose.
 // It includes various types of volumes, such as emptyDir, configMap, secret, hostPath, and persistent volumes.
-// TODO: Finalize Secret
-// TODO: Finalize ConfigMap
 #VolumeSpec: {
 	// The type of the storage volume.
-	type: #PersistenceTypes
+	type!: #PersistenceTypes
 
 	// The actual mount path in the filesystem.
 	// Sets the target directory in the container where the volume will be mounted.
-	mountPath: string
+	mountPath!: string
 
 	// Path within the volume from which the container's volume should be mounted. Defaults to "" (volume's root).
 	// Specifies which subdirectory or file within the volume should be mounted at the mountPath.
 	subPath?: string & strings.MaxRunes(1024)
 
-	// Canonical per-mount access (Compose ro/rw -> K8s volumeMount.readOnly)
-	readOnly?: bool | *false
+	// The access mode for the volume.
+	// Can either be "ReadWrite" or "ReadOnly".
+	accessMode?: #AccessMode
 
 	// mountOptions is the list of mount options, e.g. ["ro", "soft"]. Not validated - mount will
 	// simply fail if one is invalid.
@@ -75,6 +73,7 @@ import (
 
 	// emptyDir represents a temporary directory that shares a pod's lifetime.
 	if type == "emptyDir" {
+
 		// medium specifies the medium type of the emptyDir volume.
 		// If not specified, defaults to "" (disk).
 		// Valid values are "Memory" for memory-backed volumes.
@@ -87,13 +86,13 @@ import (
 	// configMap represents a ConfigMap that should populate this volume.
 	if type == "configMap" {
 		// configMap is the ConfigMap to treat as a volume.
-		configMap: #ConfigMap
+		configMap!: #ConfigMap
 	}
 
 	// secret represents a Secret that should populate this volume.
 	if type == "secret" {
 		// secret is the secret to treat as a volume.
-		secret: #Secret
+		secret!: #Secret
 	}
 
 	// hostPath represents a pre-existing file or directory on the host machine that is directly exposed to the container.
@@ -114,14 +113,14 @@ import (
 
 #PersistentVolumeSpec: {
 	// The name of the PersistentVolume.
-	name: string & strings.MaxRunes(256)
+	name!: string & strings.MaxRunes(256)
 	// The size of the volume, e.g. "1Gi".
 	// Converted for docker compose to "1G" or "1GiB".
-	size: string & #StorageQuantity
+	size!: string & #StorageQuantity
 	// The access modes for the PersistentVolume.
 	// Valid values are "ReadWriteOnce", "ReadOnlyMany", "ReadWriteMany", "ReadWriteOncePod".
 	// If not specified, defaults to ["ReadWriteOnce"].
-	// ignored by Docker Compose.
+	// Ignored by Docker Compose.
 	accessModes: #AccessModes
 	// The storage class to use for the PersistentVolume.
 	// If not specified, defaults to "standard" for Kubernetes.
@@ -212,6 +211,10 @@ import (
 // This is a list of access modes that can be used in a PersistentVolumeClaim.
 #AccessModes: [string] | *["ReadWriteOnce"] | ["ReadOnlyMany"] | ["ReadWriteMany"] | ["ReadWriteOncePod"]
 
+// AccessMode defines the access mode for a volume.
+// Must be one of "ReadWrite" or "ReadOnly".
+#AccessMode: string | "ReadWrite" | "ReadOnly"
+
 // VolumeMode defines the mode of the volume, either "Filesystem" or "Block".
 // Filesystem volumes are mounted as directories, while Block volumes are mounted as block devices.
 // Defaults to "Filesystem" if not specified.
@@ -221,14 +224,14 @@ import (
 // "Retain" means the volume is not deleted when the PersistentVolumeClaim is deleted.
 // "Delete" means the volume is deleted when the PersistentVolumeClaim is deleted.
 // "Recycle" means the volume is deleted and recreated when the PersistentVolumeClaim is deleted.
-#ReclaimPolicy: *"Retain" | "Delete" | "Recycle"
+#ReclaimPolicy: string | *"Retain" | "Delete" | "Recycle"
 
 // Binding modes for persistent volumes.
 // "Immediate" means the volume is bound immediately when created.
 // "WaitForFirstConsumer" means the volume is bound when a pod that uses it is scheduled.
 // This is useful for volumes that depend on the node where the pod is scheduled.
 // It allows the volume to be created on the same node as the pod, which can be important for performance or availability.
-#BindingMode: *"Immediate" | "WaitForFirstConsumer"
+#BindingMode: string | *"Immediate" | "WaitForFirstConsumer"
 
 // KeyToPath defines the schema for mapping a key in a ConfigMap or Secret to a file path in a volume.
 #KeyToPath: {

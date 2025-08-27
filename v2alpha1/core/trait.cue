@@ -17,7 +17,7 @@ import "strings"
 		labels?: "trait.oam.dev/name": #metadata.name
 		labels?: "trait.oam.dev/type": #metadata.type
 
-		annotations?: "definition.oam.dev/description": #metadata.description
+		annotations?: "trait.oam.dev/description": #metadata.description
 	}
 
 	// Extended metadata and attributes for the trait.
@@ -27,9 +27,14 @@ import "strings"
 		// A description of the trait.
 		description?: string
 
-		// Attributes extending the trait.
-		attributes: {...}
+		// What workload types this trait can be applied to.
+		appliesTo: [...#Workload]
 	}
 
 	config: {...}
+
+	templates: {
+		compose: {}
+		...
+	}
 }

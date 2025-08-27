@@ -98,8 +98,8 @@ import (
 }
 
 #EnvVar: {
-	name:   string & strings.MaxRunes(63)
-	value?: string & strings.MaxRunes(1024)
+	name:       string & strings.MaxRunes(63)
+	value?:     string & strings.MaxRunes(1024)
 	valueFrom?: #EnvVarSource
 }
 

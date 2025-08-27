@@ -2,8 +2,8 @@ package core
 
 #WorkloadTypes: string & "server" | "worker" | "task" | "database"
 
-#WorkloadType: #Object & {
-	#apiVersion: "workload.oam.dev/v2alpha1"
+#Workload: #Object & {
+	#apiVersion: "core.oam.dev/v2alpha1"
 	#kind:       "Workload"
 
 	#metadata: {
@@ -16,7 +16,7 @@ package core
 		labels?: "workload.oam.dev/name": #metadata.name
 		labels?: "workload.oam.dev/type": #metadata.type
 
-		annotations?: "definition.oam.dev/description": #metadata.description
+		annotations?: "workload.oam.dev/description": #metadata.description
 		for k, v in #metadata.attributes {
 			annotations?: "workload.oam.dev/\(k)": v
 		}

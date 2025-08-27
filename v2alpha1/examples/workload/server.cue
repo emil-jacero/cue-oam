@@ -8,7 +8,8 @@ import (
 // Server is a workload type that runs a containerized workload.
 // It will expose the container ports by default.
 // Generalized to run on many different containerized platforms, like Docker Compose, Kubernetes, etc.
-#Server: v2alpha1core.#WorkloadType & {
+// TODO: Add support for initContainers
+#Server: v2alpha1core.#Workload & {
 	#metadata: name: "server.workload.oam.dev"
 
 	#metadata: {

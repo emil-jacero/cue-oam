@@ -31,12 +31,12 @@ import (
 						}
 					}
 					env: [
-					    {name: "PUID", value: "1000"},
-					    {name: "PGID", value: "1000"},
-					    {name: "TZ", value: "Etc/UTC"},
-                        {name: "PROXY_DOMAIN", value: "\(metadata.name).\(config.domainName)"},
-					    {name: "PASSWORD", value: "yourpassword"},
-                        {name: "PWA_APPNAME", value: "code-server"}
+						{name: "PUID", value: "1000"},
+						{name: "PGID", value: "1000"},
+						{name: "TZ", value: "Etc/UTC"},
+						{name: "PROXY_DOMAIN", value: "\(metadata.name).\(config.domainName)"},
+						{name: "PASSWORD", value: "yourpassword"},
+						{name: "PWA_APPNAME", value: "code-server"},
 					]
 
 					ports: [
@@ -45,29 +45,27 @@ import (
 							protocol:      "TCP"
 							containerPort: 8443
 							exposedPort:   8443
-						}
+						},
 					]
 
 					volumes: [
 						{
-							name:      "config"
-							type:      "volume"
-							mountPath: "/config"
-							readOnly:  false
+							name:       "config"
+							type:       "volume"
+							mountPath:  "/config"
 						},
 						{
-							name:      "data"
-							type:      "emptyDir"
-							mountPath: "/data"
-							readOnly:  false
-							size:      "3Gi"
+							name:       "data"
+							type:       "emptyDir"
+							mountPath:  "/data"
+							size:       "3Gi"
 						},
 						{
 							name:         "docker-socket"
 							type:         "hostPath"
 							hostPath:     "/var/run/docker.sock"
 							mountPath:    "/var/run/docker.sock"
-							readOnly:     true
+							accessMode:   "ReadOnly"
 							hostPathType: "Socket"
 						},
 					]
@@ -85,9 +83,9 @@ import (
 			_name: "\(metadata.name)"
 		}
 		for component in components {
-			if component.outputs.compose != _|_ {
+			if component.templates.compose != _|_ {
 				compose: name: _name
-				compose: component.outputs.compose
+				compose: component.templates.compose
 			}
 		}
 	}

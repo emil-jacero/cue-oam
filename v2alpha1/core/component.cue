@@ -3,11 +3,21 @@ package core
 // TODO: Add component labels automatically to the workload
 
 import (
-	v2alpha1compose "jacero.io/oam/v2alpha1/transformer/compose"
+	"strings"
+
+	v2alpha1compose "jacero.io/oam/v2alpha1/schema/compose"
 )
 
+// When the component type is "workload", it must have a workload definition.
+// The workload component acts as a well-known schema and template for the component's configuration and templates,
+// making it easier to define and manage workloads.
+// When the component type is "generic", it does not rely on a workload definition.
+// The generic component type allows for more flexibility in defining the component's behavior and configuration,
+// for example a resource that is not a deployable unit, like a configuration of a Kubernetes Operator.
+#ComponentTypes: string | *"workload" | "generic"
+
 #Component: #Object & {
-	#apiVersion: "component.oam.dev/v2alpha1"
+	#apiVersion: "core.oam.dev/v2alpha1"
 	#kind:       "Component"
 
 	#metadata: {
@@ -21,38 +31,54 @@ import (
 		labels?: "component.oam.dev/type": #metadata.type
 
 		// A description of the component, used for documentation
-		annotations?: "definition.oam.dev/description": #metadata.description
+		annotations?: "component.oam.dev/description": #metadata.description
 	}
 
 	// Extended metadata and attributes for the component.
 	#metadata: {
 		// Type of the component, which can be used to categorize the component.
-		type: string
+		type: #ComponentTypes
+
+		// A category for the component, used to group similar components together.
+		category: string & strings.MinRunes(1) & strings.MaxRunes(254)
 
 		// A description of the component.
-		description?: string
-
-		// Attributes extending the component.
-		attributes: {...}
+		description?: string & strings.MinRunes(1) & strings.MaxRunes(254)
 	}
 
-	// The workload that this component represents.
-	#workload: #WorkloadType
+	// The workload type that this component represents.
+	// Acts as the primary and well-known schema and template for the component.
+	if #metadata.type == "workload" {
+		workload!: #Workload
+	}
 
-	// Config are used to define the properties of the component, which can be used by the component owner to configure the outputs.
+	// Config are used to define the properties of the component.
 	// They are defined by the component owner, with optional defaults.
+	// Treat them as standardized inputs to the component.
 	config: {...}
 
-	// A set of outputs that this component produces. Can be kubernetes resource templates or docker compose templates.
-	// Outputs are used to define the results of the component, which can be used by applications.
-	// The "main" output is the primary output of the component, and MUST be named "main".
-	outputs: {
-		// Docker Compose template outputs
+	// A set of templates that this component produces.
+	// Templates are used to define the results of the component, which can be used by applications.
+	templates: {
+		// Docker Compose template
 		compose?: v2alpha1compose.#Compose
+		// compose?: {...}
 
-		// Kubernetes resource outputs
-		kubernetes?: {...} // Kubernetes resource outputs
+		// Kubernetes resource template
+		kubernetes?: {...}
 		...
 	}
+
+	// Status defines how the status of the component, when running, can be observed.
+	status: #Status
 	...
+}
+
+#Status: {
+	// CustomStatus defines the custom status message that could display to user.
+	customStatus: {...}
+	// HealthPolicy defines the health check policy for the abstraction.
+	healthPolicy: {...}
+	// Details stores a string representation of a CUE status map to be evaluated at runtime for display.
+	details: {...}
 }

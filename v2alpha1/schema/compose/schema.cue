@@ -8,14 +8,8 @@ import "list"
 
 @jsonschema(schema="https://json-schema.org/draft/2020-12/schema")
 
-close({
-	@jsonschema(id="https://cue.jsonschema.invalid/compose_spec.json")
-
-	// declared for backward compatibility, ignored. Please remove it.
-	version?: string @deprecated()
-
-	// define the Compose project name, until user defines one
-	// explicitly.
+#Compose: {
+	// define the Compose project name, until user defines one explicitly.
 	name?: string
 
 	// compose sub-projects to be included.
@@ -46,9 +40,7 @@ close({
 	configs?: close({
 		{[=~"^[a-zA-Z0-9._-]+$"]: #config}
 	})
-
-	{[=~"^x-" & !~"^(version|name|include|services|networks|volumes|secrets|configs)$"]: _}
-})
+}
 
 // Block IO limit for a specific device.
 #blkio_limit: close({

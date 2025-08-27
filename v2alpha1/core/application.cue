@@ -3,15 +3,17 @@ package core
 // TODO: Add application labels automatically to the components
 
 import (
-	v2alpha1compose "jacero.io/oam/v2alpha1/transformer/compose"
+	"strings"
+
+	v2alpha1compose "jacero.io/oam/v2alpha1/schema/compose"
 )
 
 // Application represents a collection of components, traits, and scopes
-// that together form a complete application.
+// that together form adefinition complete application.
 // It is the top-level resource in the OAM model, encapsulating all the necessary elements
 // to define and deploy an application.
 #Application: #Object & {
-	#apiVersion: "application.oam.dev/v2alpha1"
+	#apiVersion: "core.oam.dev/v2alpha1"
 	#kind:       "Application"
 
 	#metadata: {
@@ -25,30 +27,27 @@ import (
 		labels?: "application.oam.dev/type": #metadata.type
 
 		// A description of the component, used for documentation
-		annotations?: "definition.oam.dev/description": #metadata.description
+		annotations?: "application.oam.dev/description": #metadata.description
 	}
 
 	// Extended metadata and attributes for the component.
 	#metadata: {
-		// The parameter's type. One of boolean, number, string, or null
-		// as defined in the JSON specification and the JSON Schema
-		// Validation spec
-		type: string
+		// The type of the application.
+		// Used to categorize the application.
+		type: string & strings.MinRunes(1) & strings.MaxRunes(254)
 
 		// A description of the component.
-		description?: string
-
-		// Attributes extending the component.
-		attributes: {...}
+		description?: string & strings.MinRunes(1) & strings.MaxRunes(254)
 	}
 
 	components: [...#ApplicationComponent]
 
-	// A set of outputs that this application produces. Can be kubernetes resource templates or docker compose templates.
+	// A set of outputs that this application produces.
 	// Outputs from all components are merged into these outputs.
 	outputs: {
 		// Docker Compose template outputs
 		compose?: v2alpha1compose.#Compose
+		// compose?: {...}
 
 		// Kubernetes resource outputs
 		kubernetes?: {...} // Kubernetes resource outputs
