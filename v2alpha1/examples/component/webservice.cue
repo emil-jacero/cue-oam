@@ -31,8 +31,6 @@ import (
 				digest:     _ | *""
 			}
 			restartPolicy: _ | *"Always"
-			// command: _ | *[]
-			// args: _ | *[]
 			env: _ | *[{name: "ENV", value: "production"}]
 
 			ports: _ | *[

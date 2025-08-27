@@ -28,7 +28,10 @@ import (
 		osType?: string | *"linux" | "windows"
 		// The operating system architecture.
 		arch?:   string | *"amd64" | "i386" | "arm" | "arm64"
-		// The containers that are part of the workload
+		// The containers that are part of the workload.
 		containers: [...v2alpha1schema.#ContainerSpec]
+		// initContainers are run before the main containers.
+		// They can be used to set up the environment for the main containers.
+		initContainers: [...v2alpha1schema.#ContainerSpec]
 	}
 }
