@@ -13,32 +13,32 @@ import "list"
 	name?: string
 
 	// compose sub-projects to be included.
-	include?: [...#include]
+	include?: [...#Include]
 
 	// The services that will be used by your application.
 	services?: close({
-		{[=~"^[a-zA-Z0-9._-]+$"]: #service}
+		{[=~"^[a-zA-Z0-9._-]+$"]: #Service}
 	})
 
 	// Networks that are shared among multiple services.
 	networks?: {
-		{[=~"^[a-zA-Z0-9._-]+$"]: #network}
+		{[=~"^[a-zA-Z0-9._-]+$"]: #Network}
 		...
 	}
 
 	// Named volumes that are shared among multiple services.
 	volumes?: close({
-		{[=~"^[a-zA-Z0-9._-]+$"]: #volume}
+		{[=~"^[a-zA-Z0-9._-]+$"]: #Volume}
 	})
 
 	// Secrets that are shared among multiple services.
 	secrets?: close({
-		{[=~"^[a-zA-Z0-9._-]+$"]: #secret}
+		{[=~"^[a-zA-Z0-9._-]+$"]: #Secret}
 	})
 
 	// Configurations that are shared among multiple services.
 	configs?: close({
-		{[=~"^[a-zA-Z0-9._-]+$"]: #config}
+		{[=~"^[a-zA-Z0-9._-]+$"]: #Config}
 	})
 }
 
@@ -65,7 +65,7 @@ import "list"
 #command: matchN(1, [null, string, [...string]])
 
 // Config configuration for the Compose application.
-#config: close({
+#Config: close({
 	// Custom name for this config.
 	name?: string
 
@@ -397,7 +397,7 @@ import "list"
 })
 
 // Compose application or sub-projects to be included.
-#include: matchN(1, [string, close({
+#Include: matchN(1, [string, close({
 	// Path to the Compose application or sub-project files to
 	// include.
 	path?: #string_or_list
@@ -424,7 +424,7 @@ import "list"
 // #list_or_dict: [string]: string | int | bool
 
 // Network configuration for the Compose application.
-#network: null | close({
+#Network: null | close({
 	// Custom name for this network.
 	name?: string
 
@@ -499,7 +499,7 @@ import "list"
 })
 
 // Secret configuration for the Compose application.
-#secret: close({
+#Secret: close({
 	// Custom name for this secret.
 	name?: string
 
@@ -537,7 +537,7 @@ import "list"
 })
 
 // Configuration for a service.
-#service: close({
+#Service: close({
 	develop?:     #development
 	deploy?:      #deployment
 	annotations?: #list_or_dict
@@ -1234,7 +1234,7 @@ import "list"
 }
 
 // Volume configuration for the Compose application.
-#volume: null | close({
+#Volume: null | close({
 	// Custom name for this volume.
 	name?: string
 

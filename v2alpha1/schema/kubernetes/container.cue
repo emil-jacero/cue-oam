@@ -17,6 +17,9 @@ import (
 
 #PodStatus: corev1.#PodStatus
 
-#Container: corev1.#Container
+#Container:     corev1.#Container
+#ContainerSpec: corev1.#Container
 
 #ContainerPort: corev1.#ContainerPort
+
+#VolumeMount: corev1.#VolumeMount

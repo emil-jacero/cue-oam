@@ -1,18 +1,42 @@
 package schema
 
-#Port: {
-	// If specified, this must be an IANA_SVC_NAME and unique within the pod. Each named port in a pod must have a unique name.
-	// Name for the port that can be referred to by services.
-	name: string
-	// Protocol for port. Must be UDP, TCP, or SCTP. Defaults to "TCP". 
-	protocol: *"TCP" | "UDP" | "SCTP"
+// Used inside a container specification
+#ContainerPort: {
 	// The port that the container will bind to.
 	// This must be a valid port number, 0 < x < 65536.
-	containerPort: uint & >=0
-	// The port that will be exposed outside the container.
+	containerPort!: uint & >=0
+	// If specified, this must be an IANA_SVC_NAME and unique within the pod. Each named port in a pod must have a unique name.
+	// Name for the port that can be referred to by services.
+	name?: string
+	// Protocol for port. Must be UDP, TCP, or SCTP. Defaults to "TCP". 
+	protocol?: *"TCP" | "UDP" | "SCTP"
+	// What host IP to bind the external port to.
+	hostIP?: string
+	// What port to expose on the host.
 	// This must be a valid port number, 0 < x < 65536.
-	// When setting this field, a transformer must ensure this port is exposed by the underlying platform.
-	exposedPort?: uint & >=0
-	// Optional port number to bind the port to on the host
-	nodePort?: uint & >=0
+	hostPort?: uint & >=0
+	...
+}
+
+#Port: #ContainerPort & {
+	// The port that will be exposed outside the container.
+	// ServicePort in combination with expose must inform the platform of what port to map to the container when exposing.
+	// This must be a valid port number, 0 < x < 65536.
+	servicePort?: uint & >=0
+	// If true, the port will be exposed outside the container. Defaults to false.
+	expose?: bool | *false
+	// Specify what kind of Service you want. options: "ClusterIP", "NodePort", "LoadBalancer"
+	// Ignored by Docker Compose.
+	exposeType?: *"ClusterIP" | "NodePort" | "LoadBalancer"
+}
+
+#ToContainerPort: #ContainerPort & {
+	#input: #Port
+	result: #ContainerPort & {
+		containerPort!: #input.containerPort
+		name?:        #input.name
+		protocol?:    #input.protocol
+		hostIP?:     #input.hostIP
+		hostPort?:   #input.hostPort
+	}
 }

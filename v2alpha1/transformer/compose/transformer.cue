@@ -8,6 +8,65 @@ import (
 	v2alpha1compose "jacero.io/oam/v2alpha1/schema/compose"
 )
 
+#ContainerSpecToService: {
+	I=input!: v2alpha1schema.#ContainerSpec
+	result: v2alpha1compose.#Service & {
+		hostname: I.name
+		container_name: I.name
+		image: I.image.reference
+		pull_policy: (#ToServicePullPolicy & {input: I.image.pullPolicy}).result
+
+		restart: (#ToServiceRestartPolicy & {input: I.restartPolicy}).result
+
+		if I.command != _|_ {
+			command: I.command
+		}
+
+		if I.args != _|_ {
+			args: I.args
+		}
+
+		if I.env != _|_ {
+			environment: (#ToServiceEnv & {input: I.env}).result
+		}
+
+		// Cannot use #ToServiceDeployResources because of a bug: https://github.com/cue-lang/cue/issues/4037
+		if I.resources != _|_ {
+			// deploy: resources: (#ToServiceDeployResources & {input: I.resources}).result
+			deploy: resources: {
+				if I.resources.requests != _|_ {
+					reservations: {
+						if I.resources.requests.cpu != _|_ {
+							cpus: (#CPUToCompose & {input: I.resources.requests.cpu}).result
+						}
+						if I.resources.requests.memory != _|_ {
+							memory: (#K8sMemoryToCompose & {input: I.resources.requests.memory}).result
+						}
+					}
+				}
+				if I.resources.limits != _|_ {
+					limits: {
+						if I.resources.limits.cpu != _|_ {
+							cpus: (#CPUToCompose & {input: I.resources.limits.cpu}).result
+						}
+						if I.resources.limits.memory != _|_ {
+							memory: (#K8sMemoryToCompose & {input: I.resources.limits.memory}).result
+						}
+					}
+				}
+			}
+		}
+
+		if I.ports != _|_ {
+			ports: (#ToServicePorts & {input: I.ports}).result
+		}
+
+		if I.volumes != _|_ {
+			volumes: (#ToServiceVolumes & {input: I.volumes}).result
+		}
+	}
+}
+
 #ToServicePullPolicy: {
 	I=input!: v2alpha1schema.#PullPolicy
 	result: v2alpha1compose.#PullPolicy & {

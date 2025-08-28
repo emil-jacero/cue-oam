@@ -3,8 +3,6 @@ package core
 // TODO: Add trait labels automatically to the output resources
 
 import (
-	"strings"
-
 	v2alpha1compose "jacero.io/oam/v2alpha1/schema/compose"
 )
 
@@ -15,8 +13,8 @@ import (
 	#kind:       "Trait"
 
 	#metadata: {
-		name:       string & strings.MaxRunes(254)
-		namespace?: string
+		name:       _
+		namespace?: _
 		annotations?: [string]: string | int | bool
 		labels?: [string]:      string | int | bool
 
@@ -37,9 +35,9 @@ import (
 		appliesTo: [...#Workload]
 	}
 
-	config: {...}
+	properties: {...}
 
-	// Patch the component with the trait's configuration.
+	// Patch the component with the trait's properties.
 	patch: {
 		// Docker Compose template
 		compose?: v2alpha1compose.#Compose

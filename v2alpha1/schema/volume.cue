@@ -2,41 +2,19 @@ package schema
 
 import (
 	"strings"
-
-	v2alpha1core "jacero.io/oam/v2alpha1/core"
 )
-
-#Storage: v2alpha1core.#Object & {
-
-	metadata: name:       _
-	metadata: namespace?: _
-
-	spec: #VolumeSpec & {
-		type: #PersistenceTypes
-		if type == "volume" {
-			// The name of the PersistentVolume.
-			// Auto-generated if not specified.
-			if metadata.name != "" & metadata.namespace != "" {
-				name: string | *"\(metadata.namespace)-\(metadata.name)-volume"
-			}
-			if metadata.name != "" & metadata.namespace == "" {
-				name: string | *"\(metadata.name)-volume"
-			}
-		}
-	}
-}
 
 // Volume is a modified version of VolumeSpec adds name to the volume specification.
 // It is a generalized specification to help unify platforms like Kubernetes and Docker Compose.
-#Volume: #VolumeSpec & {
+#Volume: #VolumeMount & {
 	// The name of the storage volume.
 	name!: string & strings.MaxRunes(254)
 }
 
-// VolumeSpec defines the schema for a volume in a workload.
+// VolumeMount defines the schema for a volume mount in a workload.
 // It is a generalized specification to help unify platforms like Kubernetes and Docker Compose.
-// It includes various types of volumes, such as emptyDir, configMap, secret, hostPath, and persistent volumes.
-#VolumeSpec: {
+// It includes various types of volume mounts, such as emptyDir, configMap, secret, hostPath, and persistent volume mounts.
+#VolumeMount: {
 	// The type of the storage volume.
 	type!: #PersistenceTypes
 
@@ -69,6 +47,22 @@ import (
 		// Defaults to "" (volume's root).
 		// SubPathExpr and SubPath are mutually exclusive.
 		subPathExpr?: string & strings.MaxRunes(1024)
+		// RecursiveReadOnly specifies whether read-only mounts should be handled recursively.
+		//
+		// If ReadOnly is false, this field has no meaning and must be unspecified.
+		//
+		// If ReadOnly is true, and this field is set to Disabled, the mount is not made
+		// recursively read-only.  If this field is set to IfPossible, the mount is made
+		// recursively read-only, if it is supported by the container runtime.  If this
+		// field is set to Enabled, the mount is made recursively read-only if it is
+		// supported by the container runtime, otherwise the pod will not be started and
+		// an error will be generated to indicate the reason.
+		//
+		// If this field is set to IfPossible or Enabled, MountPropagation must be set to
+		// None (or be unspecified, which defaults to None).
+		//
+		// If this field is not specified, it is treated as an equivalent of Disabled.
+		RecursiveReadOnly: string | "Disabled" | "IfPossible" | "Enabled"
 	}
 
 	// emptyDir represents a temporary directory that shares a pod's lifetime.
@@ -157,49 +151,6 @@ import (
 	// labels?: matchN(1, [close({
 	// 	{[=~".+"]: null | bool | number | string}
 	// }), list.UniqueItems() & [...string]])
-}
-
-#VolumeMount: {
-	// This must match the Name of a Volume.
-	name: string & strings.MaxRunes(256)
-	// Mounted read-only if true, read-write otherwise (false or unspecified).
-	readOnly?: bool | *false
-	// RecursiveReadOnly specifies whether read-only mounts should be handled
-	// recursively.
-	//
-	// If ReadOnly is false, this field has no meaning and must be unspecified.
-	//
-	// If ReadOnly is true, and this field is set to Disabled, the mount is not made
-	// recursively read-only.  If this field is set to IfPossible, the mount is made
-	// recursively read-only, if it is supported by the container runtime.  If this
-	// field is set to Enabled, the mount is made recursively read-only if it is
-	// supported by the container runtime, otherwise the pod will not be started and
-	// an error will be generated to indicate the reason.
-	//
-	// If this field is set to IfPossible or Enabled, MountPropagation must be set to
-	// None (or be unspecified, which defaults to None).
-	//
-	// If this field is not specified, it is treated as an equivalent of Disabled.
-	recursiveReadOnly?: *"Disabled" | "IfPossible" | "Enabled"
-	// The actual mount path in the filesystem.
-	// Sets the target directory in the container where the volume will be mounted.
-	mountPath: string & strings.MaxRunes(1024)
-	// Path within the volume from which the container's volume should be mounted.
-	// Defaults to "" (volume's root).
-	// Specifies which subdirectory or file within the volume should be mounted at the mountPath.
-	subPath?: string & strings.MaxRunes(1024)
-	// mountPropagation determines how mounts are propagated from the host
-	// to container and the other way around.
-	// When not set, MountPropagationNone is used.
-	// This field is beta in 1.10.
-	// When RecursiveReadOnly is set to IfPossible or to Enabled, MountPropagation must be None or unspecified
-	// (which defaults to None).
-	mountPropagation?: *"None" | "HostToContainer" | "Bidirectional"
-	// Expanded path within the volume from which the container's volume should be mounted.
-	// Behaves similarly to SubPath but environment variable references $(VAR_NAME) are expanded using the container's environment.
-	// Defaults to "" (volume's root).
-	// SubPathExpr and SubPath are mutually exclusive.
-	subPathExpr?: string & strings.MaxRunes(1024)
 }
 
 #HostPathType: string | *"" | "Directory" | "File" | "Socket" | "CharDevice" | "BlockDevice" | "DirectoryOrCreate" | "FileOrCreate"

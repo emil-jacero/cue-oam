@@ -4,21 +4,23 @@ package core
 
 #WorkloadTypes: string & "server" | "worker" | "task" | "database"
 
+// Describes long-running, containerized services that have a stable network endpoint to receive external traffic from.
+#WorkloadTypeWebService: "webservice"
+
 #Workload: #Object & {
 	#apiVersion: "core.oam.dev/v2alpha1"
 	#kind:       "Workload"
 
 	#metadata: {
-		// The name of the workload, must be globally unique.
-		name:       string
-		namespace?: string
-		annotations?: [string]: string | int | bool
-		labels?: [string]:      string | int | bool
+		name:         _
+		namespace?:   _
+		labels?:      _
+		annotations?: _
 
-		labels?: "workload.oam.dev/name": #metadata.name
-		labels?: "workload.oam.dev/type": #metadata.type
+		labels: "workload.oam.dev/name": #metadata.name
+		labels: "workload.oam.dev/type": #metadata.type
 
-		annotations?: "workload.oam.dev/description": #metadata.description
+		annotations: "workload.oam.dev/description": #metadata.description
 		for k, v in #metadata.attributes {
 			annotations?: "workload.oam.dev/\(k)": v
 		}
@@ -26,6 +28,9 @@ package core
 
 	// Extended metadata and attributes for the workload.
 	#metadata: {
+		apiVersion: string
+		kind:       string
+
 		// The type of workload, e.g. "server", "worker", "task"
 		type: #WorkloadTypes
 

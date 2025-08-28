@@ -12,6 +12,8 @@ import (
 	#metadata: name: "containerized.workload.core.oam.dev"
 
 	#metadata: {
+		apiVersion:  "core.oam.dev/v2alpha1"
+		kind:        "ContainerizedWorkload"
 		type:        "server"
 		description: "A server workload that runs a containerized application."
 		attributes: {

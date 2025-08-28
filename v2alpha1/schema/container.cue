@@ -7,23 +7,31 @@ import (
 )
 
 #ContainerSpec: {
+	// The name of the container.
 	name:  string & strings.MaxRunes(254)
+
+	// The container image to use.
 	image: #Image
+
+	// Command to run in the container.
 	command?: [...string]
+
+	// Arguments to pass to the command.
 	args?: [...string]
+
 	// Container's working directory. If not specified, the container runtime's default will be used,
 	// which might be configured in the container image. Cannot be updated.
 	workingDir?: string & strings.MaxRunes(1024)
+
 	// List of environment variables to set in the container.
 	env?: [...#EnvVar]
 
-	// Ports to expose from the container.
 	// Each port must have a unique name within the container.
 	// If a port is not specified, the container runtime's default will be used.
 	ports?: [...#Port]
 
 	// Volumes that can be mounted into the container.
-	// A volume specified here will also create the the relevant volume for the workload.
+	// The volume can be defined here or passed in here from another definition inheriting from #Volume.
 	volumes?: [...#Volume]
 
 	// Resources required by the container.
@@ -90,17 +98,19 @@ import (
 // EnvVarSource represents a source for environment variables.
 // For example, a secret or config map key.
 // TODO: Add support for targeting specific fields in a resource or remapping keys.
-#EnvVarSource: {
+#EnvFromSource: {
 	// Selects a key of a ConfigMap.
 	configMap?: #ConfigMap
 	// Selects a key of a secret in the pod's namespace
 	secretKeyRef?: #Secret
+	// An optional identifier to prepend to each key in the ConfigMap.
+	prefix?: string
 }
 
 #EnvVar: {
-	name:       string & strings.MaxRunes(63)
-	value?:     string & strings.MaxRunes(1024)
-	valueFrom?: #EnvVarSource
+	name:       string
+	value?:     string
+	valueFrom?: #EnvFromSource
 }
 
 #LifecycleHandler: {
@@ -162,59 +172,93 @@ import (
 		...
 	}
 
+	// GRPC specifies a GRPC HealthCheckRequest. 
+	grpc?: {
+		// Port number of the gRPC service. Number must be in the range 1 to 65535. 
+		port!: uint
+
+		// Service is the name of the service to place in the gRPC HealthCheckRequest
+		// (see https://github.com/grpc/grpc/blob/master/doc/health-checking.md).
+		// If this is not specified, the default behavior is defined by gRPC.
+		service?: string
+	}
+
 	// Instructions for assessing container health by executing an
 	// HTTP GET request. Either this attribute or the exec attribute
 	// or the tcpSocket attribute MUST be specified. This attribute
 	// is mutually exclusive with both the exec attribute and the
 	// tcpSocket attribute.
-	httpGet?: close({
-		// The endpoint, relative to the port, to which the HTTP GET
-		// request should be directed.
-		path: string
+	httpGet?: {
+		// Host name to connect to, defaults to the pod IP.
+		// You probably want to set "Host" in httpHeaders instead.
+		host?: string
 
-		// The TCP socket within the container to which the HTTP GET
-		// request should be directed.
-		port: int
+		// Custom headers to set in the request. HTTP allows repeated headers.
+		httpHeaders?: [...#HTTPHeader]
 
-		// Optional HTTP headers.
-		httpHeaders?: close({
-			// An HTTP header name. This must be unique per HTTP GET-based
-			// probe.
-			name: string
+		// Path to access on the HTTP server.
+		path?: string
 
-			// An HTTP header value.
-			value: string
-		})
-	})
+		// Name or number of the port to access on the container.
+		// Number must be in the range 1 to 65535. Name must be an IANA_SVC_NAME.
+		port!: uint
+
+		// Scheme to use for connecting to the host. Defaults to HTTP.
+		scheme?: string
+	}
 
 	// Instructions for assessing container health by probing a TCP
 	// socket. Either this attribute or the exec attribute or the
 	// httpGet attribute MUST be specified. This attribute is
 	// mutually exclusive with both the exec attribute and the
 	// httpGet attribute.
-	tcpSocket?: close({
+	tcpSocket?: {
+		// Optional: Host name to connect to, defaults to the pod IP.
+		host?: string
+
 		// The TCP socket within the container that should be probed to
 		// assess container health.
-		port: int
-	})
+		port!: uint
+	}
 
-	// Number of seconds after the container is started before the
-	// first probe is initiated.
-	initialDelaySeconds?: int
+	// Number of seconds after the container has started before liveness probes are initiated.
+	// More info: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle#container-probes
+	initialDelaySeconds?: int32
 
-	// How often, in seconds, to execute the probe.
-	periodSeconds?: int
+	// How often (in seconds) to perform the probe. Default to 10 seconds. Minimum value is 1. 
+	periodSeconds?: int32 & >=1 | *10
 
 	// Number of seconds after which the probe times out.
-	timeoutSeconds?: int
+	// Defaults to 1 second. Minimum value is 1.
+	// More info: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle#container-probes
+	timeoutSeconds?: int32 & >=1 | *1
 
-	// Minimum consecutive successes for the probe to be considered
-	// successful after having failed.
-	successThreshold?: int
+	// Minimum consecutive successes for the probe to be considered successful after having failed.
+	// Defaults to 1. Must be 1 for liveness and startup. Minimum value is 1.
+	successThreshold?: int32 & >=1 | *1
 
-	// Number of consecutive failures required to determine the
-	// container is not alive (liveness probe) or not ready
-	// (readiness probe).
-	failureThreshold?: int
-	...
+	// Minimum consecutive failures for the probe to be considered failed after having succeeded. Defaults to 3. Minimum value is 1..
+	failureThreshold?: int32 & >=1 | *3
+
+	// Optional duration in seconds the pod needs to terminate gracefully upon probe failure.
+	// The grace period is the duration in seconds after the processes running in the pod are sent a termination signal
+	// and the time when the processes are forcibly halted with a kill signal.
+	//
+	// Set this value longer than the expected cleanup time for your process.
+	// If this value is nil, the pod's terminationGracePeriodSeconds will be used.
+	// Otherwise, this value overrides the value provided by the pod spec. Value must be non-negative integer.
+	// The value zero indicates stop immediately via the kill signal (no opportunity to shut down).
+	// This is a beta field and requires enabling ProbeTerminationGracePeriod feature gate.
+	// Minimum value is 1. spec.terminationGracePeriodSeconds is used if unset.
+	terminationGracePeriodSeconds?: uint
 }
+
+// HTTPHeader describes a custom header to be used in HTTP probes 
+#HTTPHeader: {
+	name!: string
+	value!: string
+}
+
+// IntOrString is a type that can hold an int32 or a string. When used in JSON or YAML marshalling and unmarshalling,
+// it produces or consumes the inner type. This allows you to have, for example, a JSON field that can accept a name or number.
+#IntOrString: matchN(1, [int, string])

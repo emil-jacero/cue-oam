@@ -23,11 +23,11 @@ import (
 		annotations?: [string]: string | int | bool
 		labels?: [string]:      string | int | bool
 
-		labels?: "application.oam.dev/name": #metadata.name
-		labels?: "application.oam.dev/type": #metadata.type
+		labels: "application.oam.dev/name": #metadata.name
+		labels: "application.oam.dev/type": #metadata.type
 
 		// A description of the component, used for documentation
-		annotations?: "application.oam.dev/description": #metadata.description
+		annotations: "application.oam.dev/description": #metadata.description
 	}
 
 	// Extended metadata and attributes for the component.
