@@ -23,3 +23,5 @@ import (
 #ContainerPort: corev1.#ContainerPort
 
 #VolumeMount: corev1.#VolumeMount
+
+#Volume: corev1.#Volume

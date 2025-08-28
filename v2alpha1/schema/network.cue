@@ -33,7 +33,7 @@ package schema
 #ToContainerPort: #ContainerPort & {
 	#input: #Port
 	result: #ContainerPort & {
-		containerPort!: #input.containerPort
+		containerPort: #input.containerPort
 		name?:        #input.name
 		protocol?:    #input.protocol
 		hostIP?:     #input.hostIP

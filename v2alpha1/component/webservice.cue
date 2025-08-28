@@ -11,7 +11,7 @@ import (
 	// metav1 "cue.dev/x/k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// WebService results in a Kubernetes Deployment and Service.
+// WebService results in a Kubernetes Deployment and Service or Docker Compose service.
 #WebService: v2alpha1core.#Component & {
 	#metadata: {
 		name:        "webservice"
@@ -29,10 +29,10 @@ import (
 		name: string | *"example-webservice"
 
 		labels?: [string]: string | int | bool
+		annotations?: [string]: string | int | bool
 		labels: {
 			"app.oam.dev/component": properties.name
 		}
-		annotations?: [string]: string | int | bool
 
 		// Which image would you like to use for your service
 		image: {
@@ -44,6 +44,11 @@ import (
 		// Specify image pull secrets for your service
 		imagePullSecrets?: [...string]
 
+		restartPolicy?: string | *"Always"
+
+		// Resource requirements for the container
+		resources?: v2alpha1schema.#ResourceRequirements
+
 		// Command to run in the container
 		command?: [...string]
 
@@ -52,8 +57,6 @@ import (
 
 		// Environment variables to set in the container
 		env?: [...v2alpha1schema.#EnvVar]
-
-		resources?: v2alpha1schema.#ResourceRequirements
 
 		// Specify the ports for your service
 		ports?: [...v2alpha1schema.#Port]
@@ -66,6 +69,8 @@ import (
 
 		// +usage=Instructions for assessing whether the container is in a suitable state to serve traffic.
 		readinessProbe?: v2alpha1schema.#HealthProbe
+
+		...
 	}
 
 	template: {
@@ -110,7 +115,9 @@ import (
 									}
 									if properties.ports != _|_ {
 										ports: [for port in properties.ports {
-											(v2alpha1schema.#ToContainerPort & {input: port}).result
+											containerPort: port.containerPort
+											name:        port.name
+											protocol:   port.protocol
 										}]
 									}
 									if properties.volumes != _|_ {
@@ -118,8 +125,10 @@ import (
 											name:      v.name
 											mountPath: v.mountPath
 											if v.subPath != _|_ {subPath: v.subPath}
-											if v.accessMode == "ReadWrite" {readOnly: false}
-											if v.accessMode == "ReadOnly" {readOnly: true}
+											if v.accessMode != _|_ {
+												if v.accessMode == "ReadWrite" {readOnly: false}
+												if v.accessMode == "ReadOnly" {readOnly: true}
+											}
 											if v.volumeMountOptions != _|_ {
 												mountPropagation: v.volumeMountOptions.mountPropagation
 												subPathExpr:      v.volumeMountOptions.subPathExpr
@@ -133,16 +142,20 @@ import (
 									volumes: [
 										for v in properties.volumes {
 											name:      v.name
-											mountPath: v.mountPath
-											if v.subPath != _|_ {
-												subPath: v.subPath
-											}
-											if v.accessMode == "ReadWrite" {
-												readOnly: false
-											}
-											if v.accessMode == "ReadOnly" {
-												readOnly: true
-											}
+											if v.type == "hostPath" {hostPath: {
+												path: v.hostPath
+												type: v.hostPathType
+											}}
+											if v.type == "configMap" {configMap: {name: v.configMap}}
+											if v.type == "secret" {secret: {name: v.secret}}
+											if v.type == "emptyDir" {emptyDir: {}}
+											if v.type == "volume" {persistentVolumeClaim: {
+												claimName: v.name
+												if v.accessMode != _|_ {
+													if v.accessMode == "ReadWrite" {readOnly: false}
+													if v.accessMode == "ReadOnly" {readOnly: true}
+												}
+											}}
 										},
 									]
 								}

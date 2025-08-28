@@ -16,7 +16,9 @@ import (
 		image: I.image.reference
 		pull_policy: (#ToServicePullPolicy & {input: I.image.pullPolicy}).result
 
-		restart: (#ToServiceRestartPolicy & {input: I.restartPolicy}).result
+		if I.restartPolicy != _|_ {
+			restart: (#ToServiceRestartPolicy & {input: I.restartPolicy}).result
+		}
 
 		if I.command != _|_ {
 			command: I.command
@@ -31,31 +33,31 @@ import (
 		}
 
 		// Cannot use #ToServiceDeployResources because of a bug: https://github.com/cue-lang/cue/issues/4037
-		if I.resources != _|_ {
-			// deploy: resources: (#ToServiceDeployResources & {input: I.resources}).result
-			deploy: resources: {
-				if I.resources.requests != _|_ {
-					reservations: {
-						if I.resources.requests.cpu != _|_ {
-							cpus: (#CPUToCompose & {input: I.resources.requests.cpu}).result
-						}
-						if I.resources.requests.memory != _|_ {
-							memory: (#K8sMemoryToCompose & {input: I.resources.requests.memory}).result
-						}
-					}
-				}
-				if I.resources.limits != _|_ {
-					limits: {
-						if I.resources.limits.cpu != _|_ {
-							cpus: (#CPUToCompose & {input: I.resources.limits.cpu}).result
-						}
-						if I.resources.limits.memory != _|_ {
-							memory: (#K8sMemoryToCompose & {input: I.resources.limits.memory}).result
-						}
-					}
-				}
-			}
-		}
+		// if I.resources != _|_ {
+		// 	// deploy: resources: (#ToServiceDeployResources & {input: I.resources}).result
+		// 	deploy: resources: {
+		// 		if I.resources.requests != _|_ {
+		// 			reservations: {
+		// 				if I.resources.requests.cpu != _|_ {
+		// 					cpus: (#CPUToCompose & {input: I.resources.requests.cpu}).result
+		// 				}
+		// 				if I.resources.requests.memory != _|_ {
+		// 					memory: (#K8sMemoryToCompose & {input: I.resources.requests.memory}).result
+		// 				}
+		// 			}
+		// 		}
+		// 		if I.resources.limits != _|_ {
+		// 			limits: {
+		// 				if I.resources.limits.cpu != _|_ {
+		// 					cpus: (#CPUToCompose & {input: I.resources.limits.cpu}).result
+		// 				}
+		// 				if I.resources.limits.memory != _|_ {
+		// 					memory: (#K8sMemoryToCompose & {input: I.resources.limits.memory}).result
+		// 				}
+		// 			}
+		// 		}
+		// 	}
+		// }
 
 		if I.ports != _|_ {
 			ports: (#ToServicePorts & {input: I.ports}).result

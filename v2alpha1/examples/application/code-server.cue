@@ -2,11 +2,13 @@ package application
 
 import (
 	v2alpha1core "jacero.io/oam/v2alpha1/core"
-	v2alpha1component "jacero.io/oam/v2alpha1/examples/component"
+	v2alpha1component "jacero.io/oam/v2alpha1/component"
+	v2alpha1schemak8s "jacero.io/oam/v2alpha1/schema/kubernetes"
+	v2alpha1compose "jacero.io/oam/v2alpha1/schema/compose"
 )
 
-#CodeServer: v2alpha1core.#Application & {
-	metadata: {
+#Code: v2alpha1core.#Application & {
+	#metadata: {
 		name:        "code"
 		namespace:   "default"
 		description: "An application that deploys code-server, a web-based IDE."
@@ -14,79 +16,71 @@ import (
 	}
 
 	components: [
-		v2alpha1component.#WebService & {
-			config: {
-				domainName: "example.com"
-				mainContainer: {
-					name: metadata.name
-					image: {
-						repository: "lscr.io/linuxserver/code-server"
-						tag:        "latest"
-						digest:     ""
-					}
-					resources: {
-						requests: {
-							cpu:    "0.2"
-							memory: "512Mi"
-						}
-					}
-					env: [
-						{name: "PUID", value: "1000"},
-						{name: "PGID", value: "1000"},
-						{name: "TZ", value: "Etc/UTC"},
-						{name: "PROXY_DOMAIN", value: "\(metadata.name).\(config.domainName)"},
-						{name: "PASSWORD", value: "yourpassword"},
-						{name: "PWA_APPNAME", value: "code-server"},
-					]
+		v2alpha1component.#WebService & {properties: {
+			name: "code"
+			domainName: "example.com"
 
-					ports: [
-						{
-							name:          "http"
-							protocol:      "TCP"
-							containerPort: 8443
-							exposedPort:   8443
-						},
-					]
-
-					volumes: [
-						{
-							name:       "config"
-							type:       "volume"
-							mountPath:  "/config"
-						},
-						{
-							name:       "data"
-							type:       "emptyDir"
-							mountPath:  "/data"
-							size:       "3Gi"
-						},
-						{
-							name:         "docker-socket"
-							type:         "hostPath"
-							hostPath:     "/var/run/docker.sock"
-							mountPath:    "/var/run/docker.sock"
-							accessMode:   "ReadOnly"
-							hostPathType: "Socket"
-						},
-					]
+			image: {
+				repository: "lscr.io/linuxserver/code-server"
+				tag:        "4.103.2"
+				digest:     "sha256:d85f12f63fbeb0b91d337f1b9fee0409b057d9fbb106b987305856112dc7873a"
+			}
+			resources: {
+				requests: {
+					cpu:    "0.2"
+					memory: "512Mi"
 				}
 			}
-		},
+			env: [
+				{name: "PUID", value: "1000"},
+				{name: "PGID", value: "1000"},
+				{name: "TZ", value: "Etc/UTC"},
+				{name: "PROXY_DOMAIN", value: "\(name).\(domainName)"},
+				{name: "PASSWORD", value: "yourpassword"},
+				{name: "PWA_APPNAME", value: "code-server"},
+			]
+
+			ports: [
+				{
+					name:          "http"
+					protocol:      "TCP"
+					containerPort: 8443
+					servicePort:   8443
+					exposed:       true
+				},
+			]
+
+			volumes: [
+				{
+					name:       "config"
+					type:       "volume"
+					mountPath:  "/config"
+				},
+				{
+					name:       "data"
+					type:       "emptyDir"
+					mountPath:  "/data"
+					size:       "3Gi"
+				},
+				{
+					name:         "docker-socket"
+					type:         "hostPath"
+					hostPath:     "/var/run/docker.sock"
+					mountPath:    "/var/run/docker.sock"
+					accessMode:   "ReadOnly"
+					hostPathType: "Socket"
+				},
+			]
+		}}
 	]
+
 	output: {
-		_name: string
-		// Auto-generated if not specified.
-		if metadata.name != "" && metadata.namespace != "" {
-			_name: "\(metadata.namespace)-\(metadata.name)"
-		}
-		if metadata.name != "" && metadata.namespace == "" {
-			_name: "\(metadata.name)"
-		}
+		// Kubernetes
+		kubernetes: resources: [...v2alpha1schemak8s.#Object]
+		compose: v2alpha1compose.#Compose
 		for component in components {
-			if component.template.compose != _|_ {
-				compose: name: _name
-				compose: component.template.compose
-			}
+			kubernetes: resources: component.template.kubernetes.resources
+			compose: component.template.compose
 		}
 	}
 }
