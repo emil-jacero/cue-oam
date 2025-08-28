@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	v2alpha1compose "jacero.io/oam/v2alpha1/schema/compose"
+	v2alpha1schemak8s "jacero.io/oam/v2alpha1/schema/kubernetes"
 )
 
 // Application represents a collection of components, traits, and scopes
@@ -45,12 +46,14 @@ import (
 	// A set of outputs that this application produces.
 	// Template results from all components are merged into these outputs.
 	output: {
-		// Docker Compose template outputs
-		compose?: v2alpha1compose.#Compose
-		// compose?: {...}
-
-		// Kubernetes resource outputs
-		kubernetes?: {...} // Kubernetes resource outputs
+		// Kubernetes
+		kubernetes: resources: [...v2alpha1schemak8s.#Object]
+		// Docker Compose
+		compose: v2alpha1compose.#Compose
+		for component in components {
+			kubernetes: resources: component.template.kubernetes.resources
+			compose: component.template.compose
+		}
 		...
 	}
 }

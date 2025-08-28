@@ -3,8 +3,8 @@ package application
 import (
 	v2alpha1core "jacero.io/oam/v2alpha1/core"
 	v2alpha1component "jacero.io/oam/v2alpha1/component"
-	v2alpha1schemak8s "jacero.io/oam/v2alpha1/schema/kubernetes"
-	v2alpha1compose "jacero.io/oam/v2alpha1/schema/compose"
+	// v2alpha1schemak8s "jacero.io/oam/v2alpha1/schema/kubernetes"
+	// v2alpha1compose "jacero.io/oam/v2alpha1/schema/compose"
 )
 
 #Code: v2alpha1core.#Application & {
@@ -73,14 +73,4 @@ import (
 			]
 		}}
 	]
-
-	output: {
-		// Kubernetes
-		kubernetes: resources: [...v2alpha1schemak8s.#Object]
-		compose: v2alpha1compose.#Compose
-		for component in components {
-			kubernetes: resources: component.template.kubernetes.resources
-			compose: component.template.compose
-		}
-	}
 }
