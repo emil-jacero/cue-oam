@@ -11,9 +11,9 @@ import (
 #ContainerSpecToService: {
 	I=input!: v2alpha1schema.#ContainerSpec
 	result: v2alpha1compose.#Service & {
-		hostname: I.name
+		hostname:       I.name
 		container_name: I.name
-		image: I.image.reference
+		image:          I.image.reference
 		pull_policy: (#ToServicePullPolicy & {input: I.image.pullPolicy}).result
 
 		if I.restartPolicy != _|_ {
@@ -60,7 +60,19 @@ import (
 		// }
 
 		if I.ports != _|_ {
-			ports: (#ToServicePorts & {input: I.ports}).result
+			ports: [
+				for port in I.ports {
+					{
+						name:     port.name
+						target:   port.containerPort
+						protocol: port.protocol
+
+						if port.exposed {
+							published: port.servicePort
+						}
+					}
+				},
+			]
 		}
 
 		if I.volumes != _|_ {
@@ -102,7 +114,7 @@ import (
 #ToServiceEnv: {
 	I=input!: [...v2alpha1schema.#EnvVar]
 	result: v2alpha1compose.#list_or_dict & {
-		for value in I{
+		for value in I {
 			{"\(value.name)": value.value}
 		}
 	}
@@ -143,8 +155,12 @@ import (
 				name:     port.name
 				target:   port.containerPort
 				protocol: port.protocol
-				if port.exposedPort != _|_ {
-					published: port.exposedPort
+				if port.expose != _|_ {
+					if port.expose {
+						if port.servicePort != _|_ {
+							published: port.servicePort
+						}
+					}
 				}
 			}
 		},
@@ -275,8 +291,8 @@ import (
 
 	// mCPU -> cores
 	if strings.HasSuffix(input, "m") {
-		_m:  int & strconv.Atoi(strings.TrimSuffix(input, "m"))
-		result:  "\(_m/1000.0)"
+		_m:     int & strconv.Atoi(strings.TrimSuffix(input, "m"))
+		result: "\(_m/1000.0)"
 	}
 
 	// plain int/float string or numeric -> pass through normalized

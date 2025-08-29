@@ -6,20 +6,22 @@ import (
 	v2alpha1workload "jacero.io/oam/v2alpha1/workload"
 	v2alpha1schema "jacero.io/oam/v2alpha1/schema"
 	v2alpha1compose "jacero.io/oam/v2alpha1/transformer/compose"
+	v2alpha1schemak8s "jacero.io/oam/v2alpha1/schema/kubernetes"
 	// appsv1 "cue.dev/x/k8s.io/api/apps/v1"
 	// corev1 "cue.dev/x/k8s.io/api/core/v1"
 	// metav1 "cue.dev/x/k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// WebService results in a Kubernetes Deployment and Service or Docker Compose service.
+// A simple WebService. It only defines a single main container.
+// Results in a Kubernetes Deployment and Service or Docker Compose service.
 #WebService: v2alpha1core.#Component & {
 	#metadata: {
 		name:        "webservice"
 		category:    "web"
-		description: "A containerized workload that exposes a web service."
+		description: "A containerized workload that exposes a simple web service."
 	}
 
-	workload: v2alpha1workload.#Deployment
+	workload: v2alpha1workload.#ContainerizedWorkload
 
 	// Contextual metadata, usually from the application instantiating the component.
 	context: v2alpha1core.#ObjectMeta
@@ -31,7 +33,7 @@ import (
 		labels?: [string]: string | int | bool
 		annotations?: [string]: string | int | bool
 		labels: {
-			"app.oam.dev/component": properties.name
+			"app.oam.dev/component": name
 		}
 
 		// Which image would you like to use for your service
@@ -60,6 +62,11 @@ import (
 
 		// Specify the ports for your service
 		ports?: [...v2alpha1schema.#Port]
+		
+		// Specify what kind of Service you want. options: "ClusterIP", "NodePort", "LoadBalancer"
+		// Ignored by Docker Compose.
+		exposeType: *"ClusterIP" | "NodePort" | "LoadBalancer"
+
 
 		// Specify the volume mounts for your service
 		volumes?: [...v2alpha1schema.#Volume]
@@ -76,7 +83,8 @@ import (
 	template: {
 		kubernetes: {
 			resources: [
-				workload.schema & {
+				// Create the main deployment
+				v2alpha1schemak8s.#Deployment & {
 					metadata: {
 						labels: properties.labels
 						if properties.annotations != _|_ {annotations: properties.annotations}
@@ -163,6 +171,41 @@ import (
 						}
 					}
 				},
+				// Create a service with all ports that are exposed
+				v2alpha1schemak8s.#Service & {
+					metadata: {
+						labels: properties.labels
+						if properties.annotations != _|_ {annotations: properties.annotations}
+
+						if #metadata.labels != _|_ {labels: #metadata.labels}
+						if #metadata.annotations != _|_ {annotations: #metadata.annotations}
+
+						if context.labels != _|_ {labels: context.labels}
+						if context.annotations != _|_ {annotations: context.annotations}
+					}
+					spec: {
+						selector: {
+							properties.labels
+						}
+
+						#servicePorts: [...]
+						for p in properties.ports {
+							if p.exposed == true {
+								#servicePorts: [{
+									name:       p.name
+									port:       p.servicePort
+									targetPort: p.containerPort
+									protocol:   p.protocol
+								}]
+							}
+						}
+
+						if #servicePorts != _|_ {
+							ports: #servicePorts
+						}
+						type: properties.exposeType
+					}
+					}
 			]
 		}
 		compose: {

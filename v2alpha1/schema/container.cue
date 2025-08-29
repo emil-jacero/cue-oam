@@ -30,6 +30,10 @@ import (
 	// If a port is not specified, the container runtime's default will be used.
 	ports?: [...#Port]
 
+	// Specify what kind of Service you want. options: "ClusterIP", "NodePort", "LoadBalancer"
+	// Ignored by Docker Compose.
+	exposeType: *"ClusterIP" | "NodePort" | "LoadBalancer"
+
 	// Volumes that can be mounted into the container.
 	// The volume can be defined here or passed in here from another definition inheriting from #Volume.
 	volumes?: [...#Volume]
