@@ -3,12 +3,12 @@ package schema
 import (
 	"strings"
 
-	// v2alpha1core "jacero.io/oam/v2alpha1/core"
+	// v3alpha1core "jacero.io/oam/v3alpha1/core"
 )
 
 #ContainerSpec: {
 	// The name of the container.
-	name:  string & strings.MaxRunes(254)
+	name: string & strings.MaxRunes(254)
 
 	// The container image to use.
 	image: #Image
@@ -104,7 +104,7 @@ import (
 // TODO: Add support for targeting specific fields in a resource or remapping keys.
 #EnvFromSource: {
 	// Selects a key of a ConfigMap.
-	configMap?: #ConfigMap
+	configMap?: #Config
 	// Selects a key of a secret in the pod's namespace
 	secretKeyRef?: #Secret
 	// An optional identifier to prepend to each key in the ConfigMap.
@@ -259,7 +259,7 @@ import (
 
 // HTTPHeader describes a custom header to be used in HTTP probes 
 #HTTPHeader: {
-	name!: string
+	name!:  string
 	value!: string
 }
 
