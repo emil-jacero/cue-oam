@@ -4,7 +4,7 @@ import (
 	"strings"
 )
 
-#SchemaTypes:           string & #WildcardWorkloadTypes | #GenericWorkloadTypes | #K8sWorkloadTypes
+#ComponentTypes:        string & #WildcardWorkloadTypes | #GenericWorkloadTypes | #K8sWorkloadTypes
 #WildcardWorkloadTypes: string & "*"
 #GenericWorkloadTypes:  string & #TypeWebservice | #TypeWorker | #TypeTask | #TypeScheduledTask | #TypeDatabase
 #K8sWorkloadTypes:      string & "deployments.apps" | "statefulsets.apps" | "daemonsets.apps" | "jobs.batch" | "cronjobs.batch" | "configmaps.core" | "secrets.core"
@@ -24,9 +24,9 @@ import (
 // Describes stateful, scalable, containerized services that manage data.
 #TypeDatabase: string & "database"
 
-#ComponentSchema: #Object & {
+#ComponentType: #Object & {
 	#apiVersion: "core.oam.dev/v2alpha2"
-	#kind:       "ComponentSchema"
+	#kind:       "ComponentType"
 
 	#metadata: {
 		name:         _
@@ -34,15 +34,15 @@ import (
 		labels?:      _
 		annotations?: _
 
-		labels: "component-schema.oam.dev/name": #metadata.name
-		labels: "component-schema.oam.dev/type": #metadata.type
+		labels: "component-type.oam.dev/name": #metadata.name
+		labels: "component-type.oam.dev/type": #metadata.type
 
-		annotations: "component-schema.oam.dev/description": #metadata.description
+		annotations: "component-type.oam.dev/description": #metadata.description
 	}
 
 	// Extended metadata and attributes for the component.
 	#metadata: {
-		type!:        #SchemaTypes
+		type!:        #ComponentTypes
 		description?: string & strings.MinRunes(1) & strings.MaxRunes(1024)
 
 		// Attributes extending the component type.

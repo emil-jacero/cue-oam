@@ -63,8 +63,6 @@ import (
 }
 
 #ApplicationComponent: #Component & {
-	context: #ObjectMeta
-
 	// The traits that are applied to this component.
 	traits?: [...#Trait]
 

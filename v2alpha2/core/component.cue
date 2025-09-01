@@ -30,7 +30,7 @@ import (
 	// Extended metadata and attributes for the component.
 	#metadata: {
 		// Inherits type from the workload.
-		type: #SchemaTypes
+		type: #ComponentTypes
 		type: #workload.#metadata.type
 
 		// A description of the component.
@@ -38,7 +38,7 @@ import (
 	}
 
 	// Primary schema to represent the component's workload.
-	#workload!: #ComponentSchema
+	#workload!: #ComponentType
 
 	// A predefined schema for the component's context. Is injected into the component at runtime.
 	#context: #ContextMeta

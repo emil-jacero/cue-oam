@@ -31,7 +31,7 @@ import (
 		attributes: [string]: bool
 
 		// What schema types this trait can be applied to.
-		appliesTo!: list.UniqueItems() & [...#SchemaTypes]
+		appliesTo!: list.UniqueItems() & [...#ComponentTypes]
 
 		conflictsWith: [...#Trait]
 	}
