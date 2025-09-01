@@ -5,7 +5,7 @@ package component
 import (
 	v2alpha2core "jacero.io/oam/v2alpha2/core"
 	v2alpha2k8s "jacero.io/oam/v2alpha2/schema/kubernetes"
-	v2alpha2generic "jacero.io/oam/v2alpha2/component_schema/generic"
+	v2alpha2generic "jacero.io/oam/v2alpha2/component_type/generic"
 	v2alpha2compose "jacero.io/oam/v2alpha2/platform/compose"
 )
 
