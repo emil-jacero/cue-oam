@@ -67,8 +67,7 @@ import (
 						name:     port.name
 						target:   port.containerPort
 						protocol: port.protocol
-
-						if port.exposed {
+						if port.exposedPort != _|_ {
 							published: port.exposedPort
 						}
 					}

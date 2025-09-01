@@ -25,7 +25,6 @@ import (
 				name:          "http"
 				containerPort: 9898
 				protocol:      "TCP"
-				exposed:       true
 				exposedPort:   9898
 			}]
 			volumes: [{

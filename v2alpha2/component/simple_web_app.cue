@@ -34,7 +34,6 @@ import (
 			name:          "http"
 			containerPort: 80
 			protocol:      "TCP"
-			exposed:       true
 			exposedPort:   80
 		}]
 		volumes: _ | *[{
@@ -82,14 +81,6 @@ import (
 				annotations: "\(k)": "\(v)"
 			}
 		}
-	}
-	_volumes: [...]
-	for vol in properties.volumes {
-		_volumes: [{
-			if vol.type == "volume" {
-				name: "\(properties.name)-\(vol.name)"
-			}
-		}]
 	}
 	template: {
 		kubernetes: resources: [
@@ -193,7 +184,7 @@ import (
 
 					#servicePorts: [...]
 					for p in properties.ports {
-						if p.exposed == true {
+						if p.exposedPort != _|_ {
 							#servicePorts: [{
 								name:       p.name
 								port:       p.exposedPort

@@ -20,14 +20,10 @@ package generic
 #ContainerPort: close(#CommonPortSpec)
 
 #Port: close(#CommonPortSpec & {
-	// If true, the port will be exposed outside the container. Defaults to false.
-	exposed: bool | *false
-	if exposed {
-		// The port that will be exposed outside the container.
-		// exposedPort in combination with exposed must inform the platform of what port to map to the container when exposing.
-		// This must be a valid port number, 0 < x < 65536.
-		exposedPort!: uint & >=0
-	}
+	// The port that will be exposed outside the container.
+	// exposedPort in combination with exposed must inform the platform of what port to map to the container when exposing.
+	// This must be a valid port number, 0 < x < 65536.
+	exposedPort?: uint & >=0
 })
 
 #ToContainerPort: {
