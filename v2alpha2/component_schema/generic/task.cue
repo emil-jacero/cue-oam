@@ -7,13 +7,13 @@ import (
 	v2alpha2generic "jacero.io/oam/v2alpha2/schema/generic"
 )
 
-#Task: v2alpha2core.#Workload & {
+#Task: v2alpha2core.#ComponentSchema & {
 	#metadata: {
-		name:        "task.workload.core.oam.dev"
+		name:        "task.component-schema.core.oam.dev"
 		type:        "task"
 		description: "Describes short-lived, one-off, containerized tasks that run to completion. They do NOT have network endpoint to receive external network traffic."
 	}
-	schema: {
+	#schema: {
 		// The operating system type.
 		osType?: string | *"linux" | "windows"
 		// The operating system architecture.

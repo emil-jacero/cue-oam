@@ -30,18 +30,18 @@ import (
 	// Extended metadata and attributes for the component.
 	#metadata: {
 		// Inherits type from the workload.
-		type: #WorkloadTypes
-		type: workload.#metadata.type
+		type: #SchemaTypes
+		type: #workload.#metadata.type
 
 		// A description of the component.
 		description?: string & strings.MinRunes(1) & strings.MaxRunes(254)
 	}
 
 	// Primary schema to represent the component's workload.
-	workload!: #Workload
+	#workload!: #ComponentSchema
 
 	// A predefined schema for the component's context. Is injected into the component at runtime.
-	context: #ContextMeta
+	#context: #ContextMeta
 
 	// Properties are used to define the component specific configuration.
 	// They are defined by the component owner, with optional defaults.

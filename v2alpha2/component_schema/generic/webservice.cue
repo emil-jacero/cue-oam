@@ -7,13 +7,13 @@ import (
 	v2alpha2generic "jacero.io/oam/v2alpha2/schema/generic"
 )
 
-#Webservice: v2alpha2core.#Workload & {
+#Webservice: v2alpha2core.#ComponentSchema & {
 	#metadata: {
-		name:        "webservice.workload.core.oam.dev"
+		name:        "webservice.component-schema.core.oam.dev"
 		type:        "webservice"
 		description: "Service-oriented components are components that support external access to services with the container as the core, and their functions cover the needs of most of the microservice scenarios."
 	}
-	schema: {
+	#schema: {
 		// The operating system type.
 		osType?: string | *"linux" | "windows"
 		// The operating system architecture.

@@ -5,7 +5,7 @@ package component
 import (
 	v2alpha2core "jacero.io/oam/v2alpha2/core"
 	v2alpha2k8s "jacero.io/oam/v2alpha2/schema/kubernetes"
-	v2alpha2generic "jacero.io/oam/v2alpha2/workload/generic"
+	v2alpha2generic "jacero.io/oam/v2alpha2/component_schema/generic"
 	v2alpha2compose "jacero.io/oam/v2alpha2/platform/compose"
 )
 
@@ -15,12 +15,12 @@ import (
 		description: "A simple web application component with a web service and a worker."
 	}
 
-	workload: v2alpha2generic.#Webservice
+	#workload: v2alpha2generic.#Webservice
 
 	// Contextual metadata, usually from the application instantiating the component.
-	context: v2alpha2core.#ContextMeta
+	#context: v2alpha2core.#ContextMeta
 
-	properties: workload.schema & {
+	properties: #workload.#schema & {
 		name: string | *"simple-web-app"
 		container: {
 			image: {
@@ -60,8 +60,8 @@ import (
 				labels: "\(k)": "\(v)"
 			}
 		}
-		if context.labels != _|_ {
-			for k, v in context.labels {
+		if #context.labels != _|_ {
+			for k, v in #context.labels {
 				labels: "\(k)": "\(v)"
 			}
 		}
@@ -77,8 +77,8 @@ import (
 				annotations: "\(k)": "\(v)"
 			}
 		}
-		if context.annotations != _|_ {
-			for k, v in context.annotations {
+		if #context.annotations != _|_ {
+			for k, v in #context.annotations {
 				annotations: "\(k)": "\(v)"
 			}
 		}
@@ -97,8 +97,8 @@ import (
 			v2alpha2k8s.#Deployment & {
 				metadata: {
 					name: "\(properties.name)"
-					if context.namespace != _|_ {
-						namespace: context.namespace
+					if #context.namespace != _|_ {
+						namespace: #context.namespace
 					}
 					_labels
 					_annotations
@@ -180,8 +180,8 @@ import (
 			v2alpha2k8s.#Service & {
 				metadata: {
 					name: "\(properties.name)"
-					if context.namespace != _|_ {
-						namespace: context.namespace
+					if #context.namespace != _|_ {
+						namespace: #context.namespace
 					}
 					_labels
 					_annotations
@@ -215,8 +215,8 @@ import (
 					v2alpha2k8s.#PersistentVolumeClaim & {
 						metadata: {
 							name: "\(properties.name)-\(v.name)"
-							if context.namespace != _|_ {
-								namespace: context.namespace
+							if #context.namespace != _|_ {
+								namespace: #context.namespace
 							}
 							_labels
 							_annotations
@@ -236,11 +236,11 @@ import (
 		]
 		compose: {
 			name: _ | *"\(#metadata.name)"
-			if context.name != _|_ && context.namespace != _|_ {
-				name: "\(context.namespace)-\(context.name)"
+			if #context.name != _|_ && #context.namespace != _|_ {
+				name: "\(#context.namespace)-\(#context.name)"
 			}
-			if context.name != _|_ && context.namespace == _|_ {
-				name: "\(context.name)"
+			if #context.name != _|_ && #context.namespace == _|_ {
+				name: "\(#context.name)"
 			}
 			services: {
 				"\(properties.name)": (v2alpha2compose.#ContainerSpecToService & {input: properties.container, #name: properties.name}).result

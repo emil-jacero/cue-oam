@@ -2,18 +2,18 @@
 
 ## TODO
 
-- [ ] Base API and schema
-- [ ] Dependency handling of components
-- [ ] Test changing Workload to ComponentType or ComponentSchema
+- [x] Base API and schema
+- [ ] Dependency handling of components?
+- [x] Test changing Workload to ComponentType or ComponentSchema
 
 ## Definitions
 
-### Schema
+### ComponentSchema
 
-A schema is a reusable set of CUE definitions that ensures components, traits, and scopes share the same upstream standards.
+A component-schema is a reusable set of CUE definitions that ensures components, traits, and scopes share the same upstream standards.
 A set of global schemas are part of the model specification, but other schemas may be created and maintained by a platform. They serve the same purpose, and should be well-known to the users of that platform.
 
-The schema directory contains a subdirectory called "platform". This directory is meant to contain transformation templates written in CUE. These templates accelerate development by mapping standard schemas into platform-specific outputs, such as Kubernetes manifests or Docker Compose files. By encapsulating common transformations, they reduce repetitive work and encourage reuse.
+The platform directory is meant to contain transformation templates written in CUE, but they are similar to schemas. These templates accelerate development by mapping standard schemas into platform-specific outputs, such as Kubernetes manifests or Docker Compose files. By encapsulating common transformations, they reduce repetitive work and encourage reuse.
 
 **Example:**
 
@@ -56,9 +56,9 @@ exposed?: bool
 podspecable?: bool
 ```
 
-### Module
+### Application
 
-A module is a higher-level package that groups components, traits, scopes, and policies. Modules are versioned, reusable, and can be shared across platforms.
+An application is a higher-level package that groups components, traits, scopes, and policies. Applications are versioned, reusable, and can be shared across platforms.
 
 ### Trait
 

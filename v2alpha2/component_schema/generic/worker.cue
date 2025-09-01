@@ -7,13 +7,13 @@ import (
 	v2alpha2generic "jacero.io/oam/v2alpha2/schema/generic"
 )
 
-#Worker: v2alpha2core.#Workload & {
+#Worker: v2alpha2core.#ComponentSchema & {
 	#metadata: {
-		name:        "worker.workload.core.oam.dev"
+		name:        "worker.component-schema.core.oam.dev"
 		type:        "worker"
 		description: "Describes long-running, scalable, containerized services that running at backend. They do NOT have network endpoint to receive external network traffic."
 	}
-	schema: {
+	#schema: {
 		// The operating system type.
 		osType?: string | *"linux" | "windows"
 		// The operating system architecture.

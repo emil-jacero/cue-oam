@@ -21,11 +21,11 @@ import (
 	properties: {
 		[string]: string | null
 	}
+
 	template: {
 		// Kubernetes resource template
 		kubernetes: resources: [...v2alpha2k8s.#Object]
-		kubernetes: resources: #component.template.kubernetes.resources
-		kubernetes: resources: [for r in resources {
+		kubernetes: resources: [for r in #component.template.kubernetes.resources {
 			metadata: labels: {
 				for k, v in properties {
 					"\(k)": "\(v)"

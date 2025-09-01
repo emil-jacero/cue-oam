@@ -27,20 +27,24 @@ import (
 		description?: string & strings.MinRunes(1) & strings.MaxRunes(1024)
 	}
 
-	components: [...#ApplicationComponent]
+	#components: [...#ApplicationComponent]
+
 	// Inject ContextMeta so that it can be referenced in the component's template.
-	for c in components {
-		components: [c & {context: #metadata}]
+	for c in #components {
+		#components: [c & {#context: #metadata}]
 	}
 
-	template: {
+	#template: {
 		// Kubernetes
 		kubernetes: resources: [...v2alpha2k8s.#Object]
+
 		// Docker Compose
 		compose: v2alpha2compose.#Compose
-		for c in components {
+
+		for c in #components {
 			// Add Kubernetes resources
 			kubernetes: resources: c.template.kubernetes.resources
+
 			// Add Docker Compose resources
 			compose: c.template.compose
 
@@ -54,6 +58,8 @@ import (
 		}
 		...
 	}
+	kubernetes: #template.kubernetes.resources
+	compose: #template.compose
 }
 
 #ApplicationComponent: #Component & {
@@ -63,5 +69,6 @@ import (
 	traits?: [...#Trait]
 
 	// The scopes that this component is associated with.
+	// Not yet implemented
 	scopes?: [...#Scope]
 }

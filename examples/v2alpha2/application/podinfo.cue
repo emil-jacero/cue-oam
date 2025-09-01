@@ -11,7 +11,7 @@ import (
 		name:        "podinfo"
 		description: "An example application using the podinfo component."
 	}
-	components: [v2alpha2component.#SimpleWebApp & {
+	#components: [v2alpha2component.#SimpleWebApp & {
 		properties: {
 			name: "podinfo"
 			container: {
