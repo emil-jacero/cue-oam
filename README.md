@@ -131,7 +131,6 @@ cue-oam/
 │   ├── v2alpha1/           # v2alpha1 examples (legacy)
 │   └── v2alpha2/
 │       └── application/    # Example application definitions
-├── oam-schema/             # OAM reference schemas
 ├── cue.mod/                # CUE module configuration
 └── hack/                   # Testing utilities
 ```
