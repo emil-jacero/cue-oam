@@ -12,6 +12,12 @@ import (
 		name:        "worker.component-type.core.oam.dev"
 		type:        "worker"
 		description: "Describes long-running, scalable, containerized services that running at backend. They do NOT have network endpoint to receive external network traffic."
+		attributes: {
+			replicable: true
+			daemonized: true
+			exposed: false
+			podspecable: false
+		}
 	}
 	#schema: {
 		// The operating system type.

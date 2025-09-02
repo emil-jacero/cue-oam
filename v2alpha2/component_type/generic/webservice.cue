@@ -12,6 +12,12 @@ import (
 		name:        "webservice.component-type.core.oam.dev"
 		type:        "webservice"
 		description: "Describes service-oriented components that support external access to services with the container as the core."
+		attributes: {
+			replicable: true
+			daemonized: true
+			exposed: true
+			podspecable: false
+		}
 	}
 	#schema: {
 		// The operating system type.

@@ -12,6 +12,12 @@ import (
 		name:        "task.component-type.core.oam.dev"
 		type:        "task"
 		description: "Describes short-lived, one-off, containerized tasks that run to completion at specified intervals or as single instances."
+		attributes: {
+			replicable: false
+			daemonized: false
+			exposed: false
+			podspecable: false
+		}
 	}
 	#schema: {
 		// The operating system type.
