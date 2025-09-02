@@ -5,10 +5,10 @@ package component
 import (
 	v2alpha2core "jacero.io/oam/v2alpha2/core"
 	v2alpha2k8s "jacero.io/oam/v2alpha2/schema/kubernetes"
-	// v2alpha2schemageneric "jacero.io/oam/v2alpha2/schema/generic"
 	v2alpha2generic "jacero.io/oam/v2alpha2/component_type/generic"
 	v2alpha2platformcompose "jacero.io/oam/v2alpha2/platform/compose"
 	v2alpha2platformk8s "jacero.io/oam/v2alpha2/platform/kubernetes"
+	// v2alpha2schemageneric "jacero.io/oam/v2alpha2/schema/generic"
 )
 
 #SimpleWebApp: v2alpha2core.#Component & {
@@ -92,6 +92,7 @@ import (
 	template: {
 		#TCPPorts: [ for p in properties.ports if p.protocol == "TCP" {p}]
 		#UDPPorts: [ for p in properties.ports if p.protocol == "UDP" {p}]
+		#volumes: [ for v in properties.volumes if v.type == "volume" {v}]
 		kubernetes: resources: [
 			// Create the main Deployment
 			v2alpha2k8s.#Deployment & {
@@ -109,7 +110,7 @@ import (
 							#replicas: properties.replicas
 						}).result
 			},
-			// Create a service with all ports that are exposed
+			// Create services with all ports that are exposed
 			if len(#TCPPorts) > 0 {
 				v2alpha2k8s.#Service & {
 					metadata: {
@@ -145,7 +146,7 @@ import (
 				}
 			}
 			// Create PersistentVolumeClaims
-			for v in properties.volumes {
+			for v in #volumes {
 				if v.type == "volume" {
 					v2alpha2k8s.#PersistentVolumeClaim & {
 						metadata: {
