@@ -75,8 +75,8 @@ import (
 			]
 		}
 
-		if I.volumeMounts != _|_ {
-			volumes: (#ToServiceVolumes & {input: I.volumeMounts}).result
+		if I.volumes != _|_ {
+			volumes: (#ToServiceVolumes & {input: I.volumes}).result
 		}
 	}
 }
@@ -221,12 +221,8 @@ import (
 				name:     port.name
 				target:   port.containerPort
 				protocol: port.protocol
-				if port.expose != _|_ {
-					if port.expose {
-						if port.servicePort != _|_ {
-							published: port.servicePort
-						}
-					}
+				if port.exposedPort != _|_ {
+					published: port.exposedPort
 				}
 			}
 		},

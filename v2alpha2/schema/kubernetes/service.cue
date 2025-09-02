@@ -14,3 +14,5 @@ import (
 }
 
 #ServiceSpec: corev1.#ServiceSpec
+
+#ServiceStatus: corev1.#ServiceStatus

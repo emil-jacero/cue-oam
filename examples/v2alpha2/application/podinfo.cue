@@ -14,12 +14,9 @@ import (
 	#components: [v2alpha2component.#SimpleWebApp & {
 		properties: {
 			name: "podinfo"
-			container: {
-				image: {
-					repository: "stefanprodan/podinfo"
-					tag:        "6.0.0"
-				}
-				volumeMounts: [volumes[0]]
+			image: {
+				repository: "stefanprodan/podinfo"
+				tag:        "6.0.0"
 			}
 			ports: [{
 				name:          "http"

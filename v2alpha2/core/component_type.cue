@@ -6,7 +6,7 @@ import (
 
 #ComponentTypes:        string & #WildcardWorkloadTypes | #GenericWorkloadTypes | #K8sWorkloadTypes
 #WildcardWorkloadTypes: string & "*"
-#GenericWorkloadTypes:  string & #TypeWebservice | #TypeWorker | #TypeTask | #TypeScheduledTask | #TypeDatabase
+#GenericWorkloadTypes:  string & #TypeWebservice | #TypeWorker | #TypeTask | #TypeDatabase
 #K8sWorkloadTypes:      string & "deployments.apps" | "statefulsets.apps" | "daemonsets.apps" | "jobs.batch" | "cronjobs.batch" | "configmaps.core" | "secrets.core"
 
 // Describes service-oriented components that support external access to services with the container as the core.
@@ -15,11 +15,8 @@ import (
 // Describes long-running, scalable, containerized services that running at backend. They do NOT have network endpoint to receive external network traffic.
 #TypeWorker: string & "worker"
 
-// Describes short-lived, one-off, containerized tasks that run to completion. They do NOT have network endpoint to receive external network traffic.
+// Describes short-lived, one-off, containerized tasks that run to completion at specified intervals or as single instances. They do NOT have network endpoint to receive external network traffic.
 #TypeTask: string & "task"
-
-// Describes scheduled, one-off, containerized tasks that run at specified intervals. They do NOT have network endpoint to receive external network traffic.
-#TypeScheduledTask: string & "scheduled-task"
 
 // Describes stateful, scalable, containerized services that manage data.
 #TypeDatabase: string & "database"

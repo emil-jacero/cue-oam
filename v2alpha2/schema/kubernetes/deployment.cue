@@ -14,3 +14,7 @@ import (
 	spec?:      appsv1.#DeploymentSpec
 	status?:    appsv1.#DeploymentStatus
 }
+
+#DeploymentSpec: appsv1.#DeploymentSpec
+
+#DeploymentStatus: appsv1.#DeploymentStatus

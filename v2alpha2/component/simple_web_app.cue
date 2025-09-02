@@ -5,8 +5,10 @@ package component
 import (
 	v2alpha2core "jacero.io/oam/v2alpha2/core"
 	v2alpha2k8s "jacero.io/oam/v2alpha2/schema/kubernetes"
+	// v2alpha2schemageneric "jacero.io/oam/v2alpha2/schema/generic"
 	v2alpha2generic "jacero.io/oam/v2alpha2/component_type/generic"
-	v2alpha2compose "jacero.io/oam/v2alpha2/platform/compose"
+	v2alpha2platformcompose "jacero.io/oam/v2alpha2/platform/compose"
+	v2alpha2platformk8s "jacero.io/oam/v2alpha2/platform/kubernetes"
 )
 
 #SimpleWebApp: v2alpha2core.#Component & {
@@ -22,33 +24,36 @@ import (
 
 	properties: #workload.#schema & {
 		name: string | *"simple-web-app"
-		container: {
-			image: {
-				repository: _ | *"docker.io/library/nginx"
-				tag:        _ | *"latest"
-				digest:     _ | *""
-			}
-			volumeMounts: _ | *[volumes[0] & {mountPath: "/data"}]
+		domainName?: string
+		image: {
+			repository: _ | *"docker.io/library/nginx"
+			tag:        _ | *"latest"
+			digest:     _ | *""
 		}
 		ports: _ | *[{
 			name:          "http"
 			containerPort: 80
 			protocol:      "TCP"
-			exposedPort:   80
+			exposedPort:   8080
+		},
+		{
+			name:          "https"
+			containerPort: 443
+			protocol:      "TCP"
+			exposedPort:   8443
 		}]
 		volumes: _ | *[{
 			type: "volume"
 			name: "data"
 			size: "1Gi"
+			mountPath: "/data"
 		}]
-		labels?: [string]: string | int | bool
 		labels: {
-			"app": name
+			"app": properties.name
 		}
-		annotations?: [string]: string | int | bool
 	}
 
-	_labels: {
+	#labels: {
 		if properties.labels != _|_ {
 			for k, v in properties.labels {
 				labels: "\(k)": "\(v)"
@@ -65,7 +70,8 @@ import (
 			}
 		}
 	}
-	_annotations: {
+
+	#annotations: {
 		if properties.annotations != _|_ {
 			for k, v in properties.annotations {
 				annotations: "\(k)": "\(v)"
@@ -82,7 +88,10 @@ import (
 			}
 		}
 	}
+
 	template: {
+		#TCPPorts: [ for p in properties.ports if p.protocol == "TCP" {p}]
+		#UDPPorts: [ for p in properties.ports if p.protocol == "UDP" {p}]
 		kubernetes: resources: [
 			// Create the main Deployment
 			v2alpha2k8s.#Deployment & {
@@ -91,116 +100,51 @@ import (
 					if #context.namespace != _|_ {
 						namespace: #context.namespace
 					}
-					_labels
-					_annotations
+					#labels
+					#annotations
 				}
-				spec: {
-					selector: matchLabels: properties.labels
-					template: {
-						metadata: {
-							labels: properties.labels
-							if properties.annotations != _|_ {
-								annotations: properties.annotations
-							}
-						}
-						spec: {
-							containers: [{
-								name:            properties.name
-								image:           properties.container.image.reference
-								imagePullPolicy: properties.container.image.pullPolicy
-								if properties.container.imagePullSecrets != _|_ {
-									imagePullSecrets: properties.container.imagePullSecrets
-								}
-								if properties.command != _|_ {
-									command: properties.command
-								}
-								if properties.args != _|_ {
-									args: properties.args
-								}
-								if properties.env != _|_ {
-									env: properties.env
-								}
-								if properties.ports != _|_ {
-									ports: [for port in properties.ports {
-										containerPort: port.containerPort
-										name:          port.name
-										protocol:      port.protocol
-									}]
-								}
-								if properties.container.volumeMounts != _|_ {
-									volumeMounts: [for v in properties.container.volumeMounts {
-										name:      v.name
-										mountPath: v.mountPath
-										if v.subPath != _|_ {subPath: v.subPath}
-										if v.readOnly != _|_ {readOnly: v.readOnly}
-										if v.volumeMountOptions != _|_ {
-											mountPropagation: v.volumeMountOptions.mountPropagation
-											subPathExpr:      v.volumeMountOptions.subPathExpr
-										}
-									}]
-								}
-								if properties.livenessProbe != _|_ {livenessProbe: properties.livenessProbe}
-								if properties.readinessProbe != _|_ {readinessProbe: properties.readinessProbe}
-							}]
-							if properties.volumes != _|_ {
-								volumes: [
-									for v in properties.volumes {
-										name: v.name
-										if v.type == "hostPath" {hostPath: {
-											path: v.hostPath
-											type: v.hostPathType
-										}}
-										if v.type == "configMap" {configMap: {name: v.configMap}}
-										if v.type == "secret" {secret: {name: v.secret}}
-										if v.type == "emptyDir" {emptyDir: {}}
-										if v.type == "volume" {persistentVolumeClaim: {
-											claimName: "\(properties.name)-\(v.name)"
-											if v.accessMode != _|_ {
-												if v.accessMode == "ReadWrite" {readOnly: false}
-												if v.accessMode == "ReadOnly" {readOnly: true}
-											}
-										}}
-									},
-								]
-							}
-						}
-					}
-				}
+				spec: (v2alpha2platformk8s.#RenderDeploymentSpec & {
+							#input: properties
+							#selector: properties.labels
+							#replicas: properties.replicas
+						}).result
 			},
 			// Create a service with all ports that are exposed
-			v2alpha2k8s.#Service & {
-				metadata: {
-					name: "\(properties.name)"
-					if #context.namespace != _|_ {
-						namespace: #context.namespace
-					}
-					_labels
-					_annotations
-				}
-				spec: {
-					selector: {
-						properties.labels
-					}
-
-					#servicePorts: [...]
-					for p in properties.ports {
-						if p.exposedPort != _|_ {
-							#servicePorts: [{
-								name:       p.name
-								port:       p.exposedPort
-								targetPort: p.containerPort
-								protocol:   p.protocol
-							}]
+			if len(#TCPPorts) > 0 {
+				v2alpha2k8s.#Service & {
+					metadata: {
+						name: "\(properties.name)-tcp"
+						if #context.namespace != _|_ {
+							namespace: #context.namespace
 						}
+						#labels
+						#annotations
 					}
-
-					if #servicePorts != _|_ {
-						ports: #servicePorts
-					}
-					type: properties.exposeType
+					spec: (v2alpha2platformk8s.#RenderServiceSpec & {
+						#selector: properties.labels
+						#ports: #TCPPorts
+						#exposeType: properties.exposeType
+					}).result
 				}
-			},
-			// Create PersistentVolumeClaim
+			}
+			if len(#UDPPorts) > 0 {
+				v2alpha2k8s.#Service & {
+					metadata: {
+						name: "\(properties.name)-udp"
+						if #context.namespace != _|_ {
+							namespace: #context.namespace
+						}
+						#labels
+						#annotations
+					}
+					spec: (v2alpha2platformk8s.#RenderServiceSpec & {
+						#selector: properties.labels
+						#ports: #UDPPorts
+						#exposeType: properties.exposeType
+					}).result
+				}
+			}
+			// Create PersistentVolumeClaims
 			for v in properties.volumes {
 				if v.type == "volume" {
 					v2alpha2k8s.#PersistentVolumeClaim & {
@@ -209,8 +153,8 @@ import (
 							if #context.namespace != _|_ {
 								namespace: #context.namespace
 							}
-							_labels
-							_annotations
+							#labels
+							#annotations
 						}
 						spec: {
 							accessModes: v.accessModes
@@ -234,10 +178,10 @@ import (
 				name: "\(#context.name)"
 			}
 			services: {
-				"\(properties.name)": (v2alpha2compose.#ContainerSpecToService & {input: properties.container, #name: properties.name}).result
+				"\(properties.name)": (v2alpha2platformcompose.#ContainerSpecToService & {input: properties, #name: properties.name}).result
 			}
 			if properties.volumes != _|_ {
-				volumes: (v2alpha2compose.#ToVolumes & {prefix: properties.name, input: properties.volumes}).result
+				volumes: (v2alpha2platformcompose.#ToVolumes & {prefix: properties.name, input: properties.volumes}).result
 			}
 		}
 	}

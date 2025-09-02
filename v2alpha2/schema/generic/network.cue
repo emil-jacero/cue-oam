@@ -1,6 +1,6 @@
 package generic
 
-#CommonPortSpec: {
+#Port: {
 	// The port that the container will bind to.
 	// This must be a valid port number, 0 < x < 65536.
 	containerPort!: uint & >=0
@@ -14,25 +14,8 @@ package generic
 	// What port to expose on the host.
 	// This must be a valid port number, 0 < x < 65536.
 	hostPort?: uint & >=0
-	...
-}
-
-#ContainerPort: close(#CommonPortSpec)
-
-#Port: close(#CommonPortSpec & {
 	// The port that will be exposed outside the container.
 	// exposedPort in combination with exposed must inform the platform of what port to map to the container when exposing.
 	// This must be a valid port number, 0 < x < 65536.
 	exposedPort?: uint & >=0
-})
-
-#ToContainerPort: {
-	#input: #Port
-	result: #ContainerPort & {
-		containerPort: #input.containerPort
-		name?:         #input.name
-		protocol?:     #input.protocol
-		hostIP?:       #input.hostIP
-		hostPort?:     #input.hostPort
-	}
 }

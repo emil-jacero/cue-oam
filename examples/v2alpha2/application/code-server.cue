@@ -3,7 +3,7 @@ package application
 import (
 	v2alpha2core "jacero.io/oam/v2alpha2/core"
 	v2alpha2component "jacero.io/oam/v2alpha2/component"
-	// v2alpha2trait "jacero.io/oam/v2alpha2/trait"
+	v2alpha2trait "jacero.io/oam/v2alpha2/trait"
 )
 
 #CodeServer: v2alpha2core.#Application & {
@@ -15,30 +15,26 @@ import (
 		properties: {
 			name:       "code-server"
 			domainName: "example.com"
-			container: {
-				image: {
-					repository: "lscr.io/linuxserver/code-server"
-					tag:        "4.103.2"
-					digest:     "sha256:d85f12f63fbeb0b91d337f1b9fee0409b057d9fbb106b987305856112dc7873a"
-				}
-				env: [
-					{name: "PUID", value: "1000"},
-					{name: "PGID", value: "1000"},
-					{name: "TZ", value: "Etc/UTC"},
-					{name: "PROXY_DOMAIN", value: "\(properties.name).\(properties.domainName)"},
-					{name: "PASSWORD", value: "yourpassword"},
-					{name: "PWA_APPNAME", value: "code-server"},
-				]
-				resources: {
-					requests: {
-						cpu:    "1"
-						memory: "1Gi"
-					}
-				}
-				ports:        P
-				volumeMounts: volumes
+			image: {
+				repository: "lscr.io/linuxserver/code-server"
+				tag:        "4.103.2"
+				digest:     "sha256:d85f12f63fbeb0b91d337f1b9fee0409b057d9fbb106b987305856112dc7873a"
 			}
-			P=ports: [
+			env: [
+				{name: "PUID", value: "1000"},
+				{name: "PGID", value: "1000"},
+				{name: "TZ", value: "Etc/UTC"},
+				{name: "PROXY_DOMAIN", value: "\(properties.name).\(properties.domainName)"},
+				{name: "PASSWORD", value: "yourpassword"},
+				{name: "PWA_APPNAME", value: "code-server"},
+			]
+			resources: {
+				requests: {
+					cpu:    "1"
+					memory: "1Gi"
+				}
+			}
+			ports: [
 				{
 					name:          "https"
 					protocol:      "TCP"
@@ -74,5 +70,15 @@ import (
 				},
 			]
 		}
+		traits: [
+			v2alpha2trait.#Labels & {properties: {
+				"example/name":        "code-server"
+				"example/description": "An example application using the code-server component."
+				"example/version":     "1.0.0"
+			}},
+			v2alpha2trait.#Annotations & {properties: {
+				"example/annotation": "This is an example annotation for the code-server component."
+			}},
+		]
 	}]
 }
