@@ -1,4 +1,4 @@
-package core
+package v3alpha1
 
 import (
 	"strings"
@@ -24,15 +24,20 @@ import (
 
 #Trait: {
 	// Each trait can define its Kubernetes resources
-	#kubernetesOutput?: [...]
+	#output?: [...]
+	...
+}
+
+#Scope: {
+	// Each scope can define its Kubernetes resources
+	#output?: [...]
 	...
 }
 
 #Component: #Object & {
 	#Trait
+	#Scope
 
-	// Component-level Kubernetes output that aggregates trait outputs
-	#kubernetesOutput?: [...]
 	#output: [...]
 }
 
@@ -40,8 +45,6 @@ import (
 	components!: [Id=string]: #Component & {
 		#metadata: #id: Id
 	}
-	// Module-level Kubernetes output that aggregates component outputs
-	#kubernetesOutput?: [...]
 	#output: [...]
 }
 
@@ -53,15 +56,15 @@ import (
 /////////////////////////////////////////////////////////////
 #Workload: #Trait & {
 	// Define Kubernetes output for workload trait
-    #output: kubernetes: [...{
+    #output: [...{
 		apiVersion: "apps/v1"
 		kind:       "Deployment"
 		spec: {
 			replicas: 1
-			selector: matchLabels: app: "web"
+			selector: matchLabels: app: #metadata.#id
 			template: {
-				metadata: labels: app: "web"
-				spec: containers: [for container in containers & {
+				metadata: labels: app: #metadata.#id
+				spec: containers: [for container in C & {
 					name:  container.name
 					image: container.image
 					env: [
@@ -82,7 +85,7 @@ import (
 		}
 	}]
 
-	containers: [string]: {
+	C=containers: [string]: {
 		image: string
 		command: [...string]
 		args: [...string]
@@ -113,7 +116,7 @@ import (
 
 #Volume: #Trait & {
 	// Define Kubernetes output for volume trait
-	#kubernetesOutput?: [...{
+	#output?: [...{
 		apiVersion: string
 		kind:       string
 		...
@@ -123,12 +126,38 @@ import (
 	volumes: main:     _
 }
 
+#Network: #Scope & {
+	#output?: [...{
+		apiVersion: "networking.k8s.io/v1"
+		kind:       "NetworkPolicy"
+		spec: {
+			podSelector: matchLabels: app: "web"
+			ingress: [
+				{
+					from: [
+						{podSelector: matchLabels: app: "frontend"}
+					]
+				}
+			]
+		}
+	}]
+	networkSpec: {
+		name: string | "example-network"
+	}
+}
+
 /////////////////////////////////////////////////////////////
 module: #Module & {
 	#metadata: {
 		name: "example-webservice"
 	}
-	components: {
+	#components: {
+		net: {
+			#Network
+			networkSpec: {
+				name: "my-network"
+			}
+		}
 		web: {
 			#Volume
 			volumes: main: {
