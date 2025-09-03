@@ -66,28 +66,30 @@ import (
 	#metadata: #traits: Volume: {
 		provides: ["volumes"]
 		description: "Describes a named set of volumes"
+        fields: ["volumes"]
 	}
 	volumes: [string]: #Vol
 }
 
+#ContainerSpec: {
+    name:  string
+    image: string
+    command?: [...string]
+    args?: [...string]
+    env?: [...#EnvVar]
+    volumeMounts: [...#VolMount]
+}
+
 // Defines one or more containers
 #Workload: #Trait & {
-	#metadata: {
-		#traits: Workload: {
-			provides: ["containers", "replicas"]
-			description: "Describes a workload with one or multiple containers. The main container is treated as the primary container."
-			fields: ["containers", "replicas"]
-		}
-	}
-    replicas?: uint32 | *1
-	containers: main: {
-		name:  string
-		image: string
-		command?: [...string]
-		args?: [...string]
-		env?: [...#EnvVar]
-		volumeMounts: [...#VolMount]
-	}
+	#metadata: #traits: Workload: {
+        provides: ["containers", "replicas"]
+        description: "Describes a workload with one or multiple containers. The main container is treated as the primary container."
+        fields: ["containers", "replicas"]
+    }
+    replicas: uint32 | *1
+    containers: [string]: #ContainerSpec
+	containers: main: name:  string | *#metadata.name
 }
 
 // A database trait that extends the workload trait
@@ -97,7 +99,7 @@ import (
 			extends: "Workload"
 			provides: ["containers", "replicas", "database"]
 			description: "Describes a database workload"
-            fields: ["database"]
+            fields: ["containers", "replicas", "database"]
 		}
 	}
 	D=database: {
@@ -110,7 +112,7 @@ import (
 			}
 		}
 	}
-	// containers: #Workload.containers // Inherited from Workload
+	replicas: uint32 | *1
 	containers: main: {
 		if D.databaseType == "postgres" {
 			name:     "postgres"

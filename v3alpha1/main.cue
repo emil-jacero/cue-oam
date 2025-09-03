@@ -14,13 +14,13 @@ myApp: #Application & {
 		}
 	}
 	components: {
-		web: {
+		web: #Component & {
 			#Workload
+			replicas: 3
 			containers: main: {
 				name:     "nginx"
 				image:    "nginx:latest"
-				replicas: 3
-				volumeMounts: [web.volumes.vol1 & {mountPath: "/usr/share/nginx/html"}]
+				volumeMounts: [volumes.vol1 & {mountPath: "/usr/share/nginx/html"}]
 			}
 			#Volume
 			volumes: vol1: {
@@ -29,14 +29,14 @@ myApp: #Application & {
 				size: "1Gi"
 			}
 		}
-		db: {
+		db: #Component & {
 			#Database
 			database: {
 				databaseType: "postgres"
 				version:      "15"
-				volumeMount: db.volumes.vol1 & {mountPath: "/var/lib/postgresql/data"}
+				volumeMount: volumes.vol1 & {mountPath: "/var/lib/postgresql/data"}
 				postgres: {
-					configFrom: db.config.db
+					configFrom: config.db
 				}
 			}
 			#Volume
@@ -55,3 +55,26 @@ myApp: #Application & {
 		}
 	}
 }
+
+//////////////////////////////////////////////
+// Example Usage
+//////////////////////////////////////////////
+
+// Import the application definition
+// (assuming myApp is defined as in your main.cue)
+
+// Generate Kubernetes manifests
+k8sManifests: #ApplicationRenderer & {
+	app: myApp
+}
+
+// The output will be in k8sManifests.output
+// This generates a Kubernetes List with all resources
+
+// Generate Docker Compose configuration
+composeConfig: #ComposeApplicationRenderer & {
+	app: myApp
+}
+
+// The output will be in composeConfig.output
+// This generates a Docker Compose YAML structure

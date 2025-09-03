@@ -37,6 +37,7 @@ import (
 		description?: string
         // Fields this trait exposes in its root.
         // Case sensitive as they must match the field (key) exactly.
+        // The component processor will only extract these fields from the component
         fields!: [...string]
 	}
 
@@ -55,6 +56,14 @@ import (
 	...
 }
 
+#ScopeTypes: string | #ScopeTypeNetwork | #ScopeTypeHealth | #ScopeTypeResource | #ScopeTypeSecurity | #ScopeTypeExecution | #ScopeTypeCustom
+#ScopeTypeNetwork: "network" // Represents a network scope
+#ScopeTypeHealth: "health" // Represents a health scope
+#ScopeTypeResource: "resource" // Represents a resource scope
+#ScopeTypeSecurity: "security" // Represents a security scope
+#ScopeTypeExecution: "execution" // Represents an execution scope
+#ScopeTypeCustom: "custom" // Represents a custom scope
+
 #Scope: #Object & {
 	#kind: "Scope"
 	#metadata: {
@@ -67,6 +76,13 @@ import (
 		// Scopes are able to apply extra labels and annotations
 		labels?:      #LabelsType
 		annotations?: #AnnotationsType
+
+        #scopes!: [string]: {
+            // The type of the scope
+            type: #ScopeTypes
+            // Optional short description of the scope
+            description?: string
+        }
 	}
 	children: [...#Trait]
 	...
