@@ -84,7 +84,7 @@ import (
             description?: string
         }
 	}
-	children: [...#Trait]
+	children: [...#Component]
 	...
 }
 
