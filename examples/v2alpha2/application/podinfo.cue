@@ -28,7 +28,7 @@ import (
 				type:      "volume"
 				name:      "data"
 				size:      "1Gi"
-				mountPath: _ | *"/data"
+				mountPath: "/data"
 			}]
 		}
 		traits: [
