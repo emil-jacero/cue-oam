@@ -1,0 +1,296 @@
+package generic
+
+import (
+	"strings"
+)
+
+#ContainerSpec: {
+	// The name of the container.
+	name: string & strings.MaxRunes(253)
+
+	// The container image to use.
+	image: #Image
+
+	// Secrets to use when pulling the container image.
+	imagePullSecrets?: [...#Secret]
+
+	// Command to run in the container.
+	command?: [...string]
+
+	// Arguments to pass to the command.
+	args?: [...string]
+
+	// Container's working directory. If not specified, the container runtime's default will be used,
+	// which might be configured in the container image. Cannot be updated.
+	workingDir?: string & strings.MaxRunes(1024)
+
+	// List of environment variables to set in the container.
+	env?: [...#EnvVar]
+
+	// Resources required by the container.
+	// Requests describes the minimum amount of compute resources required.
+	// If Requests is omitted for a container, it defaults to an implementation-defined value.
+	// Limits describes the maximum amount of compute resources allowed.
+	// If Limits is omitted for a container, it defaults to an implementation-defined value.
+	// Requests cannot exceed Limits.
+	resources?: #ResourceRequirements
+
+	// Each port must have a unique name within the container.
+	// If a port is not specified, the container runtime's default will be used.
+	ports?: [...#Port]
+
+	// Volumes that can be mounted into the container.
+	// The volume can be defined here or passed in here from another definition inheriting from #Volume.
+	volumes?: [...#Volume]
+
+	// TODO: Implement securityContext.
+	// securityContext?: {}
+
+	restartPolicy?: #RestartPolicy
+
+	lifecycle?: {
+		postStart?:  #LifecycleHandler
+		preStop?:    #LifecycleHandler
+		stopSignal?: #Signal
+	}
+
+	// Instructions for assessing whether the container is alive.
+	livenessProbe?: #HealthProbe
+
+	// Instructions for assessing whether the container is in a
+	// suitable state to serve traffic.
+	readinessProbe?: #HealthProbe
+
+	// StartupProbe indicates that the Pod has successfully initialized.
+	// If specified, no other probes are executed until this completes successfully.
+	// If this probe fails, the Pod will be restarted, just as if the livenessProbe failed.
+	// This can be used to provide different probe parameters at the beginning of a Pod's lifecycle,
+	//when it might take a long time to load data or warm a cache, than during steady-state operation. This cannot be updated.
+	startupProbe?: #HealthProbe
+
+	// Whether this container should allocate a buffer for stdin in the container runtime.
+	// If this is not set, reads from stdin in the container will always result in EOF. Default is false.
+	stdin?: bool | *false
+
+	// Whether the container runtime should close the stdin channel after it has been opened by a single attach.
+	// When stdin is true the stdin stream will remain open across multiple attach sessions.
+	// If stdinOnce is set to true, stdin is opened on container start,
+	// is empty until the first client attaches to stdin, and then remains open and accepts data until the client disconnects,
+	// at which time stdin is closed and remains closed until the container is restarted.
+	// If this flag is false, a container processes that reads from stdin will never receive an EOF. Default is false
+	stdinOnce?: bool | *false
+
+	// Optional: Path at which the file to which the container's termination message will be written is mounted into the container's filesystem.
+	// Message written is intended to be brief final status, such as an assertion failure message.
+	// Will be truncated by the node if greater than 4096 bytes. The total message length across all containers will be limited to 12kb.
+	// Defaults to /dev/termination-log. Cannot be updated.
+	terminationMessagePath?: string | *"/dev/termination-log"
+
+	// Indicate how the termination message should be populated. File will use the contents of terminationMessagePath to populate the container
+	// status message on both success and failure. FallbackToLogsOnError will use the last chunk of container log output if
+	// the termination message file is empty and the container exited with an error. The log output is limited to 2048 bytes or 80 lines,
+	// whichever is smaller. Defaults to File. Cannot be updated. 
+	terminationMessagePolicy?: *"File" | "FallbackToLogsOnError"
+
+	// Whether this container should allocate a TTY for itself, also requires 'stdin' to be true. Default is false.
+	tty?: bool | *false
+	...
+}
+
+// EnvVarSource represents a source for environment variables.
+// For example, a secret or config map key.
+// TODO: Add support for targeting specific fields in a resource or remapping keys.
+#EnvFromSource: {
+	// Selects a key of a ConfigMap.
+	configMap?: #Config
+	// Selects a key of a secret in the pod's namespace
+	secret?: #Secret
+	// An optional identifier to prepend to each key in the ConfigMap.
+	prefix?: string
+}
+
+#EnvVar: {
+	name:       string
+	value?:     string
+	valueFrom?: #EnvFromSource
+}
+
+#LifecycleHandler: {
+	exec?: {
+		// The command to run in the container, e.g. ["nginx", "-g", "daemon off;"]
+		command: [...string] & strings.MaxRunes(1024)
+	}
+	httpGet?: {
+		// Host name to connect to, defaults to the pod IP. You probably want to set "Host" in httpHeaders instead.
+		host?: string & =~"^((\\d{1,3}\\.){3}\\d{1,3}|\\[([0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}\\])$"
+		// Path to access on the HTTP server.
+		path?: string & strings.MaxRunes(1024)
+		// Name or number of the port to access on the container. Number must be in the range 1 to 65535. Name must be an IANA_SVC_NAME.
+		port: uint & >=0
+		// Scheme to use for connecting to the host. Defaults to HTTP. 
+		scheme?: *"HTTP" | "TCP" | "GRPC" | "GRPCS"
+		// Custom headers to set in the request. HTTP allows repeated headers.
+		httpHeaders?: [...{
+			name:  string & strings.MaxRunes(63)
+			value: string & strings.MaxRunes(1024)
+		}]
+	}
+	tcpSocket?: {
+		// Optional: Host name to connect to, defaults to the pod IP.
+		host?: string & =~"^((\\d{1,3}\\.){3}\\d{1,3}|\\[([0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}\\])$"
+		// Number or name of the port to access on the container. Number must be in the range 1 to 65535. Name must be an IANA_SVC_NAME.
+		port: uint & >=0
+	}
+}
+
+// Signal is a signal that can be sent to a process.
+#Signal: "SIGABRT" | "SIGALRM" | "SIGBUS" | "SIGCHLD" | "SIGCLD" | "SIGCONT" | "SIGFPE" | "SIGHUP" | "SIGILL" | "SIGINT" | "SIGIO" | "SIGIOT" | "SIGKILL" | "SIGPIPE" | "SIGPOLL" | "SIGPROF" | "SIGPWR" | "SIGQUIT" | "SIGSEGV" | "SIGSTKFLT" | "SIGSTOP" | "SIGSYS" | "SIGTERM" | "SIGTRAP" | "SIGTSTP" | "SIGTTIN" | "SIGTTOU" | "SIGURG" | "SIGUSR1" | "SIGUSR2" | "SIGVTALRM" | "SIGWINCH" | "SIGXCPU" | "SIGXFSZ" | "SIGRTMIN" | "SIGRTMIN+1" | "SIGRTMIN+2" | "SIGRTMIN+3" | "SIGRTMIN+4" | "SIGRTMIN+5" | "SIGRTMIN+6" | "SIGRTMIN+7" | "SIGRTMIN+8" | "SIGRTMIN+9" | "SIGRTMIN+10" | "SIGRTMIN+11" | "SIGRTMIN+12" | "SIGRTMIN+13" | "SIGRTMIN+14" | "SIGRTMIN+15" | "SIGRTMAX-14" | "SIGRTMAX-13" | "SIGRTMAX-12" | "SIGRTMAX-11" | "SIGRTMAX-10" | "SIGRTMAX-9" | "SIGRTMAX-8" | "SIGRTMAX-7" | "SIGRTMAX-6" | "SIGRTMAX-5" | "SIGRTMAX-4" | "SIGRTMAX-3" | "SIGRTMAX-2" | "SIGRTMAX-1" | "SIGRTMAX"
+
+// RestartPolicy defines the restart policy for the workload.
+#RestartPolicy: string | *"Always" | "OnFailure" | "Never"
+
+// RestartPolicyToDockerMap is a mapping of the restart policy to the Docker Compose equivalent.
+#RestartPolicyK8sToDockerMap: {
+	"Always":    "always"
+	"OnFailure": "on-failure"
+	"Never":     "no"
+}
+
+// Health Probe describes how a probing operation is to be
+// executed as a way of determining the health of a component.
+#HealthProbe: {
+	// Instructions for assessing container health by executing a
+	// command. Either this attribute or the httpGet attribute or the
+	// tcpSocket attribute MUST be specified. This attribute is
+	// mutually exclusive with both the httpGet attribute and the
+	// tcpSocket attribute.
+	exec?: {
+		// A command to be executed inside the container to assess its
+		// health. Each space delimited token of the command is a
+		// separate array element. Commands exiting 0 are considered to
+		// be successful probes, whilst all other exit codes are
+		// considered failures.
+		command?: string
+		...
+	}
+
+	// GRPC specifies a GRPC HealthCheckRequest. 
+	grpc?: {
+		// Port number of the gRPC service. Number must be in the range 1 to 65535. 
+		port!: uint
+
+		// Service is the name of the service to place in the gRPC HealthCheckRequest
+		// (see https://github.com/grpc/grpc/blob/master/doc/health-checking.md).
+		// If this is not specified, the default behavior is defined by gRPC.
+		service?: string
+	}
+
+	// Instructions for assessing container health by executing an
+	// HTTP GET request. Either this attribute or the exec attribute
+	// or the tcpSocket attribute MUST be specified. This attribute
+	// is mutually exclusive with both the exec attribute and the
+	// tcpSocket attribute.
+	httpGet?: {
+		// Host name to connect to, defaults to the pod IP.
+		// You probably want to set "Host" in httpHeaders instead.
+		host?: string
+
+		// Custom headers to set in the request. HTTP allows repeated headers.
+		httpHeaders?: [...#HTTPHeader]
+
+		// Path to access on the HTTP server.
+		path?: string
+
+		// Name or number of the port to access on the container.
+		// Number must be in the range 1 to 65535. Name must be an IANA_SVC_NAME.
+		port!: uint
+
+		// Scheme to use for connecting to the host. Defaults to HTTP.
+		scheme?: string
+	}
+
+	// Instructions for assessing container health by probing a TCP
+	// socket. Either this attribute or the exec attribute or the
+	// httpGet attribute MUST be specified. This attribute is
+	// mutually exclusive with both the exec attribute and the
+	// httpGet attribute.
+	tcpSocket?: {
+		// Optional: Host name to connect to, defaults to the pod IP.
+		host?: string
+
+		// The TCP socket within the container that should be probed to
+		// assess container health.
+		port!: uint
+	}
+
+	// Number of seconds after the container has started before liveness probes are initiated.
+	// More info: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle#container-probes
+	initialDelaySeconds?: int32
+
+	// How often (in seconds) to perform the probe. Default to 10 seconds. Minimum value is 1. 
+	periodSeconds?: int32 & >=1 | *10
+
+	// Number of seconds after which the probe times out.
+	// Defaults to 1 second. Minimum value is 1.
+	// More info: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle#container-probes
+	timeoutSeconds?: int32 & >=1 | *1
+
+	// Minimum consecutive successes for the probe to be considered successful after having failed.
+	// Defaults to 1. Must be 1 for liveness and startup. Minimum value is 1.
+	successThreshold?: int32 & >=1 | *1
+
+	// Minimum consecutive failures for the probe to be considered failed after having succeeded. Defaults to 3. Minimum value is 1..
+	failureThreshold?: int32 & >=1 | *3
+
+	// Optional duration in seconds the pod needs to terminate gracefully upon probe failure.
+	// The grace period is the duration in seconds after the processes running in the pod are sent a termination signal
+	// and the time when the processes are forcibly halted with a kill signal.
+	//
+	// Set this value longer than the expected cleanup time for your process.
+	// If this value is nil, the pod's terminationGracePeriodSeconds will be used.
+	// Otherwise, this value overrides the value provided by the pod spec. Value must be non-negative integer.
+	// The value zero indicates stop immediately via the kill signal (no opportunity to shut down).
+	// This is a beta field and requires enabling ProbeTerminationGracePeriod feature gate.
+	// Minimum value is 1. spec.terminationGracePeriodSeconds is used if unset.
+	terminationGracePeriodSeconds?: uint
+}
+
+// HTTPHeader describes a custom header to be used in HTTP probes 
+#HTTPHeader: {
+	name!:  string
+	value!: string
+}
+
+// IntOrString is a type that can hold an int32 or a string. When used in JSON or YAML marshalling and unmarshalling,
+// it produces or consumes the inner type. This allows you to have, for example, a JSON field that can accept a name or number.
+#IntOrString: matchN(1, [int, string])
+
+// successPolicy specifies the policy when the Job can be declared as succeeded.
+// If empty, the default behavior applies - the Job is declared as succeeded only when the number of succeeded
+// pods equals to the completions. When the field is specified, it must be immutable and works only for the Indexed Jobs.
+// Once the Job meets the SuccessPolicy, the lingering pods are terminated.
+//
+// This field is beta-level. To use this field, you must enable the `JobSuccessPolicy` feature gate (enabled by default). 
+#JobSuccessPolicy: {
+	// Defines the behavior when a job succeeds.
+	rules!:[...#SuccessPolicyRule]
+}
+
+// SuccessPolicyRule describes rule for declaring a Job as succeeded.
+// Each rule must have at least one of the "succeededIndexes" or "succeededCount" specified.
+#SuccessPolicyRule: {
+	// succeededCount specifies the minimal required size of the actual set of the succeeded indexes for the Job.
+	// When succeededCount is used along with succeededIndexes, the check is constrained only to the set of indexes specified by succeededIndexes.
+	// For example, given that succeededIndexes is "1-4", succeededCount is "3", and completed indexes are
+	// "1", "3", and "5", the Job isn't declared as succeeded because only "1" and "3" indexes are considered in that rules.
+	// When this field is null, this doesn't default to any value and is never evaluated at any time. When specified it needs to be a positive integer. 
+	succeededCount?: uint
+	// succeededIndexes specifies the set of indexes which need to be contained in the actual set of the succeeded indexes for the Job.
+	// The list of indexes must be within 0 to ".spec.completions-1" and must not contain duplicates.
+	// At least one element is required. The indexes are represented as intervals separated by commas.
+	// The intervals can be a decimal integer or a pair of decimal integers separated by a hyphen.
+	// The number are listed in represented by the first and last element of the series, separated by a hyphen.
+	// For example, if the completed indexes are 1, 3, 4, 5 and 7, they are represented as "1,3-5,7".
+	// When this field is null, this field doesn't default to any value and is never evaluated at any time.
+	succeededIndexes?: string
+}
