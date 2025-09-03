@@ -1,7 +1,6 @@
 package v3alpha1
 
 import (
-	"strconv"
 	"strings"
 )
 
@@ -36,7 +35,10 @@ import (
 		provides?: [...string]
 		// Optional short description of the trait
 		description?: string
-	} | *null
+        // Fields this trait exposes in its root.
+        // Case sensitive as they must match the field (key) exactly.
+        fields!: [...string]
+	}
 
 	// The ID field is used to uniquely identify the trait in a component
 	#id: #NameType
@@ -80,8 +82,7 @@ import (
 #Component: #Object & {
 	#kind:     "Component"
 	#metadata: #ComponentMeta
-	#Trait
-	...
+	traits: [string]: #Trait
 }
 
 // Applications are a collection of components, scopes and policies.
@@ -141,38 +142,4 @@ import (
 	applications!: [Id=string]: #Application & {
 		#metadata: #id: Id
 	}
-}
-
-// SemVer validates the input version string and extracts the major and minor version numbers.
-// When Minimum is set, the major and minor parts must be greater or equal to the minimum
-// or a validation error is returned.
-// Usage:
-// example: #SemVer & {
-// 	   #Version: kubeVersion
-// 	   #Minimum: "1.20.0"
-// }
-#SemVer: {
-	// Input version string in strict semver format.
-	#Version!: string & =~"^\\d+\\.\\d+\\.\\d+(-[0-9A-Za-z-]+(\\.[0-9A-Za-z-]+)*)?(\\+[0-9A-Za-z-]+(\\.[0-9A-Za-z-]+)*)?$"
-
-	// Minimum is the minimum allowed MAJOR.MINOR version.
-	#Minimum: *"0.0.0" | string & =~"^\\d+\\.\\d+\\.\\d+(-[0-9A-Za-z-]+(\\.[0-9A-Za-z-]+)*)?(\\+[0-9A-Za-z-]+(\\.[0-9A-Za-z-]+)*)?$"
-
-	let minMajor = strconv.Atoi(strings.Split(#Minimum, ".")[0])
-	let minMinor = strconv.Atoi(strings.Split(#Minimum, ".")[1])
-
-	major: int & >=minMajor
-	major: strconv.Atoi(strings.Split(#Version, ".")[0])
-
-	minor: int & >=minMinor
-	minor: strconv.Atoi(strings.Split(#Version, ".")[1])
-
-	patch: int
-	patch: strconv.Atoi(strings.Split(#Version, ".")[2])
-
-	preRelease: string
-	preRelease: strings.Split(#Version, "-")[1]
-
-	buildMetadata: string
-	buildMetadata: strings.Split(#Version, "+")[1]
 }

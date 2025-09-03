@@ -20,7 +20,7 @@ myApp: #Application & {
 				name:     "nginx"
 				image:    "nginx:latest"
 				replicas: 3
-				volumes: [web.volumes.vol1 & {mountPath: "/usr/share/nginx/html"}]
+				volumeMounts: [web.volumes.vol1 & {mountPath: "/usr/share/nginx/html"}]
 			}
 			#Volume
 			volumes: vol1: {
@@ -34,7 +34,7 @@ myApp: #Application & {
 			database: {
 				databaseType: "postgres"
 				version:      "15"
-				volume: db.volumes.vol1 & {mountPath: "/var/lib/postgresql/data"}
+				volumeMount: db.volumes.vol1 & {mountPath: "/var/lib/postgresql/data"}
 				postgres: {
 					configFrom: db.config.db
 				}

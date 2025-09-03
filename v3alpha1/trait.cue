@@ -76,16 +76,17 @@ import (
 		#traits: Workload: {
 			provides: ["containers", "replicas"]
 			description: "Describes a workload with one or multiple containers. The main container is treated as the primary container."
+			fields: ["containers", "replicas"]
 		}
 	}
+    replicas?: uint32 | *1
 	containers: main: {
 		name:  string
 		image: string
 		command?: [...string]
 		args?: [...string]
 		env?: [...#EnvVar]
-		replicas?: uint32 | *1
-		volumes: [...#VolMount]
+		volumeMounts: [...#VolMount]
 	}
 }
 
@@ -96,12 +97,13 @@ import (
 			extends: "Workload"
 			provides: ["containers", "replicas", "database"]
 			description: "Describes a database workload"
+            fields: ["database"]
 		}
 	}
 	D=database: {
 		databaseType: string | *"postgres" | "mysql"
 		version:      string | *"16"
-		volume:       #VolMount
+		volumeMount:       #VolMount
 		if D.databaseType == "postgres" {
 			postgres: {
 				configFrom: #ConfigSpec
@@ -113,8 +115,7 @@ import (
 		if D.databaseType == "postgres" {
 			name:     "postgres"
 			image:    "postgres:\(D.version)"
-			replicas: 1
-			volumes: [D.volume]
+			volumeMounts: [D.volumeMount]
 			env: [for key, value in D.postgres.configFrom.data {
 				name:  key
 				value: value
@@ -128,6 +129,7 @@ import (
 	#metadata: #traits: Secret: {
 		provides: ["secrets"]
 		description: "Describes a set of secrets"
+        fields: ["secret"]
 	}
 	secret: [string]: #SecretSpec
 }
@@ -137,6 +139,7 @@ import (
 	#metadata: #traits: Config: {
 		provides: ["configurations"]
 		description: "Describes a set of configurations"
+        fields: ["config"]
 	}
 	config: [string]: #ConfigSpec
 }
