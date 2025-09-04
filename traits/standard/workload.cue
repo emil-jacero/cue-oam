@@ -8,7 +8,7 @@ import (
 // Webservice is a service-oriented components are components that support external access to services with the container as the core, and their functions cover the needs of most of he microservice scenarios.
 #WebService: corev3.#Trait & {
 	#metadata: #traits: WebService: {
-		provides: {workload: #WebService.workload}
+		provides: {webservice: #WebService.webservice}
 		requires: [
 			"core.oam.dev/v3alpha1.Workload",
 		]
@@ -149,7 +149,7 @@ import (
 	}
 }
 
-// Task trait definition
+// Defines a workload that runs code or a script to completion.
 // Combined with #Workload to define a job that runs to completion
 #Task: corev3.#Trait & {
 	#metadata: #traits: Task: {
