@@ -5,61 +5,6 @@ import (
 	corev3 "jacero.io/oam/core/v3alpha1"
 )
 
-// #AdvancedWorkload: corev3.#Trait & {
-// 	#metadata: #traits: AdvancedWorkload: {
-// 		provides: {workload: #AdvancedWorkload.workload}
-// 		requires: [
-// 			"core.oam.dev/v3alpha1.Workload",
-// 		]
-// 		extends: [#Workload.#metadata.Workload, #Exposable.#metadata.Exposable]
-// 		description: "Describes a workload with advanced deployment options, multiple containers, and optional init containers. It also supports exposing the workload on a stable network endpoint."
-// 	}
-
-// 	// Workload specific fields
-// 	workload: #Workload.workload & {
-// 		containers: [string]: #ContainerSpec
-// 		containers: main: name: string | *#metadata.name
-
-// 		// Optional init containers that run before the main containers
-// 		initContainers?: [string]: #ContainerSpec
-
-// 		// Restart policy for all containers
-// 		// Can be overridden per container
-// 		// Defaults to "Always"
-// 		restart: *"Always" | "OnFailure" | "Never"
-
-// 		// Deployment type for the workload
-// 		// Ignored by Docker Compose
-// 		// In Kubernetes this maps to Deployment, StatefulSet or DaemonSet
-// 		deploymentType?: *"Deployment" | "StatefulSet" | "DaemonSet"
-// 		if deploymentType != _|_
-// 		if deploymentType == "Deployment" {
-// 			replicas?: uint | *1
-// 			strategy?: *"Recreate" | "RollingUpdate"
-// 			rollingUpdate?: {
-// 				maxSurge?:       uint | *1
-// 				maxUnavailable?: uint | *0
-// 			}
-// 		}
-// 		if deploymentType == "StatefulSet" {
-// 			replicas?:            uint | *1
-// 			serviceName!:         string & strings.MaxRunes(253)
-// 			podManagementPolicy?: *"OrderedReady" | "Parallel"
-// 			updateStrategy?:      *"OnDelete" | "RollingUpdate"
-// 			rollingUpdate?: {
-// 				partition?: uint | *0
-// 			}
-// 		}
-// 		if deploymentType == "DaemonSet" {
-// 			updateStrategy?: *"OnDelete" | "RollingUpdate"
-// 			rollingUpdate?: {
-// 				maxUnavailable?: uint | *1
-// 			}
-// 		}
-// 	}
-// 	expose?: #Exposable.expose
-// }
-
 // Webservice is a service-oriented components are components that support external access to services with the container as the core, and their functions cover the needs of most of he microservice scenarios.
 #WebService: corev3.#Trait & {
 	#metadata: #traits: WebService: {
