@@ -1,149 +1,340 @@
-# cue-oam
+# OAM v3alpha1 Definition Types
 
-A pure [CUE](https://cuelang.org) implementation of the [Open Application Model](https://oam.dev) (OAM) specification with transformers for Docker Compose and Kubernetes.
+This document describes the core definition types in the Open Application Model (OAM) v3alpha1 specification. These types work together to create a hierarchical, composable system for defining cloud-native applications.
 
-This project demonstrates how to use CUE's powerful type system and transformations to implement OAM abstractions that can target multiple deployment platforms without external tooling.
+## Overview
 
-> [!NOTE]
-> The API and schema is under heavy development and could therefore have a lot of breaking changes!
-
-## Why?
-
-I wanted to find out if it is possible to utilize CUE fully to define, compose and transform configuration into any platform (e.g Docker Compose or Kubernetes).
-
-## Key Features
-
-- **Pure CUE Implementation** - No external tools or scripts required
-- **OAM Compliant** - Follows Open Application Model v2alpha1 specification
-- **Multi-Platform Output** - Transform to Docker Compose or Kubernetes from the same definitions
-- **Type Safety** - Leverage CUE's type system for validation and constraints
-- **Composable Components** - Build complex applications from reusable parts
-
-## Terms and Definitions
-
-### Platform Operator
-
-The platform engineers initialize the deployment environments, provide stable infrastructure capabilities (e.g. mysql-operator) and register them as reusable templates using Workload and Components into the control plane.
-
-### End User
-
-The person consuming Applications. The end users are usually app developers. They choose target environment, and choose capability templates, fill in values and finally assemble them as an Application. They don't need to understand the infrastructure details, because they rely on the included Components and Traits.
-
-### Component
-
-Components are modular building blocks of a system, similar to lego pieces. Each has a distinct purpose but can be combined seamlessly with others to form larger applications.
-A component must inherit a schema (described above). This could either be a complex schema, that describes multiple containers and their resources, or it could be a simple schema, like a ContainerSpec.
-In practice, a simple containerized workload, a Helm chart, or a cloud database (DaaS) may all be modeled as a component.
-
-For example, a simple web service component may define a single container with ports and volumes. By default, when ports are exposed, it automatically generates a Kubernetes Service and exposes the ports for Docker Compose.
-
-Components also carry a set of well-known attributes, that inform traits, scopes and policies on how to act on the component.
-
-```cue
-// Whether the component supports replication and scaling.
-replicable?: bool
-
-// Whether the workload must run continuously. 
-// Daemonized workloads treat exit as a fault; non-daemonized workloads 
-// treat exit as success if no error is reported.
-daemonized?: bool
-
-// Whether the component exposes a stable service endpoint.
-// Exposed workloads require a VIP and DNS name within their network scope.
-exposed?: bool
-
-// Whether the workload can be represented as a Kubernetes PodSpec.
-// If true, implementations may manipulate the workload via PodSpec structures.
-podspecable?: bool
-```
-
-### ComponentType
-
-A component-type is a reusable set of CUE definitions that ensures components, traits, and scopes share the same upstream standards.
-A set of global schemas are part of the model specification, but other schemas may be created and maintained by a platform. They serve the same purpose, and should be well-known to the users of that platform.
-
-### Trait
-
-Traits extend or modify components by adjusting their runtime behavior (e.g., autoscaling, ingress) or by modifying / attaching new resources.
-
-### Scopes
-
-Scopes define logical or operational boundaries that apply to multiple components, such as a network, region, or tenant. Scopes can be used to group components together.
-
-Example: A common network scope, that allows multiple components to share a network, or by configuring a proxy (e.g. Traefik or Envoy) to automatically expose the correct ports and/or domain and path.
-
-## Prerequisites
-
-- [CUE](https://cuelang.org/docs/install/) v0.14.0 or higher
-
-## Quick Start
-
-1. **Clone the repository**
-
-   ```bash
-   git clone https://github.com/emil-jacero/cue-oam.git
-   cd cue-oam
-   ```
-
-2. **Evaluate an application definition**
-
-   ```bash
-   cd examples/v2alpha2/application
-   cue eval .
-   ```
-
-3. **Export to Docker Compose**
-
-   ```bash
-   cd examples/v2alpha2/application
-   cue export -e "#Podinfo.kubernetes" --out yaml
-   cue export -e "#Podinfo.compose" --out yaml > docker-compose.yml
-   ```
-
-4. **Run with Docker Compose**
-
-   ```bash
-   docker compose up -d
-   ```
-
-## Common Commands
-
-- **Validate CUE syntax**: `cue vet <file.cue>`
-- **Format CUE files**: `cue fmt <file.cue>`
-- **Evaluate specific application**: `cue eval -e "#Podinfo"`
-- **Export to Kubernetes**: `cue export -e "#Podinfo.kubernetes" --out yaml`
-
-## Project Structure
+The OAM model provides six primary definition types that build upon each other:
 
 ```shell
-cue-oam/
-├── v2alpha2/
-│   ├── core/               # Core OAM schemas (Application, Component, ComponentType, Trait, Scope)
-│   ├── component_type/     # Reusable component type definitions
-│   │   └── generic/        # Generic component types (webservice, worker, task)
-│   ├── component/          # Component implementations
-│   ├── platform/           # Platform transformers
-│   │   └── compose/        # Docker Compose transformer
-│   ├── schema/             # Schema definitions
-│   ├── scope/              # Application scopes (WIP)
-│   └── trait/              # Application traits (WIP)
-├── examples/
-│   ├── v2alpha1/           # v2alpha1 examples (legacy)
-│   └── v2alpha2/
-│       └── application/    # Example application definitions
-├── cue.mod/                # CUE module configuration
-└── hack/                   # Testing utilities
+Bundle
+  └── Application(s)
+        ├── Component(s)
+        │     └── Trait(s)
+        ├── Scope(s)
+        └── Policy(s) [planned]
 ```
 
-## Contributing
+## Definition Types
 
-This is an experimental project exploring OAM implementation in pure CUE. Contributions are welcome! Areas of focus:
+### 🧩 #Trait
 
-- Completing the Kubernetes transformer
-- Adding more workload types
-- Creating Traits and Scopes
-- Creating additional example applications
+**Purpose**: Reusable building blocks that encapsulate specific functionality or behavior.
 
-## License
+**Description**: Traits are the atomic units of functionality in OAM. They define specific capabilities like workloads, volumes, databases, configurations, or networking rules. Traits can inherit from other traits, enabling composition and reuse.
 
-[Add your license here]
+**Key Features**:
+
+- Can extend other traits via inheritance
+- Self-contained configuration units
+- Reusable across multiple components
+- Can provide metadata about their capabilities
+
+**Example Use Cases**:
+
+- `#Workload`: Defines containers and their runtime configuration
+- `#Volume`: Manages persistent storage
+- `#Database`: Extends Workload to provide database-specific configuration
+- `#Secret`: Manages sensitive configuration data
+- `#Config`: Handles application configuration
+
+```cue
+#Database: #Workload & {
+    #metadata: {
+        #traits: Database: {
+            extends: "Workload"
+            provides: ["database", "persistence"]
+            description: "PostgreSQL database with persistent storage"
+        }
+    }
+    database: {
+        databaseType: "postgres"
+        version: "15"
+    }
+}
+```
+
+### 📦 #Component
+
+**Purpose**: Logical units that combine multiple traits to form deployable entities.
+
+**Description**: Components are collections of traits that work together to provide a complete piece of functionality. A component might represent a web server, a database, an API service, or any other deployable unit of your application.
+
+**Key Features**:
+
+- Combines multiple traits
+- Represents a deployable unit
+- Has a unique identifier within an application
+- Can apply labels and annotations
+
+**Example**:
+
+```cue
+web: #Component & {
+    #Workload  // Adds container capabilities
+    #Volume    // Adds storage capabilities
+    
+    containers: main: {
+        image: "nginx:latest"
+        replicas: 3
+    }
+    volumes: {
+        static: {type: "volume", size: "10Gi"}
+    }
+}
+```
+
+### 🔗 #Scope
+
+**Purpose**: Defines logical or physical boundaries for groups of components that share common runtime characteristics.
+
+**Description**: Scopes are application boundaries that group components with shared properties, dependencies, or environments. They define how components relate to each other at runtime and what resources or constraints they share. Scopes act as a mechanism for platform operators to inject operational behaviors and group-level resources without requiring developers to change their components.
+
+**Key Features**:
+
+- Creates boundaries (network, health, security, or resource)
+- Groups components that share runtime characteristics
+- Enables platform-level control without modifying components
+- Can overlap - components can belong to multiple scopes
+- Provides shared configuration and resources
+- Defines failure domains and blast radius
+
+**Types of Boundaries**:
+
+- **Network Scopes**: Define which components can communicate (e.g., VPC, subnet, service mesh)
+- **Health Scopes**: Define failure domains and health aggregation boundaries
+- **Resource Scopes**: Share common resources like storage backends or databases
+- **Security Scopes**: Apply common security policies, RBAC, or compliance rules
+- **Execution Scopes**: Define deployment targets (regions, clusters, namespaces)
+
+**Example Use Cases**:
+
+```cue
+// Network Scope - Components share a network boundary
+networkScope: #Scope & {
+    #metadata: {
+        name: "internal-network"
+        labels: {
+            type: "network"
+            subnet: "10.0.1.0/24"
+        }
+    }
+    // Components in this scope can communicate with each other
+    children: [components.web, components.api, components.db]
+}
+
+// Health Scope - Define a failure domain
+healthScope: #Scope & {
+    #metadata: {
+        name: "payment-service-health"
+        labels: {
+            type: "health"
+            sla: "99.99"
+        }
+    }
+    // If any component fails, the entire scope is considered unhealthy
+    children: [components.paymentAPI, components.paymentDB, components.paymentCache]
+}
+
+// Execution Scope - Deploy to specific environment
+regionScope: #Scope & {
+    #metadata: {
+        name: "us-west-2"
+        labels: {
+            type: "execution"
+            region: "us-west-2"
+            environment: "production"
+        }
+    }
+    // All components deploy to this region
+    children: [components.web, components.api]
+}
+```
+
+**Important Characteristics**:
+
+- **Overlapping**: A component can exist in multiple scopes (e.g., both a network scope and a health scope)
+- **Platform-controlled**: Scopes are typically defined by platform teams, not application developers
+- **Runtime-focused**: Scopes affect runtime behavior, not build-time configuration
+- **Hierarchical**: Scopes can potentially contain other scopes for complex topologies
+
+### 🚀 #Application
+
+**Purpose**: Represents a complete application with all its components, scopes, and policies.
+
+**Description**: An Application is a collection of components that work together to deliver functionality. It defines the complete topology of your application including all services, their relationships, and operational policies.
+
+**Key Features**:
+
+- Contains multiple components
+- Defines component relationships and dependencies
+- Includes scopes for shared resources
+- Will support policies for operational rules (planned)
+- Can be deployed as a single unit
+
+**Example**:
+
+```cue
+myApp: #Application & {
+    #metadata: {
+        name: "e-commerce-platform"
+        labels: {
+            version: "2.0"
+            team: "platform"
+        }
+    }
+    components: {
+        frontend: {/* ... */}
+        api: {/* ... */}
+        database: {/* ... */}
+        cache: {/* ... */}
+    }
+    scopes: {
+        network: {/* ... */}
+        monitoring: {/* ... */}
+    }
+    // policies: {} // Coming soon
+}
+```
+
+### 📚 #Bundle
+
+**Purpose**: Groups multiple related applications together for distribution and deployment.
+
+**Description**: Bundles are the highest-level organizational unit, allowing you to package and distribute multiple applications as a cohesive unit. This is useful for complex systems that span multiple applications or for creating reusable application templates.
+
+**Key Features**:
+
+- Contains multiple applications
+- Facilitates distribution and sharing
+- Enables versioning of application sets
+- Useful for multi-tenant or multi-environment deployments
+
+**Example Use Cases**:
+
+- A complete microservices platform with multiple applications
+- Environment-specific application sets (dev, staging, prod)
+- Reusable application templates for different customers
+- Multi-region deployment packages
+
+```cue
+platformBundle: #Bundle & {
+    #metadata: {
+        name: "acme-platform"
+        labels: {
+            release: "2024.1"
+            customer: "acme-corp"
+        }
+    }
+    applications: {
+        mainApp: {/* ... */}
+        adminPortal: {/* ... */}
+        analyticsStack: {/* ... */}
+        monitoringTools: {/* ... */}
+    }
+}
+```
+
+### 📋 #Policy [Planned]
+
+**Purpose**: Define operational rules and behaviors for applications.
+
+**Description**: Policies will enforce specific rules and behaviors at the application level. While not yet implemented in the current schema, they are planned for future releases.
+
+**Planned Use Cases**:
+
+- `apply-once`: Ensure components are only deployed once
+- `rolling-update`: Define update strategies
+- `auto-scaling`: Automatic scaling rules
+- `backup`: Data backup policies
+- `security`: Security and compliance rules
+
+## Relationships
+
+The definition types form a clear hierarchy:
+
+1. **Traits** are composed into **Components**
+2. **Components** are grouped by **Scopes** and organized into **Applications**
+3. **Applications** are packaged into **Bundles**
+4. **Policies** (when implemented) will govern **Application** behavior
+
+## Best Practices
+
+### Trait Design
+
+- Keep traits focused on a single concern
+- Use trait inheritance for specialization (e.g., Database extends Workload)
+- Document what capabilities each trait provides
+
+### Component Composition
+
+- Combine only compatible traits
+- Use meaningful component names that reflect their purpose
+- Avoid overly complex components - split if necessary
+
+### Application Structure
+
+- Group related components that need to be deployed together
+- Use scopes for shared resources and cross-cutting concerns
+- Plan for policies even if not yet implemented
+
+### Bundle Organization
+
+- Bundle applications that share a common lifecycle
+- Use bundles for versioning related applications together
+- Consider bundles for multi-environment deployments
+
+## Example: Complete Application
+
+```cue
+// Each application is independently versioned
+webStore: #Application & {
+    #metadata: {
+        name: "web-store"
+        labels: {
+            version: "2.1.0"
+            description: "E-commerce web store application"
+        }
+    }
+    components: {
+        frontend: {
+            #Workload
+            #Volume
+            containers: main: {
+                image: "store-ui:2.1.0"  // Version-tagged images
+                replicas: 3
+            }
+        }
+        backend: {
+            #Workload
+            #Config
+            containers: main: {
+                image: "store-api:2.1.0"
+                replicas: 2
+            }
+        }
+        database: {
+            #Database
+            #Volume
+            database: {
+                databaseType: "postgres"
+                version: "15"
+            }
+        }
+    }
+    scopes: {
+        network: {
+            children: [
+                components.frontend,
+                components.backend,
+                components.database
+            ]
+        }
+    }
+}
+
+
+// Deploy with: oam bundle deploy web-store-platform:1.0.0
+```
+
+This hierarchical model provides flexibility, reusability, and clear separation of concerns while maintaining type safety through CUE's constraint system. The versioning and distribution capabilities make OAM packages as shareable and reusable as Helm Charts.
