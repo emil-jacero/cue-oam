@@ -34,24 +34,33 @@ Bundle [planned]
 
 **Example Use Cases**:
 
-- `#Workload`: Defines containers and their runtime configuration
-- `#Volume`: Manages persistent storage
-- `#Database`: Extends Workload to provide database-specific configuration
-- `#Secret`: Manages sensitive configuration data
-- `#Config`: Handles application configuration
+- `#Workload`: Describes a workload that runs one or more containers. By default, the workload runs a single container called 'main'.
+- `#WebService`: Describes a long-running, scalable, containerized service that runs with a network endpoint to receive external network traffic.
+- `#Worker`: Describes a long-running, scalable, containerized service that runs in the background without a network endpoint.
+- `#Replicable`: Extends Workload to add support for scaling the number of replicas.
+- `#Exposable`: Extends Workload to add support for exposing the workload on a stable network endpoint.
+- `#Task`: Describes jobs that run code or a script to completion. Tasks can be run once or on a regular schedule.
+- `#Volume`: Manages persistent storage.
+- `#Secret`: Manages sensitive configuration data.
+- `#Config`: Handles application configuration.
 
 ```cue
-#Database: #Workload & {
-    #metadata: {
-        #traits: Database: {
-            extends: "Workload"
-            provides: ["database", "persistence"]
-            description: "PostgreSQL database with persistent storage"
-        }
+#WebService: corev3.#Trait & {
+    #metadata: #traits: WebService: {
+        provides: {webservice: #WebService.webservice}
+        requires: [
+            "core.oam.dev/v3alpha1.Workload",
+        ]
+        extends: [#Workload.#metadata.#traits.Workload, #Exposable.#metadata.#traits.Exposable]
+        description: "Describes a long-running, scalable, containerized service that runs in the background and exposes a network endpoint."
     }
-    database: {
-        databaseType: "postgres"
-        version: "15"
+
+    webservice: {
+        deploymentType: *"Deployment" | "StatefulSet"
+        expose?:        #Exposable.expose
+        workload: #Workload.workload & {
+            replicas?: uint | *1
+        }
     }
 }
 ```
@@ -80,8 +89,9 @@ web: #Component & {
         image: "nginx:latest"
         replicas: 3
     }
-    volumes: {
-        static: {type: "volume", size: "10Gi"}
+    volumes: static: {
+        type: "volume"
+        size: "10Gi"
     }
 }
 ```
@@ -325,7 +335,7 @@ webStore: #Application & {
         }
     }
     scopes: {
-        network: {
+        network: #SharedNetwork & {
             children: [
                 components.frontend,
                 components.backend,
@@ -334,9 +344,6 @@ webStore: #Application & {
         }
     }
 }
-
-
-// Deploy with: oam bundle deploy web-store-platform:1.0.0
 ```
 
 This hierarchical model provides flexibility, reusability, and clear separation of concerns while maintaining type safety through CUE's constraint system. The versioning and distribution capabilities make OAM packages as shareable and reusable as Helm Charts.

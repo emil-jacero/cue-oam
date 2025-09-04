@@ -13,10 +13,9 @@ import (
 			"core.oam.dev/v3alpha1.Workload",
 		]
 		extends: [#Workload.#metadata.#traits.Workload, #Exposable.#metadata.#traits.Exposable]
-		description: "Describes a long-running, scalable, containerized service that runs in the background and exposes a network endpoint."
+		description: "Describes a long-running, scalable, containerized service that runs with a network endpoint to receive external network traffic."
 	}
 
-	// Workload specific fields
 	webservice: {
 		deploymentType: *"Deployment" | "StatefulSet"
 		expose?:        #Exposable.expose
@@ -37,7 +36,6 @@ import (
 		description: "Describes a long-running, scalable, containerized service that runs in the background without a network endpoint."
 	}
 
-	// Workload specific fields
 	worker: {
 		replicas?: uint | *1
 		workload: #Workload.workload & {
@@ -58,7 +56,6 @@ import (
 		description: "Describes a workload that runs one or more containers. By default, the workload runs a single container called 'main'."
 	}
 
-	// Workload specific fields
 	workload: {
 		containers: [string]: #ContainerSpec
 		containers: main: {name: string | *#metadata.name}
@@ -202,8 +199,9 @@ import (
 // Register the trait
 #Registry: corev3.#TraitRegistry & {
 	traits: {
-		"Workload": #Workload
-		// "AdvancedWorkload": #AdvancedWorkload
+		"WebService": #WebService
+		"Worker":     #Worker
+		"Workload":   #Workload
 		"Replicable": #Replicable
 		"Exposable":  #Exposable
 		"Task":       #Task
