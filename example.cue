@@ -55,65 +55,65 @@ webApp: corev3.#Application & {
 				}
 			}
 		}
-		// api: {
-		// 	// Workload trait
-		// 	traits.#Workload
-		// 	workload: {
-		// 		replicas: 2
-		// 		containers: {
-		// 			main: {
-		// 				name: "api-server"
-		// 				image: {
-		// 					repository: "node"
-		// 					tag:        "18-alpine"
-		// 				}
-		// 				ports: [
-		// 					{
-		// 						name:          "api"
-		// 						containerPort: 3000
-		// 						protocol:      "TCP"
-		// 					},
-		// 				]
-		// 				env: [
-		// 					{
-		// 						name:  "NODE_ENV"
-		// 						value: "production"
-		// 					},
-		// 					{
-		// 						name:  "PORT"
-		// 						value: "3000"
-		// 					},
-		// 				]
-		// 				resources: {
-		// 					requests: {
-		// 						cpu:    "200m"
-		// 						memory: "256Mi"
-		// 					}
-		// 					limits: {
-		// 						cpu:    "1000m"
-		// 						memory: "1Gi"
-		// 					}
-		// 				}
-		// 				livenessProbe: {
-		// 					httpGet: {
-		// 						path: "/health"
-		// 						port: 3000
-		// 					}
-		// 					initialDelaySeconds: 30
-		// 					periodSeconds:       30
-		// 				}
-		// 				readinessProbe: {
-		// 					httpGet: {
-		// 						path: "/ready"
-		// 						port: 3000
-		// 					}
-		// 					initialDelaySeconds: 5
-		// 					periodSeconds:       5
-		// 				}
-		// 			}
-		// 		}
-		// 	}
-		// }
+		api: {
+			// Workload trait
+			traits.#Workload
+			workload: {
+				replicas: 2
+				containers: {
+					main: {
+						name: "api-server"
+						image: {
+							repository: "node"
+							tag:        "18-alpine"
+						}
+						ports: [
+							{
+								name:          "api"
+								containerPort: 3000
+								protocol:      "TCP"
+							},
+						]
+						env: [
+							{
+								name:  "NODE_ENV"
+								value: "production"
+							},
+							{
+								name:  "PORT"
+								value: "3000"
+							},
+						]
+						resources: {
+							requests: {
+								cpu:    "200m"
+								memory: "256Mi"
+							}
+							limits: {
+								cpu:    "1000m"
+								memory: "1Gi"
+							}
+						}
+						livenessProbe: {
+							httpGet: {
+								path: "/health"
+								port: 3000
+							}
+							initialDelaySeconds: 30
+							periodSeconds:       30
+						}
+						readinessProbe: {
+							httpGet: {
+								path: "/ready"
+								port: 3000
+							}
+							initialDelaySeconds: 5
+							periodSeconds:       5
+						}
+					}
+				}
+			}
+		}
 	}
 }
 
