@@ -7,13 +7,15 @@ This document describes the core definition types in the Open Application Model 
 The OAM model provides six primary definition types that build upon each other:
 
 ```shell
-Bundle
+Bundle [planned]
   └── Application(s)
         ├── Component(s)
         │     └── Trait(s)
-        ├── Scope(s)
+        ├── Scope(s) [planned]
         └── Policy(s) [planned]
 ```
+
+![Application logical overview](docs/img/cue-oam-app.png)
 
 ## Definition Types
 
