@@ -1,7 +1,7 @@
-// package v3alpha1
+// package v2alpha1
 
 // import (
-// 	schemav3 "jacero.io/oam/traits/schema"
+// 	schema "jacero.io/oam/traits/schema"
 // )
 
 // // Scope types
@@ -34,8 +34,8 @@
 // 	apply?: {
 // 		labels?:      #LabelsType
 // 		annotations?: #AnnotationsType
-// 		env?: [...schemav3.#EnvVar]
-// 		resources?: schemav3.#ResourceRequirements
+// 		env?: [...schema.#EnvVar]
+// 		resources?: schema.#ResourceRequirements
 // 	}
 
 // 	// Scope-specific configuration

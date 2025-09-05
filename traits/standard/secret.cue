@@ -1,15 +1,15 @@
 package standard
 
 import (
-	corev3 "jacero.io/oam/core/v3alpha1"
+	corev2 "jacero.io/oam/core/v2alpha1"
 )
 
 // Secret trait definition
-#Secret: corev3.#Trait & {
+#Secret: corev2.#Trait & {
 	#metadata: #traits: Secret: {
 		provides: {secrets: #Secret.secrets}
 		requires: [
-			"core.oam.dev/v3alpha1.Secret",
+			"core.oam.dev/v2alpha1.Secret",
 		]
 		description: "Describes a set of secrets"
 	}
@@ -18,11 +18,11 @@ import (
 	secrets: [string]: #SecretSpec
 }
 
-#ImagePullSecret: corev3.#Trait & {
+#ImagePullSecret: corev2.#Trait & {
 	#metadata: #traits: ImagePullSecret: {
 		provides: {imagePullSecrets: #ImagePullSecret.imagePullSecrets}
 		requires: [
-			"core.oam.dev/v3alpha1.ImagePullSecret",
+			"core.oam.dev/v2alpha1.ImagePullSecret",
 		]
 		extends: [#Secret.#metadata.Secret]
 		description: "Describes a set of image pull secrets"
@@ -39,7 +39,7 @@ import (
 }
 
 // Register the trait
-#Registry: corev3.#TraitRegistry & {
+#Registry: corev2.#TraitRegistry & {
 	traits: {
 		"Secret":          #Secret
 		"ImagePullSecret": #ImagePullSecret

@@ -1,6 +1,6 @@
-# OAM v3alpha1 Definition Types
+# OAM v2alpha1 Definition Types
 
-This document describes the core definition types in the Open Application Model (OAM) v3alpha1 specification. These types work together to create a hierarchical, composable system for defining cloud-native applications.
+This document describes the core definition types in the Open Application Model (OAM) v2alpha1 specification. These types work together to create a hierarchical, composable system for defining cloud-native applications.
 
 ## Overview
 
@@ -45,11 +45,11 @@ Bundle [planned]
 - `#Config`: Handles application configuration.
 
 ```cue
-#WebService: corev3.#Trait & {
+#WebService: corev2.#Trait & {
     #metadata: #traits: WebService: {
         provides: {webservice: #WebService.webservice}
         requires: [
-            "core.oam.dev/v3alpha1.Workload",
+            "core.oam.dev/v2alpha1.Workload",
         ]
         extends: [#Workload.#metadata.#traits.Workload, #Exposable.#metadata.#traits.Exposable]
         description: "Describes a long-running, scalable, containerized service that runs in the background and exposes a network endpoint."
@@ -96,7 +96,7 @@ web: #Component & {
 }
 ```
 
-### 🔗 #Scope
+### 🔗 #Scope [Planned]
 
 **Purpose**: Defines logical or physical boundaries for groups of components that share common runtime characteristics.
 
@@ -209,7 +209,7 @@ myApp: #Application & {
 }
 ```
 
-### 📚 #Bundle
+### 📚 #Bundle [Planned]
 
 **Purpose**: Groups multiple related applications together for distribution and deployment.
 
@@ -313,7 +313,10 @@ webStore: #Application & {
             #Workload
             #Volume
             containers: main: {
-                image: "store-ui:2.1.0"  // Version-tagged images
+                image: {
+                    repository: "store-ui
+                    tag: "2.1.0"  // Version-tagged images
+                }
                 replicas: 3
             }
         }
@@ -321,7 +324,11 @@ webStore: #Application & {
             #Workload
             #Config
             containers: main: {
-                image: "store-api:2.1.0"
+                image: {
+                    repository: "store-api
+                    tag: "2.1.0"
+                    digest: "sha256:9c9d20b2df6b4c2b49b7cb174e7b8f89a1e61fa5e03cc3a1c29cfcd6a5f53cf0"
+                }
                 replicas: 2
             }
         }

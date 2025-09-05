@@ -2,17 +2,17 @@ package standard
 
 import (
 	"strings"
-	corev3 "jacero.io/oam/core/v3alpha1"
+	corev2 "jacero.io/oam/core/v2alpha1"
 )
 
 // Workload trait definition
 // Defaults to a single container workload for simplicity
 // In Kubernetes this maps to a Deployment with a single container. Sidecars can be added via other traits.
-#Workload: corev3.#Trait & {
+#Workload: corev2.#Trait & {
 	#metadata: #traits: Workload: {
 		provides: {workload: #Workload.workload}
 		requires: [
-			"core.oam.dev/v3alpha1.Workload",
+			"core.oam.dev/v2alpha1.Workload",
 		]
 		description: "Describes a workload that runs one or more containers. By default, the workload runs a single container called 'main'."
 	}
@@ -62,11 +62,11 @@ import (
 }
 
 // Webservice is a service-oriented components are components that support external access to services with the container as the core, and their functions cover the needs of most of he microservice scenarios.
-#WebService: corev3.#Trait & {
+#WebService: corev2.#Trait & {
 	#metadata: #traits: WebService: {
 		provides: {webservice: #WebService.webservice}
 		requires: [
-			"core.oam.dev/v3alpha1.Workload",
+			"core.oam.dev/v2alpha1.Workload",
 		]
 		extends: [#Workload.#metadata.#traits.Workload, #Exposable.#metadata.#traits.Exposable]
 		description: "Describes a long-running, scalable, containerized service that runs with a network endpoint to receive external network traffic."
@@ -74,20 +74,20 @@ import (
 
 	webservice: {
 		DT=deploymentType: *"Deployment" | "StatefulSet"
-		expose?:        #Exposable.expose
+		expose?:           #Exposable.expose
 		workload: #Workload.workload & {
 			deploymentType: DT
-			replicas?: uint | *1
+			replicas?:      uint | *1
 		}
 	}
 }
 
 // Worker describes long-running, scalable, containerized services that running at backend. They do NOT have network endpoint to receive external network traffic. 
-#Worker: corev3.#Trait & {
+#Worker: corev2.#Trait & {
 	#metadata: #traits: Worker: {
 		provides: {worker: #Worker.worker}
 		requires: [
-			"core.oam.dev/v3alpha1.Workload",
+			"core.oam.dev/v2alpha1.Workload",
 		]
 		extends: [#Workload.#metadata.#traits.Workload]
 		description: "Describes a long-running, scalable, containerized service that runs in the background without a network endpoint."
@@ -95,20 +95,20 @@ import (
 
 	worker: {
 		DT=deploymentType: *"Deployment" | "StatefulSet"
-		R=replicas?: uint | *1
+		R=replicas?:       uint | *1
 		workload: #Workload.workload & {
 			deploymentType: DT
-			replicas?: R
+			replicas?:      R
 		}
 	}
 }
 
 // Extends a workload to add support for scaling the number of replicas
-#Replicable: corev3.#Trait & {
+#Replicable: corev2.#Trait & {
 	#metadata: #traits: Replicable: {
 		provides: {replicas: #Replicable.replicas}
 		requires: [
-			"core.oam.dev/v3alpha1.Replicable",
+			"core.oam.dev/v2alpha1.Replicable",
 		]
 		extends: [#Workload.#metadata.Workload]
 		description: "Extends Workload to add support for scaling the number of replicas."
@@ -123,11 +123,11 @@ import (
 
 // Defines a workload that can be exposed on a stable network endpoint
 // In Kubernetes this maps to a Service
-#Exposable: corev3.#Trait & {
+#Exposable: corev2.#Trait & {
 	#metadata: #traits: Exposable: {
 		provides: {expose: #Exposable.expose}
 		requires: [
-			"core.oam.dev/v3alpha1.Exposable",
+			"core.oam.dev/v2alpha1.Exposable",
 		]
 		description: "Extends Workload to add support for exposing the workload on a stable network endpoint."
 	}
@@ -151,11 +151,11 @@ import (
 
 // Defines a workload that runs code or a script to completion.
 // Combined with #Workload to define a job that runs to completion
-#Task: corev3.#Trait & {
+#Task: corev2.#Trait & {
 	#metadata: #traits: Task: {
 		provides: {task: #Task.task}
 		requires: [
-			"core.oam.dev/v3alpha1.Task",
+			"core.oam.dev/v2alpha1.Task",
 		]
 		extends: [#Workload.#metadata.Workload]
 		description: "Describes jobs that run code or a script to completion. Tasks can be run once or on a regular schedule."
@@ -200,7 +200,7 @@ import (
 }
 
 // Register the trait
-#Registry: corev3.#TraitRegistry & {
+#Registry: corev2.#TraitRegistry & {
 	traits: {
 		"WebService": #WebService
 		"Worker":     #Worker

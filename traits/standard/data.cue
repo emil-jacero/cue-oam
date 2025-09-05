@@ -1,17 +1,17 @@
 package standard
 
 import (
-	corev3 "jacero.io/oam/core/v3alpha1"
+	corev2 "jacero.io/oam/core/v2alpha1"
 )
 
-#Database: corev3.#Trait & {
+#Database: corev2.#Trait & {
 	#metadata: #traits: Database: {
 		provides: {database: #Database.database}
 		requires: [
-			"core.oam.dev/v3alpha1.DatabasePostgreSQL",
-			"core.oam.dev/v3alpha1.DatabaseMySQL",
-			"core.oam.dev/v3alpha1.DatabaseMongoDB",
-			"core.oam.dev/v3alpha1.DatabaseRedis",
+			"core.oam.dev/v2alpha1.DatabasePostgreSQL",
+			"core.oam.dev/v2alpha1.DatabaseMySQL",
+			"core.oam.dev/v2alpha1.DatabaseMongoDB",
+			"core.oam.dev/v2alpha1.DatabaseRedis",
 		]
 		extends: [#Workload.#metadata.#traits.Workload]
 		description: "Describes a database service that runs one or more containers. By default, the database runs a single container called 'main'."

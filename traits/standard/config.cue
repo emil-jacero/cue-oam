@@ -1,15 +1,15 @@
 package standard
 
 import (
-	corev3 "jacero.io/oam/core/v3alpha1"
+	corev2 "jacero.io/oam/core/v2alpha1"
 )
 
 // Defines one or more configurations
-#Config: corev3.#Trait & {
+#Config: corev2.#Trait & {
 	#metadata: #traits: Config: {
 		provides: {configMap: #Config.configMap}
 		requires: [
-			"core.oam.dev/v3alpha1.Config",
+			"core.oam.dev/v2alpha1.Config",
 		]
 		description: "Describes a set of configurations"
 	}
@@ -19,7 +19,7 @@ import (
 }
 
 // Register the trait
-#Registry: corev3.#TraitRegistry & {
+#Registry: corev2.#TraitRegistry & {
 	traits: {
 		"Config": #Config
 	}

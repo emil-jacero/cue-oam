@@ -1,23 +1,23 @@
 package compose
 
 import (
-	corev3 "jacero.io/oam/core/v3alpha1"
+	corev2 "jacero.io/oam/core/v2alpha1"
 )
 
-#ProviderCompose: corev3.#Provider & {
+#ProviderCompose: corev2.#Provider & {
 	#metadata: {
 		name:        "Compose"
 		description: "Provider for Docker Compose applications"
 		minVersion:  "v3.8" // Minimum Docker Compose version supported
 		capabilities: [
 			// Supported OAM core types
-			"core.oam.dev/v3alpha1.Workload",
-			"core.oam.dev/v3alpha1.Database",
-			"core.oam.dev/v3alpha1.Volume",
-			"core.oam.dev/v3alpha1.Secret",
-			"core.oam.dev/v3alpha1.Config",
-			"core.oam.dev/v3alpha1.Route",
-			"core.oam.dev/v3alpha1.Scaling",
+			"core.oam.dev/v2alpha1.Workload",
+			"core.oam.dev/v2alpha1.Database",
+			"core.oam.dev/v2alpha1.Volume",
+			"core.oam.dev/v2alpha1.Secret",
+			"core.oam.dev/v2alpha1.Config",
+			"core.oam.dev/v2alpha1.Route",
+			"core.oam.dev/v2alpha1.Scaling",
 		]
 	}
 
@@ -29,11 +29,11 @@ import (
 	}
 }
 
-#WorkloadTransformer: corev3.#Transformer & {
+#WorkloadTransformer: corev2.#Transformer & {
 	accepts: "Workload"
 	transform: {
 		input:   _
-		context: corev3.#ProviderContext
-		output:  corev3.#ResourceOutput
+		context: corev2.#ProviderContext
+		output:  corev2.#ResourceOutput
 	}
 }

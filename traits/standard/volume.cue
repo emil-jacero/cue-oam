@@ -1,15 +1,15 @@
 package standard
 
 import (
-	corev3 "jacero.io/oam/core/v3alpha1"
+	corev2 "jacero.io/oam/core/v2alpha1"
 )
 
 // Defines one or more volumes
-#Volume: corev3.#Trait & {
+#Volume: corev2.#Trait & {
 	#metadata: #traits: Volume: {
 		provides: {volumes: #Volume.volumes}
 		requires: [
-			"core.oam.dev/v3alpha1.Volume",
+			"core.oam.dev/v2alpha1.Volume",
 		]
 	}
 
@@ -24,7 +24,7 @@ import (
 }
 
 // Register the trait
-#Registry: corev3.#TraitRegistry & {
+#Registry: corev2.#TraitRegistry & {
 	traits: {
 		"Volume": #Volume
 	}

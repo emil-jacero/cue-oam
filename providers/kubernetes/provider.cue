@@ -1,25 +1,25 @@
 package kubernetes
 
 import (
-	corev3 "jacero.io/oam/core/v3alpha1"
+	corev2 "jacero.io/oam/core/v2alpha1"
 	traits "jacero.io/oam/traits/standard"
 )
 
-#ProviderKubernetes: corev3.#Provider & {
+#ProviderKubernetes: corev2.#Provider & {
 	#metadata: {
 		name:        "Kubernetes"
 		description: "Provider that renders resources for Kubernetes."
 		minVersion:  "v1.31.0" // Minimum supported Kubernetes version
 		capabilities: [
 			// Supported OAM core types
-			"core.oam.dev/v3alpha1.Workload",
-			"core.oam.dev/v3alpha1.Database",
-			"core.oam.dev/v3alpha1.Volume",
-			"core.oam.dev/v3alpha1.Secret",
-			"core.oam.dev/v3alpha1.Config",
-			"core.oam.dev/v3alpha1.Route",
-			"core.oam.dev/v3alpha1.Replicable",
-			"core.oam.dev/v3alpha1.Scalable",
+			"core.oam.dev/v2alpha1.Workload",
+			"core.oam.dev/v2alpha1.Database",
+			"core.oam.dev/v2alpha1.Volume",
+			"core.oam.dev/v2alpha1.Secret",
+			"core.oam.dev/v2alpha1.Config",
+			"core.oam.dev/v2alpha1.Route",
+			"core.oam.dev/v2alpha1.Replicable",
+			"core.oam.dev/v2alpha1.Scalable",
 
 			// Supported Kubernetes resources
 			"k8s.io/api/core/v1.Pod",
@@ -46,7 +46,7 @@ import (
 	}
 
 	render: {
-		app: corev3.#Application
+		app: corev2.#Application
 		output: {
 			resources: [
 				// Flatten all transformer outputs into a single array
@@ -55,7 +55,7 @@ import (
 				if transformers[traitName] != _|_
 				for resource in (transformers[traitName].transform & {
 					input: component
-					context: corev3.#ProviderContext & {
+					context: corev2.#ProviderContext & {
 						namespace:     app.#metadata.namespace
 						appName:       app.#metadata.name
 						appVersion:    app.#metadata.version
@@ -203,11 +203,11 @@ import (
 	failureThreshold?:    uint
 }
 
-#WorkloadTransformer: corev3.#Transformer & {
+#WorkloadTransformer: corev2.#Transformer & {
 	accepts: "Workload"
 	transform: {
 		input:   traits.#Workload
-		context: corev3.#ProviderContext
+		context: corev2.#ProviderContext
 		output: {
 			let workloadSpec = input.workload
 			let meta = input.#metadata

@@ -1,7 +1,7 @@
 // package standard
 
 // import (
-// 	corev3 "jacero.io/oam/core/v3alpha1"
+// 	corev2 "jacero.io/oam/core/v2alpha1"
 // 	traitsschema "jacero.io/oam/traits/schema"
 // )
 

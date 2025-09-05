@@ -1,13 +1,13 @@
 package example
 
 import (
-	corev3 "jacero.io/oam/core/v3alpha1"
+	corev2 "jacero.io/oam/core/v2alpha1"
 	traits "jacero.io/oam/traits/standard"
 	k8sprovider "jacero.io/oam/providers/kubernetes"
 )
 
 // Example Application with Workload trait
-webApp: corev3.#Application & {
+webApp: corev2.#Application & {
 	#metadata: {
 		name:      "web-app"
 		namespace: "demo"
@@ -44,7 +44,7 @@ webApp: corev3.#Application & {
 							limits: {cpu: "500m", memory: "512Mi"}
 						}
 						volumeMounts: [
-							volumes.nginx & {mountPath: "/usr/share/nginx/html"}
+							volumes.nginx & {mountPath: "/usr/share/nginx/html"},
 						]
 						readinessProbe: {
 							httpGet: {
@@ -59,26 +59,26 @@ webApp: corev3.#Application & {
 			}
 			traits.#Volume
 			volumes: nginx: {
-				type: "configMap"
-				name: "nginx-config"
+				type:    "configMap"
+				name:    "nginx-config"
 				config!: configMap.nginx
 			}
 			traits.#Config
 			configMap: nginx: {
 				data: {
 					"index.html": """
-					<!DOCTYPE html>
-					<html lang="en">
-					<head>
-						<meta charset="UTF-8">
-						<meta name="viewport" content="width=device-width, initial-scale=1.0">
-						<title>Welcome to Nginx!</title>
-					</head>
-					<body>
-						<h1>Success! The Nginx web server is running.</h1>
-					</body>
-					</html>
-					"""
+						<!DOCTYPE html>
+						<html lang="en">
+						<head>
+							<meta charset="UTF-8">
+							<meta name="viewport" content="width=device-width, initial-scale=1.0">
+							<title>Welcome to Nginx!</title>
+						</head>
+						<body>
+							<h1>Success! The Nginx web server is running.</h1>
+						</body>
+						</html>
+						"""
 				}
 			}
 		}
@@ -122,7 +122,7 @@ webApp: corev3.#Application & {
 							}
 						}
 						volumeMounts: [
-							volumes.main & {mountPath: "/data"}
+							volumes.main & {mountPath: "/data"},
 						]
 						livenessProbe: {
 							httpGet: {
@@ -145,11 +145,11 @@ webApp: corev3.#Application & {
 			}
 			traits.#Volume
 			volumes: main: {
-				type: "volume"
-				name: "api-data"
-				size:         "1Gi"
+				type:             "volume"
+				name:             "api-data"
+				size:             "1Gi"
 				storageClassName: "standard"
-				accessModes:  ["ReadWriteOnce"]
+				accessModes: ["ReadWriteOnce"]
 			}
 		}
 	}

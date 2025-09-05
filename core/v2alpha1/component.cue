@@ -1,4 +1,4 @@
-package v3alpha1
+package v2alpha1
 
 // Component definition - collection of traits
 #Component: #Object & {
