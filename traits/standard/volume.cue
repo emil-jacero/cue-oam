@@ -15,6 +15,12 @@ import (
 
 	// Volumes to be created
 	volumes: [string]: #VolumeSpec
+	// Add a name field to each volume for easier referencing in volume mounts. The name defaults to the map key.
+	for k, v in volumes {
+		volumes: (k): v & {
+			name: string | *k
+		}
+	}
 }
 
 // Register the trait

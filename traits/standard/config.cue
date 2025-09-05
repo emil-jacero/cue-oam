@@ -7,7 +7,7 @@ import (
 // Defines one or more configurations
 #Config: corev3.#Trait & {
 	#metadata: #traits: Config: {
-		provides: {configs: #Config.configs}
+		provides: {configMap: #Config.configMap}
 		requires: [
 			"core.oam.dev/v3alpha1.Config",
 		]
@@ -15,7 +15,7 @@ import (
 	}
 
 	// Configurations to be created
-	configs: [string]: #ConfigSpec
+	configMap: [string]: #ConfigSpec
 }
 
 // Register the trait

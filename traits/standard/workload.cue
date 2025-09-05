@@ -5,45 +5,6 @@ import (
 	corev3 "jacero.io/oam/core/v3alpha1"
 )
 
-// Webservice is a service-oriented components are components that support external access to services with the container as the core, and their functions cover the needs of most of he microservice scenarios.
-#WebService: corev3.#Trait & {
-	#metadata: #traits: WebService: {
-		provides: {webservice: #WebService.webservice}
-		requires: [
-			"core.oam.dev/v3alpha1.Workload",
-		]
-		extends: [#Workload.#metadata.#traits.Workload, #Exposable.#metadata.#traits.Exposable]
-		description: "Describes a long-running, scalable, containerized service that runs with a network endpoint to receive external network traffic."
-	}
-
-	webservice: {
-		deploymentType: *"Deployment" | "StatefulSet"
-		expose?:        #Exposable.expose
-		workload: #Workload.workload & {
-			replicas?: uint | *1
-		}
-	}
-}
-
-// Worker describes long-running, scalable, containerized services that running at backend. They do NOT have network endpoint to receive external network traffic. 
-#Worker: corev3.#Trait & {
-	#metadata: #traits: Worker: {
-		provides: {worker: #Worker.worker}
-		requires: [
-			"core.oam.dev/v3alpha1.Workload",
-		]
-		extends: [#Workload.#metadata.#traits.Workload]
-		description: "Describes a long-running, scalable, containerized service that runs in the background without a network endpoint."
-	}
-
-	worker: {
-		replicas?: uint | *1
-		workload: #Workload.workload & {
-			deploymentType: *"Deployment" | "StatefulSet"
-		}
-	}
-}
-
 // Workload trait definition
 // Defaults to a single container workload for simplicity
 // In Kubernetes this maps to a Deployment with a single container. Sidecars can be added via other traits.
@@ -96,6 +57,48 @@ import (
 					maxUnavailable?: uint | *1
 				}
 			}
+		}
+	}
+}
+
+// Webservice is a service-oriented components are components that support external access to services with the container as the core, and their functions cover the needs of most of he microservice scenarios.
+#WebService: corev3.#Trait & {
+	#metadata: #traits: WebService: {
+		provides: {webservice: #WebService.webservice}
+		requires: [
+			"core.oam.dev/v3alpha1.Workload",
+		]
+		extends: [#Workload.#metadata.#traits.Workload, #Exposable.#metadata.#traits.Exposable]
+		description: "Describes a long-running, scalable, containerized service that runs with a network endpoint to receive external network traffic."
+	}
+
+	webservice: {
+		DT=deploymentType: *"Deployment" | "StatefulSet"
+		expose?:        #Exposable.expose
+		workload: #Workload.workload & {
+			deploymentType: DT
+			replicas?: uint | *1
+		}
+	}
+}
+
+// Worker describes long-running, scalable, containerized services that running at backend. They do NOT have network endpoint to receive external network traffic. 
+#Worker: corev3.#Trait & {
+	#metadata: #traits: Worker: {
+		provides: {worker: #Worker.worker}
+		requires: [
+			"core.oam.dev/v3alpha1.Workload",
+		]
+		extends: [#Workload.#metadata.#traits.Workload]
+		description: "Describes a long-running, scalable, containerized service that runs in the background without a network endpoint."
+	}
+
+	worker: {
+		DT=deploymentType: *"Deployment" | "StatefulSet"
+		R=replicas?: uint | *1
+		workload: #Workload.workload & {
+			deploymentType: DT
+			replicas?: R
 		}
 	}
 }
