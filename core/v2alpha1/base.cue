@@ -6,7 +6,6 @@ import (
 
 // Base types and metadata definitions
 #NameType:      string & strings.MinRunes(1) & strings.MaxRunes(254)
-#NamespaceType: string & strings.MinRunes(1) & strings.MaxRunes(254)
 #VersionType:   string & =~"^\\d+\\.\\d+\\.\\d+(-[0-9A-Za-z-]+(\\.[0-9A-Za-z-]+)*)?(\\+[0-9A-Za-z-]+(\\.[0-9A-Za-z-]+)*)?$"
 
 #LabelsType: [string]:      string | int | bool

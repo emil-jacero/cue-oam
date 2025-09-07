@@ -7,7 +7,7 @@ package v2alpha1
 		#CommonObjectMeta
 
 		// The namespace the application is deployed in
-		namespace?: #NamespaceType | *"default"
+		namespace?: #NameType | *"default"
 
 		// The version of the application. Must follow semver
 		version: string & =~"^\\d+\\.\\d+\\.\\d+(-[0-9A-Za-z-]+(\\.[0-9A-Za-z-]+)*)?(\\+[0-9A-Za-z-]+(\\.[0-9A-Za-z-]+)*)?$"
