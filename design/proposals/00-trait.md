@@ -1,398 +1,466 @@
-# CUE-OAM Design Document: Trait System Architecture
+# CUE-OAM Design Document: Unified Trait Architecture
 
-2025/01/09
+2025-09-06
 
-**Status:** Draft
-**Lifecycle:** Proposed
-**Authors:** emil-jacero@
-**Tracking Issue:** emil-jacero/cue-oam#[TBD]
-**Related Roadmap Items:** Core Architecture, Component Model, Extensibility Framework
-**Reviewers:** [TBD]
-**Discussion:** GitHub Issue/PR #[TBD]
+**Status:** Draft  
+**Lifecycle:** Proposed  
+**Authors:** <emil@jacero.se>  
+**Tracking Issue:** emil-jacero/cue-oam#[TBD]  
+**Related Roadmap Items:** Core Architecture, Component Model, Extensibility Framework  
+**Reviewers:** [TBD]  
+**Discussion:** GitHub Issue/PR #[TBD]  
 
 ## Objective
 
-Establish a unified trait-based architecture as the foundational abstraction for all CUE-OAM system components, enabling consistent composition, extensibility, and platform-agnostic application modeling. This design consolidates operational functionality, scopes, policies, and platform extensions under a single, coherent framework.
+Establish a unified trait-based architecture where **everything is a trait**, organized into five fundamental categories. This design makes traits the single abstraction for all CUE-OAM functionality, from basic workloads to complex policies, with clear composition patterns and self-documenting metadata.
 
 ## Background
 
 ### Current State
 
-CUE-OAM currently implements traits as the primary building blocks for component functionality, with existing implementations including:
+CUE-OAM currently implements traits as building blocks for component functionality, but lacks:
 
-- **Operational Traits**: `#Workload`, `#WebService`, `#Worker`, `#Task`, `#Database`
-- **Storage and Data Traits**: `#Volume`, `#Config`, `#Secret`, `#ImagePullSecret`
-- **Behavioral Traits**: `#Replicable`, `#Exposable`
-
-These traits are defined in `/traits/standard/` and provide core functionality for containerized workloads, but the system lacks:
-
-- A unified categorization scheme to allow traits to be reused elsewhere
-- Standardized metadata for discovery and validation
-- Clear composition patterns for complex scenarios
+- A unified categorization scheme for trait reusability
+- Clear patterns for trait composition
+- Self-documenting trait metadata
+- Consistent trait application across different levels (component, application, scope, bundle, promise)
 
 ### Problem Statement
 
-The current trait system, while functional, faces several limitations:
+The current trait system faces several limitations:
 
-1. **Namespace Conflicts**: No isolation between different types of traits (operational vs. governance)
-2. **Limited Discoverability**: No standardized way to understand trait capabilities and what traits exist
-3. **Composition Complexity**: Unclear patterns for combining traits effectively
-4. **Extension Challenges**: Difficult to add platform-specific or policy traits
-
-Example (Composition Complexity):
-
-```cue
-// Base trait
-#Workload: #ComponentTrait & {
-    #metadata: #traits: Workload: {
-        provides: workload: #Workload.workload
-        requires: [
-            "core.oam.dev/v2alpha1.Workload",
-        ]
-    }
-    
-    workload: {
-        containers: [string]: #ContainerSpec
-        containers: main: {name: string | *#metadata.name}
-    }
-}
-
-// Extended trait
-#Database: #ComponentTrait & {
-    #metadata: #traits: Database: {
-        provides: database: #Database.database
-        requires: [
-            "core.oam.dev/v2alpha1.Workload",
-            "core.oam.dev/v2alpha1.Volume",
-            "core.oam.dev/v2alpha1.Config",
-        ]
-        extends: [
-            #Workload.#metadata.#traits.Workload,
-            #Volume.#metadata.#traits.Volume,
-            #Config.#metadata.#traits.Config
-        ]
-        category: "operational"
-    }
-    
-    database: {
-        type: "postgres" | "mysql" | "mongodb"
-        replicas?: uint | *1
-        version: string
-        persistence: {
-            enabled: bool | *true
-            size: string | *"10Gi"
-        }
-    }
-    
-    // Automatically inherited fields
-    // Makes sure the schemas are included
-    for f in #metadata.#traits.Database.extends {
-        f.provides
-    }
-}
-```
+1. **Unclear Composition**: No standard way to build complex traits from simpler ones
+2. **Category Confusion**: Mixing of concerns (operational, governance, structural) without clear boundaries
+3. **Limited Reusability**: Traits designed for one level can't easily be reused at others
+4. **Discovery Challenges**: Hard to understand what traits exist and how they relate
 
 ### Goals
 
-- [x] **Unified Architecture**: Establish traits as the single foundational abstraction
-- [x] **Category System**: Implement trait categorization to prevent conflicts
-- [x] **Rich Metadata**: Standardize metadata for discovery, validation, and tooling
-- [x] **Composition Patterns**: Define clear patterns for trait combination and inheritance
-- [x] **Extensibility**: Enable easy addition of new trait types and categories
-- [ ] **Platform Integration**: Seamless mapping from traits to platform resources
-- [ ] **Validation Framework**: Built-in validation for trait definitions and usage
+- [x] **Everything is a Trait**: Unify all functionality under the trait abstraction
+- [x] **Five Core Categories**: Establish fundamental trait categories
+- [x] **Self-Documenting Composition**: Make trait composition obvious from structure
+- [x] **Maximum Reusability**: Enable traits to work across all appropriate levels
+- [x] **Type-Safe Composition**: Leverage CUE's type system for validation
 
 ### Non-Goals
 
-- Replacing existing trait implementations (maintain backward compatibility)
-- Creating trait-specific DSLs (leverage CUE's native capabilities)
-- Platform-specific trait optimizations (keep traits platform-agnostic, for now)
-- Runtime trait modification (focus on design-time composition)
+- Migration of existing traits (separate effort)
+- Provider-specific implementations
+- Runtime trait discovery mechanisms
+- GUI/tooling implementation
 
 ## Proposal
 
-### CUE-OAM Model Impact
+### Core Trait Categories
 
-This design establishes traits as the universal building block across the entire CUE-OAM hierarchy:
-
-- **New Traits**: Introduce trait categories and enhanced metadata system. Simplify inheritance and schema management
-- **Component Changes**: Components become aggregators of categorized traits
-- **Application Changes**: Applications can define scope and policy traits alongside components
-- **Scope/Policy Integration**: Scopes and policies become specialized trait categories
-- **Provider Requirements**: Providers must handle all trait categories and their mappings
-
-### Core Trait Definition
-
-The foundational trait structure provides a consistent base for all system components:
+All traits in CUE-OAM belong to one of five fundamental categories:
 
 ```cue
-#TraitCategory: string | "component" | "scope" | "policy" | "bundle"
-
-#TraitsMeta: {
-    // Category designation
-    category!: #TraitCategory
-
-    // Which fields this trait adds to a parent component, scope or policy.
-    // Must be a list of CUE paths, e.g. workload: #Workload.workload
-    provides!: [string]: {...}
-
-    // Platform capabilities required by this trait to function.
-    // Used to ensure that the target platform supports the trait.
-    requires!: [...string]
-
-    // Optionally, which trait this trait extends
-    extends?: [...#TraitsMeta]
-
-    // Optional short description of the trait
-    description?: string
-
-    ...
-}
-
-#Trait: {
-    #metadata: {
-        #id:  #NameType
-        name: #NameType | *#id
-        #traits: [string]: #TraitsMeta
-        ...
-    }
-
-    // Trait-specific fields
-    ...
-}
+#TraitCategory: "operational" | "structural" | "behavioral" | "resource" | "contractual"
 ```
 
-### Category-Specific Extensions
+1. **Operational** - How things execute (runtime behavior)
+   - Examples: Workload, Task, CronJob, Scaling, Lifecycle
 
-Each trait category extends the base with specific metadata:
+2. **Structural** - How things are organized and related
+   - Examples: Network, Dependency, Topology, Service Discovery
+
+3. **Behavioral** - How things act and react (logic and patterns)
+   - Examples: Retry, CircuitBreaker, RateLimiter, Throttle, Strategy
+
+4. **Resource** - What things have and need (state and data)
+   - Examples: Volume, Config, Database, Secret, Cache
+
+5. **Contractual** - What things must guarantee (constraints and policies)
+   - Examples: Policy, SLA, Schema, Validation, Security, Compliance
+
+### Trait Metadata Structure
 
 ```cue
-#ComponentTrait: #Trait & {
-    #metadata: {
-        #id:  #NameType
-        name: #NameType | *#id
-        #traits: [string]: #TraitsMeta & {
-            category: "component"
+#TraitMeta: {
+    name: #NameType
+
+    // What kind of trait this is, based on where it can be applied
+    scope: [...#TraitScope]
+
+    // Primary category - what this trait mainly does
+    category: #TraitCategory
+    
+    // Composition - list of traits this trait is built from
+    // Presence of this field makes it a composite trait
+    // Absence makes it an atomic trait
+    composes?: [...#TraitMeta]
+    
+    // fields this trait provides to a component, application, scope, bundle, or promise
+    provides: {...}
+    
+    // External dependencies (not composition)
+    // For atomic traits: manually specified
+    // For composite traits: automatically computed from composed traits
+    requires?: [...string]
+    
+    // Computed requirements for composite traits
+    #computedRequires: {
+        if composes == _|_ {
+            // Atomic trait - use manually specified requires
+            if requires == _|_ {
+                out: []
+            }
+            if requires != _|_ {
+                out: requires
+            }
+        }
+        if composes != _|_ {
+            if len(composes) == 0 {
+                // Empty composes list - treat as atomic
+                if requires == _|_ {
+                    out: []
+                }
+                if requires != _|_ {
+                    out: requires
+                }
+            }
+            if len(composes) > 0 {
+                // Composite trait - compute from composed traits
+                allRequirements: list.FlattenN([
+                    for composedTrait in composes {
+                        composedTrait.#computedRequires.out
+                    }
+                ], 1)
+                
+                // Deduplicate requirements using unique list pattern
+                deduped: [ for i, x in allRequirements if !list.Contains(list.Drop(allRequirements, i+1), x) {x}]
+                
+                // Sort the deduplicated requirements
+                out: list.Sort(deduped, list.Ascending)
+            }
         }
     }
-    ...
+    
+    // Validation: composite traits should not manually specify requires
+    if composes != _|_ {
+        if len(composes) > 0 && requires != _|_ {
+            error("Composite traits should not manually specify 'requires' - they are computed automatically")
+        }
+
+        // Validation: composite traits can only compose atomic traits
+        if len(composes) > 0 {
+            for i, composedTrait in composes {
+                // Each composed trait must be atomic (no composes field or empty composes)
+                if (composedTrait.composes & [...]) != _|_ {
+                    if len(composedTrait.composes & [...]) > 0 {
+                        error("Composite trait can only compose atomic traits. Trait at index \(i) is composite (has composes field)")
+                    }
+                }
+            }
+        }
+    }
 }
 
-#ScopeTrait: #Trait & {
-    #metadata: {
-        #id:          #NameType
-        name:         #NameType | *#id
-        #traits: [string]: #TraitsMeta & {
-            category: "scope"
-        }
-    }
-    ...
-}
-
-#PolicyTrait: #Trait & {
-    #metadata: {
-        #id:  #NameType
-        name: #NameType | *#id
-        #traits: [string]: #TraitsMeta & {
-            category: "policy"
-        }
-    }
-    ...
-}
-
-#BundleTrait: #Trait & {
-    #metadata: {
-        #id:  #NameType
-        name: #NameType | *#id
-        #traits: [string]: #TraitsMeta & {
-            category: "bundle"
-        }
-    }
-    ...
-}
+#TraitScope: "component" | "scope" | "bundle" | "promise"
 ```
 
-### Trait Composition Patterns
+### Trait Composition Model
 
-#### Inheritance
+Traits are either **atomic** (fundamental building blocks) or **composite** (built from other traits):
+
+#### Atomic Trait Example
 
 ```cue
-// Base trait
-#Workload: #ComponentTrait & {
+#Workload: #Trait & {
     #metadata: #traits: Workload: {
+        category: "operational"
         provides: workload: #Workload.workload
         requires: [
             "core.oam.dev/v2alpha1.Workload",
         ]
+        scope: ["component"]
     }
-    
+
     workload: {
-        containers: [string]: #ContainerSpec
+        containers: [string]: {...}
         containers: main: {name: string | *#metadata.name}
     }
 }
 
-// Extended trait
-#Database: #ComponentTrait & {
-    #metadata: #traits: Database: {
-        provides: database: #Database.database
+#Volume: #Trait & {
+    #metadata: #traits: Volume: {
+        category: "resource"
+        provides: volumes: #Volume.volumes
         requires: [
-            "core.oam.dev/v2alpha1.Workload",
             "core.oam.dev/v2alpha1.Volume",
-            "core.oam.dev/v2alpha1.Config",
         ]
-        extends: [
-            #Workload.#metadata.#traits.Workload,
-            #Volume.#metadata.#traits.Volume,
-            #Config.#metadata.#traits.Config
-        ]
-        category: "operational"
+        scope: ["component"]
     }
-    
-    database: {
-        type: "postgres" | "mysql" | "mongodb"
-        replicas?: uint | *1
-        version: string
-        persistence: {
-            enabled: bool | *true
-            size: string | *"10Gi"
+
+    // Volumes to be created
+    volumes: [string]: {
+        name!:      string
+        type!:      "emptyDir" | "volume"
+        mountPath!: string
+        if type == "volume" {
+            size?: string
         }
     }
-    
-    // Automatically inherited fields
-    // Makes sure the schemas are included
-    for f in #metadata.#traits.Database.extends {
-        f.provides
+    // Add a name field to each volume for easier referencing in volume mounts. The name defaults to the map key.
+    for k, v in volumes {
+        volumes: (k): v & {
+            name: string | *k
+        }
     }
 }
 ```
 
-### Provider Integration
-
-Providers translate traits to platform-specific resources based on category:
+#### Composite Trait Example
 
 ```cue
-#KubernetesProvider: {
-    // Handle operational traits
-    component: {
-        "Workload": #WorkloadTransformer
-        "WebService": #WebServiceTransformer
-        "Database": #DatabaseTransformer
-        "Volume": #VolumeTransformer
-        "Config": #ConfigTransformer
-        "Secret": #SecretTransformer
+#Database: #Trait & {
+    #metadata: #traits: Database: {
+        category: "operational"
+        composes: [#Workload.#metadata.#traits.Workload, #Volume.#metadata.#traits.Volume]
+        provides: database: #Database.database
+        scope: ["component"]
+        // requires: automatically computed from composed traits
     }
-    
-    // Handle scope traits
-    scope: {
-        "NetworkScope": #NetworkPolicyTransformer
-        "ResourceScope": #ResourceQuotaTransformer
-        "SecurityScope": #PodSecurityTransformer
+
+    database: {
+        type:      "postgres" | "mysql"
+        replicas?: uint | *1
+        version:   string
+        persistence: {
+            enabled: bool | *true
+            size:    string | *"10Gi"
+        }
     }
+
+    volumes: {if database.persistence.enabled {
+        dbData: {
+            type:      "volume"
+            name:      "db-data"
+            size:      database.persistence.size
+            mountPath: string | *"/var/lib/data"
+        }
+    }}
     
-    // Handle policy traits
-    policy: {
-        "SecurityPolicy": #ValidatingWebhookTransformer
-        "ResourcePolicy": #MutatingWebhookTransformer
-        "CompliancePolicy": #PolicyReportTransformer
+    workload: #Workload.workload & {
+        if database.type == "postgres" {
+            containers: main: {
+                name: "postgres"
+                image: {
+                    registry: "docker.io/library/postgres"
+                    tag:      database.version
+                }
+                ports: [{
+                    name:          "postgres"
+                    protocol:      "TCP"
+                    containerPort: 5432
+                }]
+                if database.persistence.enabled {
+                    volumeMounts: [volumes.dbData & {mountPath: "/var/lib/postgresql/data"}]
+                }
+                env: "POSTGRES_DB": {name: "POSTGRES_DB", value: #metadata.name}
+            }
+        }
+        if database.type == "mysql" {
+            containers: main: {
+                name: "mysql"
+                image: {
+                    registry: "docker.io/library/mysql"
+                    tag:      database.version
+                }
+                ports: [{
+                    name:          "mysql"
+                    protocol:      "TCP"
+                    containerPort: 3306
+                }]
+                if database.persistence.enabled {
+                    volumeMounts: [volumes.dbData & {mountPath: "/var/lib/mysql"}]
+                }
+                env: "MYSQL_DATABASE": {name: "MYSQL_DATABASE", value: #metadata.name}
+            }
+        }
     }
-    
-    // Handle bundle traits (TBD)
-    bundle: {
-        // Bundle-specific traits to be defined
+
+    // Inherited fields. Useful for validation or defaults.
+    for t in #metadata.#traits.Database.composes {
+        t.provides
     }
 }
 ```
 
-### Validation Framework
+### Trait Validation
 
-Built-in validation ensures trait correctness:
+The validation is built into the `#TraitMeta` structure using CUE's `error()` builtin:
 
 ```cue
+// Built into #TraitMeta - automatic validation
+
+// Validation: composite traits should not manually specify requires
+if composes != _|_ {
+    if len(composes) > 0 && requires != _|_ {
+        error("Composite traits should not manually specify 'requires' - they are computed automatically")
+    }
+
+    // Validation: composite traits can only compose atomic traits
+    if composes != _|_ && len(composes) > 0 {
+        for i, composedTrait in composes {
+            // Each composed trait must be atomic (no composes field or empty composes)
+            if (composedTrait.composes & [...]) != _|_ {
+                if len(composedTrait.composes & [...]) > 0 {
+                    error("Composite trait can only compose atomic traits. Trait at index \(i) is composite (has composes field)")
+                }
+            }
+        }
+    }
+}
 ```
 
-## Implementation Plan
+### User Experience
 
-### Phase 1: Core Architecture (In Progress)
+Users work with traits at different levels naturally:
 
-- [x] Define base `#Trait` structure
-- [x] Implement trait categorization system
-- [ ] Establish metadata standards
-- [ ] Update existing operational traits. Organize into different packages.
-- [ ] Add conflict resolution for overlapping traits
+```cue
+// Component level - compose traits to build components
+myService: #Component & {
+    #metadata: name: "api-service"
 
-```shell
-/
-├── traits
-│   ├── schema ## The standard schema that will be referenced in all traits
-│   ├── component ## The component traits
-│   ├── scope ## The scope traits
-│   ├── policy ## The policy traits
-│   └── bundle ## The bundle traits
+    #WebService
+    workload: containers: main: image: "myapp:v1.0"
+    expose: port: 8080
+
+    #Database
+    database: {
+        engine: "postgres"
+        version: "14"
+    }
+
+    #Metrics
+    metrics: {
+        endpoints: ["/metrics"]
+    }
+}
+
+// Application level - apply traits to entire applications
+myApp: #Application & {
+    name: "my-application"
+    components: {
+        api: myService
+    }
+    scopes: {
+        #NetworkIsolationScope
+        network: {
+            components: [components.api]
+            // Network isolation level
+            isolation: "none" | "namespace" | "pod" | "strict" | *"namespace"
+            
+            // Ingress/egress policies
+            ingress?: [...#NetworkPolicyRule]
+            egress?: [...#NetworkPolicyRule]
+            
+            // Service mesh configuration
+            serviceMesh?: {
+                enabled: bool | *false
+                profile?: "strict" | "permissive" | *"permissive"
+                mTLS?: bool | *true
+            }
+            
+            // DNS configuration
+            dns?: {
+                policy?: "ClusterFirst" | "ClusterFirstWithHostNet" | "Default"
+                search?: [...string]
+                options?: [...#DNSOption]
+            }
+        }
+    }
+    policies: {
+        #SecurityPolicy // contractual trait
+        securityPolicy: {
+            podSecurity: "restricted"
+        }
+
+        #ResourceQuotaPolicy // contractual trait
+        resourceQuota: {
+            limits: {
+                cpu: "1000"
+                memory: "1000Gi"
+            }
+        }
+    }
+}
 ```
 
-### Phase 2: Scope Integration (Planned)
+### Key Features Implemented
 
-- [ ] Implement scope traits (`#NetworkScope`, `#ResourceScope`)
-- [ ] Define scope-component relationship patterns
-- [ ] Update applications to support scope traits
-- [ ] Add provider support for scope traits
+1. **Automatic Requirement Computation**: Composite traits automatically compute requirements from their composed traits
+2. **Deduplication and Sorting**: Requirements are deduplicated using CUE's unique list pattern and sorted alphabetically
+3. **Validation with Error Messages**: Uses CUE's `error()` builtin for proper error handling
+4. **Self-Documenting Structure**: Presence of `composes` field indicates composite trait
+5. **Name Population**: Trait names are automatically populated from the key in the `#traits` map
 
-### Phase 3: Policy Integration (Planned)
+### Working Example
 
-- [ ] Implement policy trait framework
-- [ ] Integrate existing well known tools. Like OPA and Kyverno.
-- [ ] Define policy targeting and rule systems
-- [ ] Add validation and enforcement mechanisms
-- [ ] Integrate with existing governance tools
+The current implementation includes working examples:
 
-### Phase 5: Advanced Features (Future)
+```cue
+// Test composite trait that works correctly
+testValidWebService: #TraitMeta & {
+    category: "operational"
+    composes: [
+        testAtomicWorkload,
+        testAtomicExposable, 
+        testAtomicHealthCheck,
+    ]
+    provides: {
+        workload: {}
+        expose: {}
+        health: {}
+    }
+    scope: ["component"]
+}
 
-- [ ] Trait composition validation
+// Computed requirements will be:
+// ["core.oam.dev/v2alpha1.HealthProvider", "core.oam.dev/v2alpha1.NetworkProvider", "core.oam.dev/v2alpha1.Runtime"]
+```
+
+## Benefits
+
+1. **Unified Mental Model**: Everything is a trait - no special cases
+2. **Maximum Reusability**: Traits work at any appropriate level
+3. **Self-Documenting**: Structure itself shows atomic vs composite
+4. **Type Safety**: CUE's type system ensures valid compositions
+5. **Clear Categories**: Five categories cover all use cases
+6. **Natural Composition**: Complex traits built from simple ones
+7. **Better Discovery**: Easy to find and understand traits
+8. **Extensible**: New traits fit naturally into categories
+
+## Testing
+
+1. **Category Coverage**: Ensure all existing traits fit categories
+2. **Composition Validation**: Test atomic and composite traits
+3. **Level Compatibility**: Verify traits work at appropriate levels
+4. **Cycle Detection**: Ensure no circular dependencies
 
 ## Alternatives Considered
 
-### Separate Abstraction Layers
+### More Categories
 
-**Alternative**: Keep scopes, policies, and extensions as separate abstractions
-**Rejected**: Would fragment the system and create inconsistent patterns and a lot more work
+Having 10+ categories was considered but rejected as too complex. Five categories provide sufficient organization without overwhelming users.
 
-### Trait Namespacing
+### Explicit Composition Field
 
-**Alternative**: Use CUE packages for trait organization instead of categories
-**Rejected**: Categories provide better runtime behavior and clearer semantics. Although the traits categories should be separated into different packages for organisational sake.
+Adding a `composition: "atomic" | "composite"` field was considered but rejected as redundant - the presence/absence of `composes` is self-documenting.
 
-### Dynamic Trait System
+### Inheritance Model
 
-**Alternative**: Runtime trait modification and hot-swapping
-**Rejected**: Adds complexity without clear benefits for the target use cases. Plus we want to utilize CUE fully.
+Traditional inheritance (`extends`) was considered but composition (`composes`) is clearer and more flexible.
 
-## Future Considerations
+## Open Questions
 
-### Trait Ecosystem
+1. Should we enforce category-specific validation rules?
+2. How deep should composition be allowed to go? Right now it is forced at 0.
+3. Should certain category combinations be prohibited at an application level?
+4. How do we handle trait versioning in compositions?
 
-- Community-contributed trait marketplace. Distributed as CUE modules (OCI artifacts)
-- Trait discovery and recommendation systems. Using a CLI tool
-- Cross-organization trait sharing standards. By following the same api naming standard.
+## Conclusion
 
-### Advanced Composition
-
-- Trait dependency resolution
-- Automatic trait selection based on requirements
-- Conflict resolution for overlapping traits
-- Performance optimization for large trait compositions
-
-### Tooling Integration
-
-- IDE support for trait development
-- Visual trait composition tools. Maybe :-)
-- Automated documentation generation. Using CUE
-- Testing frameworks for trait validation. Using CUE
-
-## Related Work
-
-- **Kubernetes Operators**: Inspiration for extension traits
-- **OPA/Gatekeeper**: Policy enforcement patterns
-- **Helm Charts**: Composition and templating concepts
-- **Timoni**: Composition and bundling of applications
-- **Crossplane**: Provider abstraction models
+This unified trait architecture makes CUE-OAM incredibly flexible while maintaining structure through five fundamental categories. By making everything a trait with clear composition patterns, we achieve maximum reusability and a consistent mental model across the entire system. The self-documenting nature of the metadata structure ensures that traits are easy to understand, compose, and validate.
