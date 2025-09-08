@@ -12,16 +12,17 @@ import (
 		description: "Provider that renders resources for Kubernetes."
 		minVersion:  "v1.31.0" // Minimum supported Kubernetes version
 		capabilities: [
-			// Supported OAM core types
-			"core.oam.dev/v2alpha2.Workload",
-			"core.oam.dev/v2alpha2.Database",
+			// Supported OAM atomic traits
+			"core.oam.dev/v2alpha2.ContainerSet",
+			"core.oam.dev/v2alpha2.Replica",
+			"core.oam.dev/v2alpha2.RestartPolicy",
+			"core.oam.dev/v2alpha2.UpdateStrategy",
+			"core.oam.dev/v2alpha2.Expose",
 			"core.oam.dev/v2alpha2.Volume",
 			"core.oam.dev/v2alpha2.Secret",
 			"core.oam.dev/v2alpha2.Config",
-			"core.oam.dev/v2alpha2.Route",
-			"core.oam.dev/v2alpha2.Replicable",
-			"core.oam.dev/v2alpha2.Scalable",
-
+			"core.oam.dev/v2alpha2.NetworkIsolationScope",
+			
 			// Supported Kubernetes resources
 			"k8s.io/api/core/v1.Pod",
 			"k8s.io/api/core/v1.Service",
@@ -33,6 +34,7 @@ import (
 			"k8s.io/api/rbac/v1.Role",
 			"k8s.io/api/rbac/v1.RoleBinding",
 			"k8s.io/api/networking/v1.Ingress",
+			"k8s.io/api/networking/v1.NetworkPolicy",
 			"k8s.io/api/core/v1.ConfigMap",
 			"k8s.io/api/core/v1.Secret",
 			"k8s.io/api/core/v1.PersistentVolumeClaim",
@@ -40,10 +42,13 @@ import (
 	}
 
 	transformers: {
-		"core.oam.dev/v2alpha2.Workload": #WorkloadTransformer
-		// "core.oam.dev/v2alpha2.Volume":   #VolumeTransformer
-		// "core.oam.dev/v2alpha2.Secret":   #SecretTransformer
-		// "core.oam.dev/v2alpha2.Config":   #ConfigTransformer
+		// Primary trait transformers (handle modifier traits internally)
+		"core.oam.dev/v2alpha2.ContainerSet":           #ContainerSetTransformer
+		"core.oam.dev/v2alpha2.Expose":                 #ExposeTransformer
+		"core.oam.dev/v2alpha2.Volume":                 #VolumeTransformer
+		"core.oam.dev/v2alpha2.Secret":                 #SecretTransformer
+		"core.oam.dev/v2alpha2.Config":                 #ConfigTransformer
+		"core.oam.dev/v2alpha2.NetworkIsolationScope":  #NetworkIsolationScopeTransformer
 	}
 
 	render: {
@@ -73,13 +78,14 @@ import (
 	}
 }
 
-#WorkloadTransformer: core.#Transformer & {
-	accepts: "core.oam.dev/v2alpha2.Workload"
+// ContainerSet Transformer - Creates Deployment with containers
+#ContainerSetTransformer: core.#Transformer & {
+	accepts: "core.oam.dev/v2alpha2.ContainerSet"
 	transform: {
-		input:   trait.#Workload
+		input:   trait.#ContainerSet
 		context: core.#ProviderContext
 		output: {
-			let workloadSpec = input.workload
+			let containerSetSpec = input.containerSet
 			let meta = input.#metadata
 			let ctx = context
 
@@ -100,15 +106,44 @@ import (
 						}
 					}
 					spec: {
-						if workloadSpec.replicas != _|_ {
-							replicas: workloadSpec.replicas
+						// Check for Replica trait and use its count if present
+						let replicaTrait = {for n, t in input.#metadata.#traits if t.#kind == "Replica" {t}}
+						if len(replicaTrait) > 0 {
+							let replicaSpec = {for n, t in replicaTrait {input.replica}}
+							replicas: {for n, r in replicaSpec {r.count}}[0]
 						}
-						if workloadSpec.replicas == _|_ {replicas: 1}
+						if len(replicaTrait) == 0 {
+							replicas: 1 // Default
+						}
 						selector: matchLabels: {
 							"app.kubernetes.io/name":     meta.name
 							"app.kubernetes.io/instance": ctx.appName
-							"app.kubernetes.io/version":  ctx.appVersion
 						}
+						
+						// Check for UpdateStrategy trait and configure deployment strategy
+						let updateStrategyTrait = {for n, t in input.#metadata.#traits if t.#kind == "UpdateStrategy" {t}}
+						if len(updateStrategyTrait) > 0 {
+							let strategySpec = {for n, t in updateStrategyTrait {input.updateStrategy}}
+							strategy: {
+								for n, s in strategySpec {
+									type: s.type
+									if s.type == "RollingUpdate" && s.rollingUpdate != _|_ {
+										rollingUpdate: s.rollingUpdate
+									}
+								}
+							}
+						}
+						if len(updateStrategyTrait) == 0 {
+							// Default strategy
+							strategy: {
+								type: "RollingUpdate"
+								rollingUpdate: {
+									maxSurge:       1
+									maxUnavailable: 0
+								}
+							}
+						}
+						
 						template: {
 							metadata: labels: {
 								"app.kubernetes.io/name":     meta.name
@@ -116,8 +151,9 @@ import (
 								"app.kubernetes.io/version":  ctx.appVersion
 							} & ctx.appLabels
 							spec: {
+								// Main containers
 								containers: [
-									for containerName, containerSpec in workloadSpec.containers {
+									for containerName, containerSpec in containerSetSpec.containers {
 										{
 											name:  containerSpec.name
 											image: "\(containerSpec.image.repository):\(containerSpec.image.tag)"
@@ -128,7 +164,7 @@ import (
 															if port.name != _|_ {
 																name: port.name
 															}
-															containerPort: port.containerPort
+															containerPort: port.targetPort
 															if port.protocol != _|_ {
 																protocol: port.protocol
 															}
@@ -158,15 +194,131 @@ import (
 											if containerSpec.startupProbe != _|_ {
 												startupProbe: (_transformProbe & {probe: containerSpec.startupProbe}).transformedProbe
 											}
+											if containerSpec.volumeMounts != _|_ {
+												volumeMounts: containerSpec.volumeMounts
+											}
 										}
 									},
 								]
+								// Init containers
+								if containerSetSpec.init != _|_ {
+									initContainers: [
+										for containerName, containerSpec in containerSetSpec.init {
+											{
+												name:  containerSpec.name
+												image: "\(containerSpec.image.repository):\(containerSpec.image.tag)"
+												if containerSpec.env != _|_ {
+													env: [
+														for envVar in containerSpec.env {
+															{
+																name:  envVar.name
+																value: envVar.value
+															}
+														},
+													]
+												}
+												if containerSpec.resources != _|_ {
+													resources: containerSpec.resources
+												}
+												if containerSpec.volumeMounts != _|_ {
+													volumeMounts: containerSpec.volumeMounts
+												}
+											}
+										},
+									]
+								}
+								
+								// Check for RestartPolicy trait and configure restart policy
+								let restartPolicyTrait = {for n, t in input.#metadata.#traits if t.#kind == "RestartPolicy" {t}}
+								if len(restartPolicyTrait) > 0 {
+									let policy = {for n, t in restartPolicyTrait {input.restartPolicy}}
+									restartPolicy: policy
+								}
+								if len(restartPolicyTrait) == 0 {
+									restartPolicy: "Always" // Default
+								}
+								
+								// Check for Volume trait and add volumes to pod spec
+								let volumeTrait = {for n, t in input.#metadata.#traits if t.#kind == "Volume" {t}}
+								if len(volumeTrait) > 0 {
+									volumes: [
+										for volumeName, volume in input.volumes {
+											if volume.type == "volume" {
+												{
+													name: volume.name
+													persistentVolumeClaim: claimName: "\(meta.name)-\(volumeName)"
+												}
+											}
+											if volume.type == "emptyDir" {
+												{
+													name: volume.name
+													emptyDir: {}
+													if volume.medium != _|_ {
+														emptyDir: medium: volume.medium
+													}
+													if volume.sizeLimit != _|_ {
+														emptyDir: sizeLimit: volume.sizeLimit
+													}
+												}
+											}
+											if volume.type == "configMap" {
+												{
+													name: volume.name
+													configMap: {
+														name: volume.config.name
+														if volume.config.items != _|_ {
+															items: volume.config.items
+														}
+													}
+												}
+											}
+											if volume.type == "secret" {
+												{
+													name: volume.name
+													secret: {
+														secretName: volume.secret.name
+														if volume.secret.items != _|_ {
+															items: volume.secret.items
+														}
+													}
+												}
+											}
+											if volume.type == "hostPath" {
+												{
+													name: volume.name
+													hostPath: {
+														path: volume.hostPath
+														if volume.hostPathType != _|_ {
+															type: volume.hostPathType
+														}
+													}
+												}
+											}
+										},
+									]
+								}
 							}
 						}
 					}
 				},
+			]
+		}
+	}
+}
 
-				// Service resource - generated for workloads with exposed ports
+// Expose Transformer - Creates Service for exposed ports
+#ExposeTransformer: core.#Transformer & {
+	accepts: "core.oam.dev/v2alpha2.Expose"
+	transform: {
+		input:   trait.#Expose
+		context: core.#ProviderContext
+		output: {
+			let exposeSpec = input.expose
+			let meta = input.#metadata
+			let ctx = context
+
+			resources: [
+				// Service resource
 				schema.#Service & {
 					metadata: {
 						name:      meta.name
@@ -179,29 +331,271 @@ import (
 						} & ctx.appLabels
 					}
 					spec: {
-						selector: {
-							"app.kubernetes.io/name":     meta.name
-							"app.kubernetes.io/instance": ctx.appName
+						// Service type
+						if exposeSpec.type != _|_ {
+							type: exposeSpec.type
 						}
-						for containerName, containerSpec in workloadSpec.containers
-						if containerSpec.ports != _|_ {
+						if exposeSpec.type == _|_ {
+							type: "ClusterIP"
+						}
+						
+						// Selector
+						if exposeSpec.selector != _|_ {
+							selector: exposeSpec.selector
+						}
+						if exposeSpec.selector == _|_ {
+							selector: {
+								"app.kubernetes.io/name":     meta.name
+								"app.kubernetes.io/instance": ctx.appName
+							}
+						}
+						
+						// Ports
+						if exposeSpec.ports != _|_ {
 							ports: [
-								for p in containerSpec.ports {
+								for p in exposeSpec.ports {
 									{
-										name:       p.name
-										targetPort: p.containerPort
-										protocol:   p.protocol
-
-										// If exposedPort is specified, use that
-										if p.exposedPort != _|_ {port: p.exposedPort}
-
-										// If exposedPort is not specified, use containerPort
-										if p.exposedPort == _|_ {port: p.containerPort}
+										if p.name != _|_ {
+											name: p.name
+										}
+										if p.exposedPort != _|_ {
+											port: p.exposedPort
+										}
+										if p.exposedPort == _|_ {
+											port: p.containerPort
+										}
+										if p.targetPort != _|_ {
+											targetPort: p.targetPort
+										}
+										if p.targetPort == _|_ {
+											targetPort: p.port
+										}
+										if p.protocol != _|_ {
+											protocol: p.protocol
+										}
+										// NodePort specific
+										if (exposeSpec.type | *"ClusterIP") == "NodePort" && p.nodePort != _|_ {
+											nodePort: p.nodePort
+										}
 									}
 								},
 							]
 						}
+						
+						// LoadBalancer specific
+						if (exposeSpec.type | *"ClusterIP") == "LoadBalancer" {
+							if exposeSpec.loadBalancerIP != _|_ {
+								loadBalancerIP: exposeSpec.loadBalancerIP
+							}
+							if exposeSpec.loadBalancerSourceRanges != _|_ {
+								loadBalancerSourceRanges: exposeSpec.loadBalancerSourceRanges
+							}
+						}
+					}
+				},
+			]
+		}
+	}
+}
 
+// Volume Transformer - Creates PersistentVolumeClaims
+#VolumeTransformer: core.#Transformer & {
+	accepts: "core.oam.dev/v2alpha2.Volume"
+	transform: {
+		input:   trait.#Volume
+		context: core.#ProviderContext
+		output: {
+			let volumeSpec = input.volumes
+			let meta = input.#metadata
+			let ctx = context
+
+			resources: [
+				for volumeName, volume in volumeSpec
+				if volume.type == "volume" {
+					schema.#PersistentVolumeClaim & {
+						metadata: {
+							name:      "\(meta.name)-\(volumeName)"
+							namespace: ctx.namespace
+							labels: {
+								"app.kubernetes.io/name":       meta.name
+								"app.kubernetes.io/managed-by": "cue-oam"
+								"app.kubernetes.io/instance":   ctx.appName
+								"app.kubernetes.io/component":  "volume"
+							} & ctx.appLabels
+						}
+						spec: {
+							if volume.accessModes != _|_ {
+								accessModes: volume.accessModes
+							}
+							if volume.accessModes == _|_ {
+								accessModes: ["ReadWriteOnce"]
+							}
+							resources: requests: storage: volume.size
+							if volume.storageClassName != _|_ {
+								storageClassName: volume.storageClassName
+							}
+						}
+					}
+				},
+			]
+		}
+	}
+}
+
+// Secret Transformer - Creates Secret resources
+#SecretTransformer: core.#Transformer & {
+	accepts: "core.oam.dev/v2alpha2.Secret"
+	transform: {
+		input:   trait.#Secret
+		context: core.#ProviderContext
+		output: {
+			let secretSpec = input.secrets
+			let meta = input.#metadata
+			let ctx = context
+
+			resources: [
+				for secretName, secret in secretSpec {
+					schema.#Secret & {
+						metadata: {
+							name:      "\(meta.name)-\(secretName)"
+							namespace: ctx.namespace
+							labels: {
+								"app.kubernetes.io/name":       meta.name
+								"app.kubernetes.io/managed-by": "cue-oam"
+								"app.kubernetes.io/instance":   ctx.appName
+								"app.kubernetes.io/component":  "secret"
+							} & ctx.appLabels
+						}
+						type: secret.type | *"Opaque"
+						if secret.data != _|_ {
+							data: secret.data
+						}
+						if secret.stringData != _|_ {
+							stringData: secret.stringData
+						}
+					}
+				},
+			]
+		}
+	}
+}
+
+// Config Transformer - Creates ConfigMap resources
+#ConfigTransformer: core.#Transformer & {
+	accepts: "core.oam.dev/v2alpha2.Config"
+	transform: {
+		input:   trait.#Config
+		context: core.#ProviderContext
+		output: {
+			let configSpec = input.configMap
+			let meta = input.#metadata
+			let ctx = context
+
+			resources: [
+				for configName, config in configSpec {
+					schema.#ConfigMap & {
+						metadata: {
+							name:      "\(meta.name)-\(configName)"
+							namespace: ctx.namespace
+							labels: {
+								"app.kubernetes.io/name":       meta.name
+								"app.kubernetes.io/managed-by": "cue-oam"
+								"app.kubernetes.io/instance":   ctx.appName
+								"app.kubernetes.io/component":  "config"
+							} & ctx.appLabels
+						}
+						if config.data != _|_ {
+							data: config.data
+						}
+						if config.binaryData != _|_ {
+							binaryData: config.binaryData
+						}
+					}
+				},
+			]
+		}
+	}
+}
+
+// NetworkIsolationScope Transformer - Creates NetworkPolicy resources
+#NetworkIsolationScopeTransformer: core.#Transformer & {
+	accepts: "core.oam.dev/v2alpha2.NetworkIsolationScope"
+	transform: {
+		input:   trait.#NetworkIsolationScope
+		context: core.#ProviderContext
+		output: {
+			let networkSpec = input.network
+			let meta = input.#metadata
+			let ctx = context
+
+			resources: [
+				schema.#NetworkPolicy & {
+					metadata: {
+						name:      meta.name
+						namespace: ctx.namespace
+						labels: {
+							"app.kubernetes.io/name":       meta.name
+							"app.kubernetes.io/managed-by": "cue-oam"
+							"app.kubernetes.io/instance":   ctx.appName
+							"app.kubernetes.io/component":  "network-policy"
+						} & ctx.appLabels
+					}
+					spec: {
+						podSelector: matchLabels: {
+							"app.kubernetes.io/name":     meta.name
+							"app.kubernetes.io/instance": ctx.appName
+						}
+						
+						// Apply default policies based on isolation level
+						if networkSpec.isolation == "strict" {
+							policyTypes: ["Ingress", "Egress"]
+							ingress: []
+							egress: []
+						}
+						if networkSpec.isolation == "pod" {
+							policyTypes: ["Ingress", "Egress"]
+							ingress: [{
+								from: [{
+									podSelector: matchLabels: {
+										"app.kubernetes.io/name":     meta.name
+										"app.kubernetes.io/instance": ctx.appName
+									}
+								}]
+							}]
+							egress: [{
+								to: [{
+									podSelector: matchLabels: {
+										"app.kubernetes.io/name":     meta.name
+										"app.kubernetes.io/instance": ctx.appName
+									}
+								}]
+							}]
+						}
+						if networkSpec.isolation == "namespace" {
+							policyTypes: ["Ingress", "Egress"]
+							ingress: [{
+								from: [{
+									namespaceSelector: matchLabels: {
+										"kubernetes.io/metadata.name": ctx.namespace
+									}
+								}]
+							}]
+							egress: [{
+								to: [{
+									namespaceSelector: matchLabels: {
+										"kubernetes.io/metadata.name": ctx.namespace
+									}
+								}]
+							}]
+						}
+						
+						// Note: Custom policies would need to be merged with base policies
+						// This is a simplified implementation
+						if networkSpec.policies != _|_ && networkSpec.isolation == "none" {
+							policyTypes: ["Ingress", "Egress"]
+							ingress: []
+							egress: []
+						}
 					}
 				},
 			]

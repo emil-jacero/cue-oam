@@ -15,15 +15,26 @@ core.#Application
 
 components: {
 	web: {
-		standard.#Workload
-		workload: {
+		standard.#ContainerSet
+		standard.#RestartPolicy
+		standard.#Expose
+		containerSet: {
 			containers: main: {
 				image: {
-					repository?: "docker.io"
-					tag:         "latest"
+					repository: "nginx"
+					tag:        "latest"
 				}
-				volumeMounts: [volumes.dataVolume & {mountPath: "/data"}]
+				ports: [expose.ports[0]]
 			}
+		}
+		restartPolicy: "Always"
+		expose: {
+			ports: [{
+				name: "http"
+				targetPort: 80
+				exposedPort: 8080
+				protocol: "TCP"
+			}]
 		}
 		standard.#Volume
 		volumes: dataVolume: {

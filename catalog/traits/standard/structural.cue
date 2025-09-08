@@ -2,56 +2,28 @@ package standard
 
 import (
 	core "jacero.io/oam/core/v2alpha2"
+	schema "jacero.io/oam/catalog/traits/standard/schema"
 )
 
-// Expose - Platform-agnostic port exposure trait
-// Maps to Kubernetes Service or Docker Compose port publishing
-#ExposeTraitMeta: core.#TraitObject & {
-	#kind:       "Expose"
-	description: "Platform-agnostic port exposure for services"
-	type:        "atomic"
-	category:    "structural"
-	scope:       ["component"]
+// Expose - Marks a component as exposable for external access
+#ExposeTraitMeta: core.#TraitMeta & {
+	#kind:    "Expose"
+	description: "Marks a component as exposable for external access"
+	type:     "atomic"
+	category: "structural"
+	scope:    ["component"]
 	requiredCapabilities: [
-		"network.expose",
+		"core.oam.dev/v2alpha2.Exposeable",
 	]
 	provides: {
-		expose: {
+		exposable: {
 			// Port mappings
-			ports: [...{
-				port!:       uint & >=1 & <=65535  // External/service port
-				targetPort?: uint & >=1 & <=65535  // Container port (defaults to port)
-				protocol?:   *"TCP" | "UDP"
-				name?:       string
-			}]
-			
-			// Exposure type
-			// ClusterIP: Internal cluster access only (Kubernetes)
-			// NodePort: Expose on node's port (Kubernetes)  
-			// LoadBalancer: Cloud load balancer (Kubernetes)
-			// HostPort: Direct host port mapping (Docker/Kubernetes)
-			type?: *"ClusterIP" | "NodePort" | "LoadBalancer" | "HostPort"
-			
-			// For NodePort type (Kubernetes only)
-			if type == "NodePort" {
-				nodePort?: uint & >=30000 & <=32767
-			}
-			
-			// For LoadBalancer type
-			if type == "LoadBalancer" {
-				loadBalancerIP?: string
-				loadBalancerSourceRanges?: [...string]
-			}
-			
-			// Selector labels for service discovery
-			selector?: [string]: string
+			ports: [...schema.#Port]
 		}
 	}
 }
 #Expose: core.#Trait & {
 	#metadata: #traits: Expose: #ExposeTraitMeta
-
-	expose: #ExposeTraitMeta.provides.expose
 }
 
 // Network Isolation Scope - manages network boundaries and policies

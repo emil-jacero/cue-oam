@@ -9,9 +9,9 @@ import (
 // To illustrate how an application can be defined.
 myApp: core.#Application & {
 	#metadata: {
-		name: "my-app"
+		name:      "my-app"
 		namespace: "default"
-		version: "0.1.0"
+		version:   "0.1.0"
 		labels: {
 			"app.kubernetes.io/part-of": "my-app"
 		}
@@ -19,35 +19,31 @@ myApp: core.#Application & {
 	components: {
 		web: {
 			standard.#ContainerSet
+			standard.#RestartPolicy
+			standard.#Expose
 			containerSet: {
 				containers: main: {
 					image: {
 						repository: "nginx"
 						tag:        "latest"
 					}
-					ports: [80]
+					ports: [expose.ports[0]]
 				}
 			}
-			standard.#Service
-			service: {
-				type:       "ClusterIP"
-				port:       80
-				targetPort: 80
+			restartPolicy: "Always"
+			expose: {
+				ports: [{
+					name: "http"
+					targetPort: 80
+					exposedPort: 8080
+					protocol: "TCP"
+				}]
 			}
-			workload: {
-				containers: main: {
-					image: {
-						repository?: "docker.io"
-						tag:         "latest"
-					}
-					volumeMounts: [volumes.dataVolume & {mountPath: "/data"}]
-				}
-			}
-			standard.#Service
 			standard.#Volume
 			volumes: dataVolume: {
 				name: "data-volume"
-				type: "emptyDir"
+				type: "volume"
+				size: "1Gi"
 			}
 		}
 	}

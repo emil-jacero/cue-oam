@@ -17,7 +17,7 @@ import (
 	// The port that the container will bind to.
 	// This must be a valid port number, 0 < x < 65536.
 	// If exposedPort is not specified, this value will be used for exposing the port outside the container.
-	containerPort!: uint & >=1 & <=65535
+	targetPort!: uint & >=1 & <=65535
 	// This must be an IANA_SVC_NAME and unique within the pod. Each named port in a pod must have a unique name.
 	// Name for the port that can be referred to by services.
 	name!: #IANA_SVC_NAME
@@ -32,4 +32,6 @@ import (
 	// exposedPort in combination with exposed must inform the platform of what port to map to the container when exposing.
 	// This must be a valid port number, 0 < x < 65536.
 	exposedPort?: uint & >=1 & <=65535
+	// Node port for NodePort services. This must be a valid port number, 30000-32767.
+	nodePort?: uint & >=30000 & <=32767
 }

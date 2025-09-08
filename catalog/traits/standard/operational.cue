@@ -49,6 +49,8 @@ import (
 	requiredCapabilities: [
 		"core.oam.dev/v2alpha1.Replica",
 	]
+	// This trait modifies resources created by ContainerSet
+	requires: [#ContainerSetTraitMeta]
 	provides: {
 		replica: {
 			count: uint | *1
@@ -71,16 +73,16 @@ import (
 	requiredCapabilities: [
 		"core.oam.dev/v2alpha1.RestartPolicy",
 	]
+	// This trait modifies Pod spec created by ContainerSet
+	requires: [#ContainerSetTraitMeta]
 	provides: {
-		restartPolicy: {
-			policy: *"Always" | "OnFailure" | "Never"
-		}
+		restartPolicy: string | *"Always" | "OnFailure" | "Never"
 	}
 }
 #RestartPolicy: core.#Trait & {
 	#metadata: #traits: RestartPolicy: #RestartPolicyTraitMeta
 
-	restartPolicy: #RestartPolicy.provides.restartPolicy
+	restartPolicy: #RestartPolicyTraitMeta.provides.restartPolicy
 }
 
 // UpdateStrategy - Controls how updates are applied
@@ -93,6 +95,8 @@ import (
 	requiredCapabilities: [
 		"core.oam.dev/v2alpha1.UpdateStrategy",
 	]
+	// This trait modifies Deployment/StatefulSet created by ContainerSet
+	requires: [#ContainerSetTraitMeta]
 	provides: {
 		updateStrategy: {
 			type: *"RollingUpdate" | "Recreate"
@@ -110,7 +114,7 @@ import (
 #UpdateStrategy: core.#Trait & {
 	#metadata: #traits: UpdateStrategy: #UpdateStrategyTraitMeta
 
-	updateStrategy: #UpdateStrategy.provides.updateStrategy
+	updateStrategy: #UpdateStrategyTraitMeta.provides.updateStrategy
 }
 
 //////////////////////////////////////////////
@@ -137,14 +141,14 @@ import (
 			// Legacy interface for backward compatibility
 			container: #ContainerSet.containerSet.containers
 			initContainers?: #ContainerSet.containerSet.init
-			restart: #RestartPolicy.restartPolicy.policy
+			restart: #RestartPolicy.restartPolicy
 			replicas?: #Replica.replica.count
 			updateStrategy?: #UpdateStrategy.updateStrategy.type
 			if #UpdateStrategy.updateStrategy.type == "RollingUpdate" {
 				rollingUpdate?: #UpdateStrategy.updateStrategy.rollingUpdate
 			}
 			expose: #Expose.expose
-			
+
 			// Deployment type for backward compatibility
 			deploymentType?: *"Deployment" | "StatefulSet" | "DaemonSet"
 			if deploymentType != _|_ {
@@ -216,7 +220,7 @@ import (
 	replica: #Replica.replica & {count: 1}
 
 	// Configure restart policy
-	restartPolicy: #RestartPolicy.restartPolicy & {policy: "Always"}
+	restartPolicy: #RestartPolicy.restartPolicy & {"Always"}
 
 	// Configure containers based on database type
 	containers: #ContainerSet.containers & {

@@ -9,6 +9,10 @@ package v2alpha2
 		labels?:      #LabelsType
 		annotations?: #AnnotationsType
 	}
-	components: [string]: #Component
-	scopes: [string]:     #Scope
+	components: [Id=string]: #Component & {
+		#metadata: #id: Id
+	}
+	scopes: [Id=string]:     #Scope & {
+		#metadata: #id: Id
+	}
 }
