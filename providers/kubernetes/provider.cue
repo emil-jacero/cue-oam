@@ -22,7 +22,9 @@ import (
 			"core.oam.dev/v2alpha2.Secret",
 			"core.oam.dev/v2alpha2.Config",
 			"core.oam.dev/v2alpha2.NetworkIsolationScope",
-			
+			"core.oam.dev/v2alpha1.Labels",
+			"core.oam.dev/v2alpha1.Annotations",
+
 			// Supported Kubernetes resources
 			"k8s.io/api/core/v1.Pod",
 			"k8s.io/api/core/v1.Service",
@@ -49,6 +51,8 @@ import (
 		"core.oam.dev/v2alpha2.Secret":                 #SecretTransformer
 		"core.oam.dev/v2alpha2.Config":                 #ConfigTransformer
 		"core.oam.dev/v2alpha2.NetworkIsolationScope":  #NetworkIsolationScopeTransformer
+		// "core.oam.dev/v2alpha1.Labels":                 #LabelsTransformer
+		// "core.oam.dev/v2alpha1.Annotations":            #AnnotationsTransformer
 	}
 
 	render: {

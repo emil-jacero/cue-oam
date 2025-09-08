@@ -117,6 +117,48 @@ import (
 	updateStrategy: #UpdateStrategyTraitMeta.provides.updateStrategy
 }
 
+// Labels - Adds custom labels to the workload
+#LabelsTraitMeta: core.#TraitMeta & {
+	#kind:    "Labels"
+	description: "Adds custom labels to the workload"
+	type:     "atomic"
+	category: "operational"
+	scope: ["component"]
+	requiredCapabilities: [
+		"core.oam.dev/v2alpha1.Labels",
+	]
+	// This trait modifies resources created by ContainerSet
+	requires: [#ContainerSetTraitMeta]
+	provides: {
+		labels: [string]: string
+	}
+}
+#Labels: core.#Trait & {
+	#metadata: #traits: Labels: #LabelsTraitMeta
+	labels: #LabelsTraitMeta.provides.labels
+}
+
+// Annotations - Adds custom annotations to the workload
+#AnnotationsTraitMeta: core.#TraitMeta & {
+	#kind:    "Annotations"
+	description: "Adds custom annotations to the workload"
+	type:     "atomic"
+	category: "operational"
+	scope: ["component"]
+	requiredCapabilities: [
+		"core.oam.dev/v2alpha1.Annotations",
+	]
+	// This trait modifies resources created by ContainerSet
+	requires: [#ContainerSetTraitMeta]
+	provides: {
+		annotations: [string]: string
+	}
+}
+#Annotations: core.#Trait & {
+	#metadata: #traits: Annotations: #AnnotationsTraitMeta
+	annotations: #AnnotationsTraitMeta.provides.annotations
+}
+
 //////////////////////////////////////////////
 //// Legacy Composite Traits (for compatibility)
 //////////////////////////////////////////////

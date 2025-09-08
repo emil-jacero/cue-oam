@@ -13,7 +13,7 @@ myApp: core.#Application & {
 		namespace: "default"
 		version:   "0.1.0"
 		labels: {
-			"app.kubernetes.io/part-of": "my-app"
+			"extra-label": "example"
 		}
 	}
 	components: {
