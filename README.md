@@ -48,7 +48,7 @@ CUE-OAM implements a hierarchical, trait-based system where **"everything is a t
 
 ### Type Hierarchy
 
-```
+```shell
 Bundle [planned]
   └── Application(s)
         ├── Component(s)
@@ -59,7 +59,7 @@ Bundle [planned]
 
 ### Directory Structure
 
-```
+```shell
 cue-oam/
 ├── core/v2alpha2/        # Core OAM v2alpha2 definitions
 │   ├── trait.cue         # Trait system with composition
@@ -105,48 +105,48 @@ cue mod tidy
 
 1. **Define an Application**
 
-```cue
-package myapp
+    ```cue
+    package myapp
 
-import (
-    core "jacero.io/oam/core/v2alpha2"
-    traits "jacero.io/oam/catalog/traits/standard"
-)
+    import (
+        core "jacero.io/oam/core/v2alpha2"
+        traits "jacero.io/oam/catalog/traits/standard"
+    )
 
-app: core.#Application & {
-    #metadata: {
-        name: "my-app"
-        namespace: "default"
-    }
-    
-    components: {
-        web: {
-            traits.#Workload
-            workload: {
-                containers: main: {
-                    image: {
-                        repository: "nginx"
-                        tag: "1.24"
+    app: core.#Application & {
+        #metadata: {
+            name: "my-app"
+            namespace: "default"
+        }
+        
+        components: {
+            web: {
+                traits.#Workload
+                workload: {
+                    containers: main: {
+                        image: {
+                            repository: "nginx"
+                            tag: "1.24"
+                        }
+                        ports: [{
+                            containerPort: 80
+                        }]
                     }
-                    ports: [{
-                        containerPort: 80
-                    }]
                 }
             }
         }
     }
-}
-```
+    ```
 
 2. **Export to Kubernetes**
 
-```bash
-# Export application definition
-cue export myapp.cue --out yaml
+    ```bash
+    # Export application definition
+    cue export myapp.cue --out yaml
 
-# Render for Kubernetes
-cue eval myapp.cue -e "k8s.render(app)" --out yaml
-```
+    # Render for Kubernetes
+    cue eval myapp.cue -e "k8s.render(app)" --out yaml
+    ```
 
 ## Core Concepts
 
@@ -376,6 +376,7 @@ done
 ## Roadmap
 
 ### ✅ Completed
+
 - Core v2alpha2 API
 - Trait composition system
 - Standard trait catalog
@@ -383,11 +384,13 @@ done
 - Basic examples
 
 ### 🚧 In Progress
+
 - Scope system implementation
 - Database traits enhancement
 - Provider capability discovery
 
 ### 📅 Planned
+
 - [ ] Policy framework
 - [ ] Bundle system
 - [ ] CLI tooling (`oam` command)

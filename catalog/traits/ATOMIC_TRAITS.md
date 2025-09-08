@@ -1,4 +1,4 @@
-# Atomic Traits Catalog
+# Example Atomic Traits Catalog
 
 This document provides a comprehensive list of all atomic traits in the CUE-OAM system. Atomic traits are the fundamental building blocks that cannot be decomposed further and provide specific, focused functionality.
 

@@ -1,4 +1,4 @@
-# Composite Traits Catalog
+# Example Composite Traits Catalog
 
 This document provides a comprehensive list of all composite traits in the CUE-OAM system. Composite traits are built by combining atomic traits and/or other composite traits to provide higher-level, multi-faceted functionality.
 

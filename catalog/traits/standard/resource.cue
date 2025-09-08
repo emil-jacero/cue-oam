@@ -7,19 +7,7 @@ import (
 
 // Volume trait definition
 // Describes a set of volumes
-#Volume: core.#Trait & {
-	#metadata: #traits: Volume: #VolumeTrait
-
-	// Volumes to be created
-	volumes: [string]: schema.#VolumeSpec
-	// Add a name field to each volume for easier referencing in volume mounts. The name defaults to the map key.
-	for k, v in volumes {
-		volumes: (k): v & {
-			name: string | *k
-		}
-	}
-}
-#VolumeTrait: core.#TraitObject & {
+#VolumeTraitMeta: core.#TraitMeta & {
 	#kind:    "Volume"
 	type:     "atomic"
 	category: "resource"
@@ -27,18 +15,26 @@ import (
 	requiredCapabilities: [
 		"core.oam.dev/v2alpha1.Volume",
 	]
-	provides: {volumes: #Volume.volumes}
+	provides: {
+		volumes: [string]: schema.#VolumeSpec
+	}
+}
+#Volume: core.#Trait & {
+	#metadata: #traits: Volume: #VolumeTraitMeta
+
+	// Volumes to be created
+	volumes: #VolumeTraitMeta.provides.volumes
+	// Add a name field to each volume for easier referencing in volume mounts. The name defaults to the map key.
+	for k, v in volumes {
+		volumes: (k): v & {
+			name: string | *k
+		}
+	}
 }
 
 // Secret trait definition
 // Describes a set of secrets
-#Secret: core.#Trait & {
-	#metadata: #traits: Secret: #SecretTrait
-
-	// Secrets to be created
-	secrets: [string]: schema.#SecretSpec
-}
-#SecretTrait: core.#TraitObject & {
+#SecretTraitMeta: core.#TraitMeta & {
 	#kind:    "Secret"
 	type:     "atomic"
 	category: "resource"
@@ -46,18 +42,20 @@ import (
 	requiredCapabilities: [
 		"core.oam.dev/v2alpha1.Secret",
 	]
-	provides: {secrets: #Secret.secrets}
+	provides: {
+		secrets: [string]: schema.#SecretSpec
+	}
+}
+#Secret: core.#Trait & {
+	#metadata: #traits: Secret: #SecretTraitMeta
+
+	// Secrets to be created
+	secrets: #SecretTraitMeta.provides.secrets
 }
 
 // Config trait definition
 // Defines one or more configurations
-#Config: core.#Trait & {
-	#metadata: #traits: Config: #ConfigTrait
-
-	// Configurations to be created
-	configMap: [string]: schema.#ConfigSpec
-}
-#ConfigTrait: core.#TraitObject & {
+#ConfigTraitMeta: core.#TraitMeta & {
 	#kind:    "Config"
 	type:     "atomic"
 	category: "resource"
@@ -65,5 +63,13 @@ import (
 	requiredCapabilities: [
 		"core.oam.dev/v2alpha1.Config",
 	]
-	provides: {configMap: #Config.configMap}
+	provides: {
+		configMap: [string]: schema.#ConfigSpec
+	}
+}
+#Config: core.#Trait & {
+	#metadata: #traits: Config: #ConfigTraitMeta
+
+	// Configurations to be created
+	configMap: #ConfigTraitMeta.provides.configMap
 }

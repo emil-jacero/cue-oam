@@ -10,7 +10,7 @@ import (
 
 #Trait: {
 	#metadata: #ComponentMeta & {
-		#traits: [traitName=string]: #TraitObject & {
+		#traits: [traitName=string]: #TraitMeta & {
 			#kind: traitName
 		}
 	}
@@ -23,9 +23,10 @@ import (
 	...
 }
 
-#TraitObject: {
+#TraitMeta: {
 	#apiVersion: "core.oam.dev/v2alpha2"
 	#kind:       string
+	#combinedVersion: "\(#apiVersion).\(#kind)"
 
 	// Human-readable description of the trait
 	description?: string
@@ -45,7 +46,7 @@ import (
 	// Composition - list of traits this trait is built from
 	// Presence of this field makes it a composite trait
 	// Absence makes it an atomic trait
-	composes?: [...#TraitObject]
+	composes?: [...#TraitMeta]
 
 	// External dependencies (not composition)
 	// For atomic traits: manually specified

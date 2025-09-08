@@ -2,9 +2,11 @@ package security
 
 import (
 	core "jacero.io/oam/core/v2alpha2"
+	schema "jacero.io/oam/catalog/traits/kubernetes/schema"
 )
 
-#ServiceAccount: core.#TraitObject & {
+// ServiceAccountTrait defines the properties and behaviors of a Kubernetes ServiceAccount
+#ServiceAccountTrait: core.#TraitObject & {
 	#apiVersion: "core.oam.dev/v2alpha2"
 	#kind:       "ServiceAccount"
 	
@@ -19,33 +21,34 @@ import (
 	]
 	
 	provides: {
-		serviceaccount: {
-			// ServiceAccount metadata
-			metadata: {
-				name:      string
-				namespace: string | *"default"
-				labels: [string]:      string
-				annotations: [string]: string
-			}
-			
-			// Secrets is a list of the secrets in the same namespace that pods using this ServiceAccount are allowed to use
-			secrets?: [...{
-				apiVersion?: string
-				fieldPath?:  string
-				kind?:       string
-				name?:       string
-				namespace?:  string
-				resourceVersion?: string
-				uid?:        string
-			}]
-			
-			// ImagePullSecrets is a list of references to secrets in the same namespace to use for pulling images
-			imagePullSecrets?: [...{
-				name?: string
-			}]
-			
-			// AutomountServiceAccountToken indicates whether pods running as this service account should have an API token automatically mounted
-			automountServiceAccountToken?: bool
-		}
+		serviceaccount: schema.ServiceAccount
 	}
+}
+#ServiceAccount: core.#Trait & {
+	#metadata: #traits: ServiceAccount: #ServiceAccountTrait
+	serviceaccount: schema.ServiceAccount
+}
+
+// ServiceAccounts defines the properties and behaviors of multiple Kubernetes ServiceAccounts
+#ServiceAccountsTrait: core.#TraitObject & {
+	#apiVersion: "core.oam.dev/v2alpha2"
+	#kind:       "ServiceAccounts"
+
+	description: "Kubernetes ServiceAccounts provides an identity for processes that run in a Pod"
+
+	type:     "atomic"
+	category: "resource"
+	scope: ["component"]
+
+	requiredCapabilities: [
+		"k8s.io/api/core/v1.ServiceAccount",
+	]
+
+	provides: {
+		serviceaccounts: [string]: schema.ServiceAccount
+	}
+}
+#ServiceAccounts: core.#Trait & {
+	#metadata: #traits: ServiceAccounts: #ServiceAccountsTrait
+	serviceaccounts: [string]: schema.ServiceAccount
 }

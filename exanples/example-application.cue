@@ -3,16 +3,37 @@ package examples
 import (
 	core "jacero.io/oam/core/v2alpha2"
 	standard "jacero.io/oam/catalog/traits/standard"
+	k8sprovider "jacero.io/oam/providers/kubernetes"
 )
 
 // To illustrate how an application can be defined.
 myApp: core.#Application & {
 	#metadata: {
 		name: "my-app"
+		namespace: "default"
+		version: "0.1.0"
+		labels: {
+			"app.kubernetes.io/part-of": "my-app"
+		}
 	}
 	components: {
 		web: {
-			standard.#Workload
+			standard.#ContainerSet
+			containerSet: {
+				containers: main: {
+					image: {
+						repository: "nginx"
+						tag:        "latest"
+					}
+					ports: [80]
+				}
+			}
+			standard.#Service
+			service: {
+				type:       "ClusterIP"
+				port:       80
+				targetPort: 80
+			}
 			workload: {
 				containers: main: {
 					image: {
@@ -22,6 +43,7 @@ myApp: core.#Application & {
 					volumeMounts: [volumes.dataVolume & {mountPath: "/data"}]
 				}
 			}
+			standard.#Service
 			standard.#Volume
 			volumes: dataVolume: {
 				name: "data-volume"
@@ -29,4 +51,9 @@ myApp: core.#Application & {
 			}
 		}
 	}
+}
+
+// Generate Kubernetes manifests using our provider
+k8sManifests: k8sprovider.#ProviderKubernetes.render & {
+	app: myApp
 }

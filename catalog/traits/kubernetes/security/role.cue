@@ -2,16 +2,18 @@ package security
 
 import (
 	core "jacero.io/oam/core/v2alpha2"
+	schema "jacero.io/oam/catalog/traits/kubernetes/schema"
 )
 
-#Role: core.#TraitObject & {
+// RoleTrait defines the properties and behaviors of a Kubernetes Role
+#RoleTrait: core.#TraitObject & {
 	#apiVersion: "core.oam.dev/v2alpha2"
 	#kind:       "Role"
 	
 	description: "Kubernetes Role contains rules that represent a set of permissions within a namespace"
 	
 	type:     "atomic"
-	category: "resource"
+	category: "behavioral"
 	scope: ["component"]
 	
 	requiredCapabilities: [
@@ -19,32 +21,34 @@ import (
 	]
 	
 	provides: {
-		role: {
-			// Role metadata
-			metadata: {
-				name:      string
-				namespace: string | *"default"
-				labels: [string]:      string
-				annotations: [string]: string
-			}
-			
-			// Rules holds all the PolicyRules for this Role
-			rules: [...{
-				// Verbs is a list of Verbs that apply to ALL the ResourceKinds contained in this rule
-				verbs: [...("get" | "list" | "create" | "update" | "patch" | "watch" | "delete" | "deletecollection" | "*")]
-				
-				// APIGroups is the name of the APIGroup that contains the resources
-				apiGroups?: [...string]
-				
-				// Resources is a list of resources this rule applies to
-				resources?: [...string]
-				
-				// ResourceNames is an optional white list of names that the rule applies to
-				resourceNames?: [...string]
-				
-				// NonResourceURLs is a set of partial urls that a user should have access to
-				nonResourceURLs?: [...string]
-			}]
-		}
+		role: schema.Role
 	}
+}
+#Role: core.#Trait & {
+	#metadata: #traits: Role: #RoleTrait
+	role: schema.Role
+}
+
+// Roles defines the properties and behaviors of multiple Kubernetes Roles
+#RolesTrait: core.#TraitObject & {
+	#apiVersion: "core.oam.dev/v2alpha2"
+	#kind:       "Roles"
+
+	description: "Kubernetes Roles contains rules that represent a set of permissions within a namespace"
+
+	type:     "atomic"
+	category: "behavioral"
+	scope: ["component"]
+
+	requiredCapabilities: [
+		"k8s.io/api/rbac/v1.Role",
+	]
+
+	provides: {
+		roles: [string]: schema.Role
+	}
+}
+#Roles: core.#Trait & {
+	#metadata: #traits: Roles: #RolesTrait
+	roles: [string]: schema.Role
 }

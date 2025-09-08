@@ -2,16 +2,18 @@ package security
 
 import (
 	core "jacero.io/oam/core/v2alpha2"
+	schema "jacero.io/oam/catalog/traits/kubernetes/schema"
 )
 
-#ClusterRole: core.#TraitObject & {
+// ClusterRoleTrait defines the properties and behaviors of a Kubernetes ClusterRole
+#ClusterRoleTrait: core.#TraitObject & {
 	#apiVersion: "core.oam.dev/v2alpha2"
 	#kind:       "ClusterRole"
 	
 	description: "Kubernetes ClusterRole contains rules that represent a set of permissions at the cluster level"
 	
 	type:     "atomic"
-	category: "resource"
+	category: "behavioral"
 	scope: ["component"]
 	
 	requiredCapabilities: [
@@ -19,43 +21,34 @@ import (
 	]
 	
 	provides: {
-		clusterrole: {
-			// ClusterRole metadata (no namespace)
-			metadata: {
-				name: string
-				labels: [string]:      string
-				annotations: [string]: string
-			}
-			
-			// Rules holds all the PolicyRules for this ClusterRole
-			rules: [...{
-				// Verbs is a list of Verbs that apply to ALL the ResourceKinds contained in this rule
-				verbs: [...("get" | "list" | "create" | "update" | "patch" | "watch" | "delete" | "deletecollection" | "*")]
-				
-				// APIGroups is the name of the APIGroup that contains the resources
-				apiGroups?: [...string]
-				
-				// Resources is a list of resources this rule applies to
-				resources?: [...string]
-				
-				// ResourceNames is an optional white list of names that the rule applies to
-				resourceNames?: [...string]
-				
-				// NonResourceURLs is a set of partial urls that a user should have access to
-				nonResourceURLs?: [...string]
-			}]
-			
-			// AggregationRule is an optional field that describes how to build the Rules for this ClusterRole
-			aggregationRule?: {
-				clusterRoleSelectors?: [...{
-					matchLabels?: [string]: string
-					matchExpressions?: [...{
-						key:      string
-						operator: "In" | "NotIn" | "Exists" | "DoesNotExist"
-						values?: [...string]
-					}]
-				}]
-			}
-		}
+		clusterrole: schema.ClusterRole
 	}
+}
+#ClusterRole: core.#Trait & {
+	#metadata: #traits: ClusterRole: #ClusterRoleTrait
+	clusterrole: schema.ClusterRole
+}
+
+// ClusterRolesTrait defines the properties and behaviors of multiple Kubernetes ClusterRoles
+#ClusterRolesTrait: core.#TraitObject & {
+	#apiVersion: "core.oam.dev/v2alpha2"
+	#kind:       "ClusterRoles"
+
+	description: "Kubernetes ClusterRoles contains rules that represent a set of permissions at the cluster level"
+
+	type:     "atomic"
+	category: "behavioral"
+	scope: ["component"]
+
+	requiredCapabilities: [
+		"k8s.io/api/rbac/v1.ClusterRole",
+	]
+
+	provides: {
+		clusterroles: [string]: schema.ClusterRole
+	}
+}
+#ClusterRoles: core.#Trait & {
+	#metadata: #traits: ClusterRoles: #ClusterRolesTrait
+	clusterroles: [string]: schema.ClusterRole
 }

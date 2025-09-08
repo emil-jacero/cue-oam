@@ -2,16 +2,18 @@ package security
 
 import (
 	core "jacero.io/oam/core/v2alpha2"
+	schema "jacero.io/oam/catalog/traits/kubernetes/schema"
 )
 
-#ClusterRoleBinding: core.#TraitObject & {
+// ClusterRoleBindingTrait defines the properties and behaviors of a Kubernetes ClusterRoleBinding
+#ClusterRoleBindingTrait: core.#TraitObject & {
 	#apiVersion: "core.oam.dev/v2alpha2"
 	#kind:       "ClusterRoleBinding"
 	
 	description: "Kubernetes ClusterRoleBinding grants permissions defined in a ClusterRole to a user or set of users cluster-wide"
 	
 	type:     "atomic"
-	category: "resource"
+	category: "behavioral"
 	scope: ["component"]
 	
 	requiredCapabilities: [
@@ -19,40 +21,34 @@ import (
 	]
 	
 	provides: {
-		clusterrolebinding: {
-			// ClusterRoleBinding metadata (no namespace)
-			metadata: {
-				name: string
-				labels: [string]:      string
-				annotations: [string]: string
-			}
-			
-			// Subjects holds references to the objects the role applies to
-			subjects?: [...{
-				// Kind of object being referenced
-				kind: "User" | "Group" | "ServiceAccount"
-				
-				// Name of the object being referenced
-				name: string
-				
-				// APIGroup holds the API group of the referenced subject
-				apiGroup?: string
-				
-				// Namespace of the referenced object
-				namespace?: string
-			}]
-			
-			// RoleRef can only reference a ClusterRole in the global namespace
-			roleRef: {
-				// APIGroup is the group for the resource being referenced
-				apiGroup: "rbac.authorization.k8s.io"
-				
-				// Kind is the type of resource being referenced
-				kind: "ClusterRole"
-				
-				// Name is the name of resource being referenced
-				name: string
-			}
-		}
+		clusterrolebinding: schema.ClusterRoleBinding
 	}
+}
+#ClusterRoleBinding: core.#Trait & {
+	#metadata: #traits: ClusterRoleBinding: #ClusterRoleBindingTrait
+	clusterrolebinding: schema.ClusterRoleBinding
+}
+
+// ClusterRoleBindingsTrait defines the properties and behaviors of multiple Kubernetes ClusterRoleBindings
+#ClusterRoleBindingsTrait: core.#TraitObject & {
+	#apiVersion: "core.oam.dev/v2alpha2"
+	#kind:       "ClusterRoleBindings"
+
+	description: "Kubernetes ClusterRoleBindings grants permissions defined in a ClusterRole to a user or set of users cluster-wide"
+
+	type:     "atomic"
+	category: "behavioral"
+	scope: ["component"]
+
+	requiredCapabilities: [
+		"k8s.io/api/rbac/v1.ClusterRoleBinding",
+	]
+
+	provides: {
+		clusterrolebindings: [string]: schema.ClusterRoleBinding
+	}
+}
+#ClusterRoleBindings: core.#Trait & {
+	#metadata: #traits: ClusterRoleBindings: #ClusterRoleBindingsTrait
+	clusterrolebindings: [string]: schema.ClusterRoleBinding
 }

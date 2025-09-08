@@ -3,6 +3,7 @@ package kubernetes
 import (
 	core "jacero.io/oam/core/v2alpha2"
 	trait "jacero.io/oam/catalog/traits/standard"
+	schema "jacero.io/oam/catalog/traits/kubernetes/schema"
 )
 
 #ProviderKubernetes: core.#Provider & {
@@ -39,10 +40,10 @@ import (
 	}
 
 	transformers: {
-		"Workload": #WorkloadTransformer
-		// "Volume":   #VolumeTransformer
-		// "Secret":   #SecretTransformer
-		// "Config":   #ConfigTransformer
+		"core.oam.dev/v2alpha2.Workload": #WorkloadTransformer
+		// "core.oam.dev/v2alpha2.Volume":   #VolumeTransformer
+		// "core.oam.dev/v2alpha2.Secret":   #SecretTransformer
+		// "core.oam.dev/v2alpha2.Config":   #ConfigTransformer
 	}
 
 	render: {
@@ -52,8 +53,8 @@ import (
 				// Flatten all transformer outputs into a single array
 				for componentName, component in app.components
 				for traitName, trait in component.#metadata.#traits
-				if transformers[traitName] != _|_
-				for resource in (transformers[traitName].transform & {
+				if transformers[trait.#combinedVersion] != _|_
+				for resource in (transformers[trait.#combinedVersion].transform & {
 					input: component
 					context: core.#ProviderContext & {
 						namespace:     app.#metadata.namespace
@@ -72,139 +73,8 @@ import (
 	}
 }
 
-// Kubernetes resource schemas
-#K8sDeployment: {
-	apiVersion: "apps/v1"
-	kind:       "Deployment"
-	metadata: {
-		name:      string
-		namespace: string
-		labels: [string]:      string
-		annotations: [string]: string
-	}
-	spec: {
-		replicas: uint32 | *1
-		selector: matchLabels: [string]: string
-		template: {
-			metadata: {
-				labels: [string]:      string
-				annotations: [string]: string
-			}
-			spec: {
-				containers: [...{
-					name:  string
-					image: string
-					ports?: [...{
-						name?:          string
-						containerPort!: uint & >=1 & <=65535
-						protocol?:      "TCP" | "UDP" | "SCTP" | *"TCP"
-					}]
-					env?: [...{
-						name:  string
-						value: string
-					}]
-					resources?: {
-						requests?: [string]: string
-						limits?: [string]:   string
-					}
-					livenessProbe?:  #K8sProbe
-					readinessProbe?: #K8sProbe
-					startupProbe?:   #K8sProbe
-				}]
-				restartPolicy?: "Always" | "OnFailure" | "Never" | *"Always"
-			}
-		}
-	}
-}
-
-#K8sStatefulSet: {
-	apiVersion: "apps/v1"
-	kind:       "StatefulSet"
-	metadata: {
-		name:      string
-		namespace: string
-		labels: [string]:      string
-		annotations: [string]: string
-	}
-	spec: {
-		replicas:     uint32 | *1
-		serviceName!: string
-		selector: matchLabels: [string]: string
-		template: {
-			metadata: {
-				labels: [string]:      string
-				annotations: [string]: string
-			}
-			spec: {
-				containers: [...{
-					name:  string
-					image: string
-					ports?: [...{
-						name?:          string
-						containerPort!: uint & >=1 & <=65535
-						protocol?:      "TCP" | "UDP" | "SCTP" | *"TCP"
-					}]
-					env?: [...{
-						name:  string
-						value: string
-					}]
-					resources?: {
-						requests?: [string]: string
-						limits?: [string]:   string
-					}
-					livenessProbe?:  #K8sProbe
-					readinessProbe?: #K8sProbe
-					startupProbe?:   #K8sProbe
-				}]
-				restartPolicy?: "Always" | "OnFailure" | "Never" | *"Always"
-			}
-		}
-	}
-}
-
-#K8sService: {
-	apiVersion: "v1"
-	kind:       "Service"
-	metadata: {
-		name:      string
-		namespace: string
-		labels: [string]:      string
-		annotations: [string]: string
-	}
-	spec: {
-		type: "ClusterIP" | "NodePort" | "LoadBalancer" | "ExternalName" | *"ClusterIP"
-		selector: [string]: string
-		// ports: [...]
-		ports: [...{
-			name?:       string
-			port!:       uint & >=1 & <=65535
-			targetPort?: uint | string
-			protocol?:   "TCP" | "UDP" | "SCTP" | *"TCP"
-		}]
-	}
-}
-
-#K8sProbe: {
-	httpGet?: {
-		path?:   string
-		port!:   uint & >=1 & <=65535
-		scheme?: "HTTP" | "HTTPS" | *"HTTP"
-	}
-	tcpSocket?: {
-		port!: uint & >=1 & <=65535
-	}
-	exec?: {
-		command?: [...string]
-	}
-	initialDelaySeconds?: uint
-	periodSeconds?:       uint
-	timeoutSeconds?:      uint
-	successThreshold?:    uint
-	failureThreshold?:    uint
-}
-
 #WorkloadTransformer: core.#Transformer & {
-	accepts: "Workload"
+	accepts: "core.oam.dev/v2alpha2.Workload"
 	transform: {
 		input:   trait.#Workload
 		context: core.#ProviderContext
@@ -215,7 +85,7 @@ import (
 
 			resources: [
 				// Deployment resource
-				#K8sDeployment & {
+				schema.#Deployment & {
 					metadata: {
 						name:      meta.name
 						namespace: ctx.namespace
@@ -297,7 +167,7 @@ import (
 				},
 
 				// Service resource - generated for workloads with exposed ports
-				#K8sService & {
+				schema.#Service & {
 					metadata: {
 						name:      meta.name
 						namespace: ctx.namespace
