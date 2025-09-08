@@ -1,7 +1,7 @@
-package examples
+package v2alpha2
 
 #Application: {
-	#apiVersion: "core.oam.dev/v2alpha1"
+	#apiVersion: "core.oam.dev/v2alpha2"
 	#kind:       "Application"
 	#metadata: #ComponentMeta & {
 		name:         #NameType

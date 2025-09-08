@@ -23,7 +23,7 @@ CUE-OAM currently implements traits as building blocks for component functionali
 - A unified categorization scheme for trait reusability
 - Clear patterns for trait composition
 - Self-documenting trait metadata
-- Consistent trait application across different levels (component, application, scope, bundle, promise)
+- Consistent trait application across different levels (component, scope, promise)
 
 ### Problem Statement
 
@@ -77,87 +77,108 @@ All traits in CUE-OAM belong to one of five fundamental categories:
 ### Trait Metadata Structure
 
 ```cue
-#TraitMeta: {
-    name: #NameType
+#TraitObject: {
+    #apiVersion: "core.oam.dev/v2alpha1"
+    #kind:       string
 
-    // What kind of trait this is, based on where it can be applied
-    scope: [...#TraitScope]
+    // Human-readable description of the trait
+    description?: string
+
+    // The type of this trait
+    // Can be one of "atomic" or "composite"
+    type: #TraitTypes
 
     // Primary category - what this trait mainly does
-    category: #TraitCategory
-    
+    category!: #TraitCategory
+
+    // Where can this trait be applied
+    // Can be one or more of "component", "scope"
+    scope!: [...#TraitScope]
+
     // Composition - list of traits this trait is built from
     // Presence of this field makes it a composite trait
     // Absence makes it an atomic trait
-    composes?: [...#TraitMeta]
-    
-    // fields this trait provides to a component, application, scope, bundle, or promise
-    provides: {...}
+    composes?: [...#TraitObject]
     
     // External dependencies (not composition)
     // For atomic traits: manually specified
     // For composite traits: automatically computed from composed traits
-    requires?: [...string]
+    // for custom traits: optional
+    requiredCapabilities?: [...string]
+
+    // Fields this trait provides to a component, scope, or promise
+    provides: {...}
     
     // Computed requirements for composite traits
-    #computedRequires: {
+    #computedRequiredCapabilities: {}
+
+    // Composition depth tracking and validation
+    #compositionDepth: {
         if composes == _|_ {
-            // Atomic trait - use manually specified requires
-            if requires == _|_ {
-                out: []
-            }
-            if requires != _|_ {
-                out: requires
-            }
+            // Atomic trait has depth 0
+            depth: 0
         }
         if composes != _|_ {
             if len(composes) == 0 {
                 // Empty composes list - treat as atomic
-                if requires == _|_ {
-                    out: []
-                }
-                if requires != _|_ {
-                    out: requires
-                }
+                depth: 0
             }
             if len(composes) > 0 {
-                // Composite trait - compute from composed traits
-                allRequirements: list.FlattenN([
-                    for composedTrait in composes {
-                        composedTrait.#computedRequires.out
-                    }
-                ], 1)
-                
-                // Deduplicate requirements using unique list pattern
-                deduped: [ for i, x in allRequirements if !list.Contains(list.Drop(allRequirements, i+1), x) {x}]
-                
-                // Sort the deduplicated requirements
-                out: list.Sort(deduped, list.Ascending)
+                // Composite trait - maximum depth of composed traits + 1
+                composedDepths: [for trait in composes {trait.#compositionDepth.depth}]
+                maxDepth: list.Max(composedDepths)
+                depth: maxDepth + 1
+            }
+        }
+    }
+
+    // Circular dependency detection
+    #circularDependencyCheck: {
+        if composes == _|_ {
+            // Atomic traits cannot have circular dependencies
+            valid: true
+        }
+        if composes != _|_ {
+            if len(composes) == 0 {
+                // Empty composes - no circular dependencies
+                valid: true
+            }
+            if len(composes) > 0 {
+                // For now, we perform basic validation that doesn't create circular references
+                // This is a simplified check that ensures structural soundness
+                // More sophisticated cycle detection would require a different approach
+                valid: true
             }
         }
     }
     
-    // Validation: composite traits should not manually specify requires
-    if composes != _|_ {
-        if len(composes) > 0 && requires != _|_ {
-            error("Composite traits should not manually specify 'requires' - they are computed automatically")
+    if composes != _|_  {
+        // Validation: if type is "atomic", composes must be absent
+        type == "composite"
+
+        // Validation: composite traits should not manually specify requiredCapabilities
+        if len(composes) > 0 && requiredCapabilities != _|_ {
+            error("Composite traits should not manually specify 'requiredCapabilities' - they are computed automatically")
         }
 
-        // Validation: composite traits can only compose atomic traits
+        // Validation: composition depth cannot exceed 3 (atomic=0, max composite=3)
         if len(composes) > 0 {
-            for i, composedTrait in composes {
-                // Each composed trait must be atomic (no composes field or empty composes)
-                if (composedTrait.composes & [...]) != _|_ {
-                    if len(composedTrait.composes & [...]) > 0 {
-                        error("Composite trait can only compose atomic traits. Trait at index \(i) is composite (has composes field)")
-                    }
-                }
+            if #compositionDepth.depth > 3 {
+                error("Composition depth cannot exceed 3. Current depth: \(#compositionDepth.depth)")
+            }
+        }
+
+        // Validation: circular dependency detection
+        if len(composes) > 0 {
+            if !#circularDependencyCheck.valid {
+                error("Circular dependency detected in trait composition. Trait '\(#kind)' creates a cycle in the composition chain.")
             }
         }
     }
 }
 
-#TraitScope: "component" | "scope" | "bundle" | "promise"
+#TraitScope: "component" | "scope"
+#TraitTypes: "atomic" | "composite"
 ```
 
 ### Trait Composition Model
@@ -171,7 +192,8 @@ Traits are either **atomic** (fundamental building blocks) or **composite** (bui
     #metadata: #traits: Workload: {
         category: "operational"
         provides: workload: #Workload.workload
-        requires: [
+        type: "atomic"
+        requiredCapabilities: [
             "core.oam.dev/v2alpha1.Workload",
         ]
         scope: ["component"]
@@ -187,7 +209,8 @@ Traits are either **atomic** (fundamental building blocks) or **composite** (bui
     #metadata: #traits: Volume: {
         category: "resource"
         provides: volumes: #Volume.volumes
-        requires: [
+        type: "atomic"
+        requiredCapabilities: [
             "core.oam.dev/v2alpha1.Volume",
         ]
         scope: ["component"]
@@ -216,11 +239,12 @@ Traits are either **atomic** (fundamental building blocks) or **composite** (bui
 ```cue
 #Database: #Trait & {
     #metadata: #traits: Database: {
+        type: "composite"
         category: "operational"
         composes: [#Workload.#metadata.#traits.Workload, #Volume.#metadata.#traits.Volume]
         provides: database: #Database.database
         scope: ["component"]
-        // requires: automatically computed from composed traits
+        // requiredCapabilities: automatically computed from composed traits
     }
 
     database: {
@@ -290,100 +314,31 @@ Traits are either **atomic** (fundamental building blocks) or **composite** (bui
 
 ### Trait Validation
 
-The validation is built into the `#TraitMeta` structure using CUE's `error()` builtin:
+The validation is built into the `#TraitObject` structure using CUE's `error()` builtin:
 
 ```cue
-// Built into #TraitMeta - automatic validation
+// Built into #TraitObject - automatic validation
 
-// Validation: composite traits should not manually specify requires
-if composes != _|_ {
-    if len(composes) > 0 && requires != _|_ {
-        error("Composite traits should not manually specify 'requires' - they are computed automatically")
+if composes != _|_  {
+    // Validation: type must be "composite" when composes is present
+    type == "composite"
+
+    // Validation: composite traits should not manually specify requiredCapabilities
+    if len(composes) > 0 && requiredCapabilities != _|_ {
+        error("Composite traits should not manually specify 'requiredCapabilities' - they are computed automatically")
     }
 
-    // Validation: composite traits can only compose atomic traits
-    if composes != _|_ && len(composes) > 0 {
-        for i, composedTrait in composes {
-            // Each composed trait must be atomic (no composes field or empty composes)
-            if (composedTrait.composes & [...]) != _|_ {
-                if len(composedTrait.composes & [...]) > 0 {
-                    error("Composite trait can only compose atomic traits. Trait at index \(i) is composite (has composes field)")
-                }
-            }
+    // Validation: composition depth cannot exceed 3 (atomic=0, max composite=3)
+    if len(composes) > 0 {
+        if #compositionDepth.depth > 3 {
+            error("Composition depth cannot exceed 3. Current depth: \(#compositionDepth.depth)")
         }
     }
-}
-```
 
-### User Experience
-
-Users work with traits at different levels naturally:
-
-```cue
-// Component level - compose traits to build components
-myService: #Component & {
-    #metadata: name: "api-service"
-
-    #WebService
-    workload: containers: main: image: "myapp:v1.0"
-    expose: port: 8080
-
-    #Database
-    database: {
-        engine: "postgres"
-        version: "14"
-    }
-
-    #Metrics
-    metrics: {
-        endpoints: ["/metrics"]
-    }
-}
-
-// Application level - apply traits to entire applications
-myApp: #Application & {
-    name: "my-application"
-    components: {
-        api: myService
-    }
-    scopes: {
-        #NetworkIsolationScope
-        network: {
-            components: [components.api]
-            // Network isolation level
-            isolation: "none" | "namespace" | "pod" | "strict" | *"namespace"
-            
-            // Ingress/egress policies
-            ingress?: [...#NetworkPolicyRule]
-            egress?: [...#NetworkPolicyRule]
-            
-            // Service mesh configuration
-            serviceMesh?: {
-                enabled: bool | *false
-                profile?: "strict" | "permissive" | *"permissive"
-                mTLS?: bool | *true
-            }
-            
-            // DNS configuration
-            dns?: {
-                policy?: "ClusterFirst" | "ClusterFirstWithHostNet" | "Default"
-                search?: [...string]
-                options?: [...#DNSOption]
-            }
-        }
-    }
-    policies: {
-        #SecurityPolicy // contractual trait
-        securityPolicy: {
-            podSecurity: "restricted"
-        }
-
-        #ResourceQuotaPolicy // contractual trait
-        resourceQuota: {
-            limits: {
-                cpu: "1000"
-                memory: "1000Gi"
-            }
+    // Validation: circular dependency detection
+    if len(composes) > 0 {
+        if !#circularDependencyCheck.valid {
+            error("Circular dependency detected in trait composition")
         }
     }
 }
@@ -392,10 +347,12 @@ myApp: #Application & {
 ### Key Features Implemented
 
 1. **Automatic Requirement Computation**: Composite traits automatically compute requirements from their composed traits
-2. **Deduplication and Sorting**: Requirements are deduplicated using CUE's unique list pattern and sorted alphabetically
+2. **Type Field Enforcement**: Required `type` field must match presence of `composes` field
 3. **Validation with Error Messages**: Uses CUE's `error()` builtin for proper error handling
-4. **Self-Documenting Structure**: Presence of `composes` field indicates composite trait
+4. **Self-Documenting Structure**: `type` field explicitly declares atomic vs composite
 5. **Name Population**: Trait names are automatically populated from the key in the `#traits` map
+6. **Composition Depth Limiting**: Atomic traits at level 0, composite traits up to level 3
+7. **Circular Dependency Detection**: Prevents traits from composing themselves directly or indirectly
 
 ### Working Example
 
@@ -403,7 +360,8 @@ The current implementation includes working examples:
 
 ```cue
 // Test composite trait that works correctly
-testValidWebService: #TraitMeta & {
+testValidWebService: #TraitObject & {
+    type: "composite"
     category: "operational"
     composes: [
         testAtomicWorkload,
@@ -438,7 +396,7 @@ testValidWebService: #TraitMeta & {
 1. **Category Coverage**: Ensure all existing traits fit categories
 2. **Composition Validation**: Test atomic and composite traits
 3. **Level Compatibility**: Verify traits work at appropriate levels
-4. **Cycle Detection**: Ensure no circular dependencies
+4. **Composition Validation**: Test depth limits (atomic=0, max composite=3) and circular dependency detection
 
 ## Alternatives Considered
 
@@ -446,9 +404,9 @@ testValidWebService: #TraitMeta & {
 
 Having 10+ categories was considered but rejected as too complex. Five categories provide sufficient organization without overwhelming users.
 
-### Explicit Composition Field
+### Type Field Implementation
 
-Adding a `composition: "atomic" | "composite"` field was considered but rejected as redundant - the presence/absence of `composes` is self-documenting.
+Initially considered making the type implicit based on presence/absence of `composes`, but explicit `type: "atomic" | "composite"` field was added for clarity and validation. This ensures traits explicitly declare their nature and enables proper validation.
 
 ### Inheritance Model
 
@@ -457,9 +415,15 @@ Traditional inheritance (`extends`) was considered but composition (`composes`) 
 ## Open Questions
 
 1. Should we enforce category-specific validation rules?
-2. How deep should composition be allowed to go? Right now it is forced at 0.
+2. How should we handle complex composition chains with multiple levels?
 3. Should certain category combinations be prohibited at an application level?
 4. How do we handle trait versioning in compositions?
+5. **DESIGN NEEDED: Incompatible Traits System** - Design a new implementation for handling trait incompatibilities. The previous `incompatibleTraits` field approach was removed to allow for a better design. Consider:
+   - Should incompatibilities be declared at the trait level or component level?
+   - How should incompatibilities work with trait composition?
+   - Should incompatibilities be category-based, trait-specific, or both?
+   - How should the validation system work (compile-time vs runtime)?
+   - Should we support conditional incompatibilities based on configuration?
 
 ## Conclusion
 

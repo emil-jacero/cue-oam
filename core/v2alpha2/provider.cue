@@ -1,8 +1,8 @@
-package v2alpha1
+package v2alpha2
 
 // Provider interface
 #Provider: {
-	#apiVersion: "core.oam.dev/v3alpha1"
+	#apiVersion: "core.oam.dev/v2alpha2"
 	#kind:       "Provider"
 	#metadata: {
 		name:        string // The name of the provider

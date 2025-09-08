@@ -1,9 +1,9 @@
 # CUE-OAM Design Document: Scope System for Cross-Cutting Concerns
 
-2025-09-06
+2025-09-07
 
 **Status:** Draft  
-**Lifecycle:** Proposed  
+**Lifecycle:** Incoherent Rambling  
 **Authors:** <emil@jacero.se>  
 **Tracking Issue:** emil-jacero/cue-oam#[TBD]  
 **Related Roadmap Items:** Core Architecture, Scope System, Trait Composition  
@@ -12,18 +12,19 @@
 
 ## Objective
 
-Establish a scope system that enables trait-based management of cross-cutting concerns at Application and Bundle levels. Scopes group components and apply shared operational policies like networking, security, resource management, and deployment strategies without requiring traits directly at the Application level.
+Establish a scope system that unifies Components and Scopes under a common trait-based architecture. Both Components and Scopes are trait compositions, with Scopes serving as additions to Components that manage cross-cutting concerns at Application and Bundle levels.
 
 ## Background
 
 ### Current State
 
-The unified trait architecture successfully handles concerns at the Component level through atomic and composite traits. However, there's a gap in managing cross-cutting concerns that affect multiple components collectively:
+The unified trait architecture provides a foundation where both Components and Scopes are trait compositions:
 
-- Components have rich trait composition capabilities
-- Applications orchestrate components but lack their own traits
-- No mechanism exists for shared policies across component groups
-- Bundle-level operational concerns are undefined
+- Components compose traits to define workload behavior
+- Scopes compose traits to define cross-cutting concerns that affect components
+- Both inherit from #Trait, providing a unified architecture
+- Applications contain components with scopes as additions that apply policies and concerns
+- Scopes reference components via an `affects` field to specify which components they apply to
 
 ### Problem Statement
 
@@ -37,18 +38,36 @@ Modern applications require managing operational concerns that span multiple com
 Example scenario requiring scopes:
 
 ```cue
-// Current: No way to express shared network policy
+// Components defined separately
 frontend: #WebService & {...}
 backend: #WebService & {...}
 database: #Database & {...}
 
-// Desired: Group components with shared networking
+// Application brings components together and adds scopes
 myApp: #Application & {
+    components: {
+        frontend: frontend
+        backend: backend
+        database: database
+    }
+    
+    // Scopes are additions that manage cross-cutting concerns
     scopes: {
         webTier: #NetworkScope & {
-            components: [frontend, backend]
-            isolation: "namespace"
-            serviceMesh: enabled: true
+            // References components by their keys
+            affects: ["frontend", "backend"]
+            network: {
+                isolation: "namespace"
+                serviceMesh: enabled: true
+            }
+        }
+        
+        dataLayer: #SecurityScope & {
+            affects: ["database"]
+            security: {
+                rbac: enabled: true
+                compliance: frameworks: ["SOC2"]
+            }
         }
     }
 }
@@ -56,11 +75,12 @@ myApp: #Application & {
 
 ### Goals
 
-- [x] **Trait-Based Scopes**: Integrate scopes with the unified trait system  
-- [x] **Application Integration**: Enable scopes at Application level
+- [x] **Unified Architecture**: Components and Scopes both inherit from #Trait
+- [x] **Trait Composition**: Scopes compose traits just like Components
+- [x] **Application Integration**: Applications contain components with scopes as additions
+- [x] **Explicit Relationships**: Scopes explicitly declare which components they affect
 - [ ] **Bundle Integration**: Support scopes at Bundle level for distribution concerns
-- [ ] **Component Grouping**: Explicit assignment of components to scopes
-- [ ] **Policy Application**: Apply shared configurations across scope members
+- [ ] **Cross-Cutting Management**: Scopes manage concerns that span multiple components
 - [ ] **Provider Translation**: Enable platform-specific scope implementations
 
 ### Non-Goals
@@ -73,60 +93,97 @@ myApp: #Application & {
 
 ### CUE-OAM Model Impact
 
-Scopes extend the trait system for cross-cutting concerns:
+The unified architecture where both Components and Scopes inherit from #Trait:
 
-- **New Scope Traits**: Specialized traits with `scope: ["scope"]` or `scope: ["bundle"]`
-- **Application Changes**: Applications contain scopes that reference their components
-- **Bundle Changes**: Bundles can define scopes for distribution/deployment concerns
-- **Component Changes**: Components remain unchanged (no scope traits applied to them)
-- **Provider Requirements**: Providers must handle scope traits and apply them to component groups
+- **Common Base**: Both #Component and #Scope extend #Trait
+- **Trait Metadata**: Components and Scopes have #metadata with #traits field
+- **Application Structure**: Applications contain components as primary workloads, with scopes as additions that apply cross-cutting concerns
+- **Scope-Component Relationship**: Scopes use an `affects` field to specify which components they apply to
+- **Trait Scope Field**: The `traitScope` field in #TraitObject determines where traits can be applied
+- **Provider Requirements**: Providers process components first, then apply scope effects to affected components
 
-### Scope Architecture
+### Unified Architecture
 
-Scopes are specialized traits that operate at Application and Bundle levels:
+Both Components and Scopes inherit from #Trait, creating a unified system where Components define workloads and Scopes add cross-cutting concerns:
 
 ```cue
-#ScopeTrait: #Trait & {
-    #metadata: #traits: #TraitMeta & {
-        scope: ["scope"] | ["bundle"] | ["scope", "bundle"]
+// Base trait definition (from trait.cue)
+#Trait: {
+    #metadata: #ComponentMeta & {
+        #traits: [traitName=string]: #TraitObject & {
+            name: traitName
+        }
     }
-    // The components to attach to this scope
-    components: [...#Component]
+    // Trait-specific fields
     ...
 }
 
-#SecurityScope: #Trait & {
-    #metadata: #traits: SecurityScope: {
-        category: "operational"
-        provides: workload: #Workload.workload
-        requires: [
-            "core.oam.dev/v2alpha1.Workload",
-        ]
-        scope: ["component"]
+// Component definition (from component.cue)
+#Component: {
+    #apiVersion: "core.oam.dev/v2alpha1"
+    #kind:       "Component"
+    #metadata: #ComponentMeta & {
+        labels?:      #LabelsType
+        annotations?: #AnnotationsType
     }
-
-    workload: {
-        containers: [string]: {...}
-        containers: main: {name: string | *#metadata.name}
-    }
+    #Trait  // Inherits from #Trait
 }
 
-// Scope traits have specific scope values
-#ScopeTraitMeta: #TraitMeta & {
-    scope: ["scope"] | ["bundle"] | ["scope", "bundle"]
+// Scope definition (from scope.cue)
+#Scope: {
+    #apiVersion: "core.oam.dev/v2alpha1"
+    #kind:       "Scope"
+    #metadata: #ScopeMeta & {
+        labels?:      #LabelsType
+        annotations?: #AnnotationsType
+    }
+    #Trait  // Inherits from #Trait
+    
+    // Specifies which components this scope affects
+    affects: [...string]
 }
 
-// Base pattern for scope implementations
-#ApplicationScope: #Trait & {
-    #metadata: #traits: [ScopeName=string]: #ScopeTraitMeta & {
-        scope: ["scope"]
-    }
+// Metadata structures
+#ComponentMeta: {
+    #id:  #NameType
+    name: #NameType | *#id
+    ...
 }
 
-#BundleScope: #Trait & {
-    #metadata: #traits: [ScopeName=string]: #ScopeTraitMeta & {
-        scope: ["bundle"]
-    }
+#ScopeMeta: {
+    #id:  #NameType
+    name: #NameType | *#id
+    ...
+}
+```
+
+### Trait Scope Field
+
+The `traitScope` field in #TraitObject determines where traits can be applied:
+
+```cue
+#TraitScope: "component" | "scope" | "bundle" | "promise"
+
+#TraitObject: {
+    name: #NameType
+    
+    // Where this trait can be applied
+    traitScope: [...#TraitScope]
+    
+    // Category of concern this trait addresses
+    category: #TraitCategory
+    
+    // What this trait provides
+    provides: {...}
+    
+    // Dependencies
+    requires?: [...string]
+    
+    // Composition (for composite traits)
+    composes?: [...#TraitObject]
+    
+    // Attributes
+    attributes: [string]: bool
 }
 ```
 
@@ -134,26 +191,32 @@ Scopes are specialized traits that operate at Application and Bundle levels:
 
 #### Network Scope
 
-Manages network policies and connectivity for component groups:
+A scope that manages network policies and connectivity:
 
 ```cue
-#NetworkScope: #ApplicationScope & {
-    #metadata: #traits: NetworkScope: {
+#NetworkScope: #Scope & {
+    #metadata: #traits: NetworkScope: #TraitObject & {
+        name: "NetworkScope"
+        traitScope: ["scope"]  // This trait applies to scopes
         category: "structural"
         provides: network: #NetworkScope.network
-        scope: ["scope"]
         requires: [
             "core.oam.dev/v1.NetworkPolicy",
             "core.oam.dev/v1.ServiceMesh"
         ]
+        attributes: {
+            replicable: false
+            daemonized: false
+            exposed: true
+        }
     }
+    
+    // Components affected by this scope
+    affects: [...string]
 
     network: {
         // Network isolation level
         isolation: "none" | "namespace" | "pod" | "strict" | *"namespace"
-        
-        // Component references this scope affects
-        components: [...string]
         
         // Ingress/egress policies
         ingress?: [...#NetworkPolicyRule]
@@ -178,25 +241,31 @@ Manages network policies and connectivity for component groups:
 
 #### Security Scope
 
-Manages security policies and RBAC:
+A scope that manages security policies and RBAC:
 
 ```cue
-#SecurityScope: #ApplicationScope & {
-    #metadata: #traits: SecurityScope: {
+#SecurityScope: #Scope & {
+    #metadata: #traits: SecurityScope: #TraitObject & {
+        name: "SecurityScope"
+        traitScope: ["scope"]
         category: "contractual"
         provides: security: #SecurityScope.security
-        scope: ["scope"]
         requires: [
             "core.oam.dev/v1.RBAC",
             "core.oam.dev/v1.PodSecurityPolicy"
         ]
+        attributes: {
+            replicable: false
+            daemonized: false
+            exposed: false
+        }
     }
+    
+    // Components affected by this scope
+    affects: [...string]
 
     security: {
-        // Components affected by this security scope
-        components: [...string]
-        
-        // Pod security context applied to all components
+        // Pod security context
         podSecurityContext?: {
             runAsNonRoot?: bool
             runAsUser?: int
@@ -231,25 +300,31 @@ Manages security policies and RBAC:
 
 #### Resource Scope
 
-Manages resource allocation and constraints:
+A scope that manages resource allocation and constraints:
 
 ```cue
-#ResourceScope: #ApplicationScope & {
-    #metadata: #traits: ResourceScope: {
+#ResourceScope: #Scope & {
+    #metadata: #traits: ResourceScope: #TraitObject & {
+        name: "ResourceScope"
+        traitScope: ["scope"]
         category: "resource"
         provides: resources: #ResourceScope.resources
-        scope: ["scope"]
         requires: [
             "core.oam.dev/v1.ResourceQuota",
             "core.oam.dev/v1.LimitRange"
         ]
+        attributes: {
+            replicable: false
+            daemonized: false
+            exposed: false
+        }
     }
+    
+    // Components affected by this scope
+    affects: [...string]
 
     resources: {
-        // Components sharing these resource constraints
-        components: [...string]
-        
-        // Resource quotas for the scope
+        // Resource quotas
         quota?: {
             cpu?: string
             memory?: string
@@ -281,24 +356,69 @@ Manages resource allocation and constraints:
 }
 ```
 
+### Component Traits vs Scope Traits
+
+The key distinction is in the `traitScope` field:
+
+```cue
+// A trait that can be used in Components
+#Workload: #Trait & {
+    #metadata: #traits: Workload: #TraitObject & {
+        name: "Workload"
+        traitScope: ["component"]  // Only for components
+        category: "operational"
+        provides: workload: {...}
+    }
+    workload: {...}
+}
+
+// A trait that can be used in Scopes
+#NetworkPolicy: #Trait & {
+    #metadata: #traits: NetworkPolicy: #TraitObject & {
+        name: "NetworkPolicy"
+        traitScope: ["scope"]  // Only for scopes
+        category: "structural"
+        provides: policy: {...}
+    }
+    policy: {...}
+}
+
+// A trait that can be used in both
+#Monitoring: #Trait & {
+    #metadata: #traits: Monitoring: #TraitObject & {
+        name: "Monitoring"
+        traitScope: ["component", "scope"]  // Both
+        category: "operational"
+        provides: monitoring: {...}
+    }
+    monitoring: {...}
+}
+```
+
 ### Bundle-Level Scopes
 
-Bundles can define scopes for distribution and deployment concerns:
+Scopes with `traitScope: ["bundle"]` operate at the Bundle level:
 
 #### Compliance Scope
 
-Manages regulatory and organizational requirements:
+A scope for regulatory and organizational requirements:
 
 ```cue
-#ComplianceScope: #BundleScope & {
-    #metadata: #traits: ComplianceScope: {
+#ComplianceScope: #Scope & {
+    #metadata: #traits: ComplianceScope: #TraitObject & {
+        name: "ComplianceScope"
+        traitScope: ["bundle"]
         category: "contractual"
-        provides: compliance: #ComplianceScope.compliance  
-        scope: ["bundle"]
+        provides: compliance: #ComplianceScope.compliance
         requires: [
             "core.oam.dev/v1.PolicyEngine",
             "core.oam.dev/v1.AuditLog"
         ]
+        attributes: {
+            replicable: false
+            daemonized: false
+            exposed: false
+        }
     }
 
     compliance: {
@@ -330,43 +450,87 @@ Manages regulatory and organizational requirements:
 
 ### Application Integration
 
-Applications define scopes and reference their components:
+Applications contain components with scopes as additional cross-cutting concerns:
 
 ```cue
 #Application: {
-    name: string
-    components: [string]: #Component
-    
-    // Scopes define cross-cutting concerns
-    scopes?: {
-        [ScopeName=string]: #ApplicationScope
+    #apiVersion: "core.oam.dev/v2alpha1"
+    #kind:       "Application"
+    #metadata: #ComponentMeta & {
+        name:         #NameType
+        namespace?:   #NameType
+        labels?:      #LabelsType
+        annotations?: #AnnotationsType
     }
-    
-    // Policies can be defined separately for contractual traits
-    policies?: {...}
+    components: [string]: #Component
+    scopes: [string]:     #Scope
 }
 ```
 
 ### User Experience Examples
 
-#### Basic Application with Network Scope
+#### Basic Application with Components and Scopes
 
 ```cue
 myApp: #Application & {
-    name: "web-application"
+    #metadata: {
+        name: "web-application"
+        namespace: "production"
+    }
     
+    // Components define the workloads
     components: {
-        frontend: #WebService & {
+        frontend: #Component & {
+            #metadata: {
+                #id: "frontend"
+                name: "frontend-service"
+                #traits: {
+                    Workload: {
+                        name: "Workload"
+                        traitScope: ["component"]
+                        category: "operational"
+                        provides: workload: {...}
+                    }
+                    Expose: {
+                        name: "Expose"
+                        traitScope: ["component"]
+                        category: "structural"
+                        provides: expose: port: 3000
+                    }
+                }
+            }
             workload: containers: main: image: "frontend:v1.0"
             expose: port: 3000
         }
         
-        backend: #WebService & {
+        backend: #Component & {
+            #metadata: {
+                #id: "backend"
+                name: "backend-service"
+                #traits: {
+                    Workload: {...}
+                    Expose: {
+                        provides: expose: port: 8080
+                    }
+                }
+            }
             workload: containers: main: image: "backend:v1.0"
             expose: port: 8080
         }
         
-        database: #Database & {
+        database: #Component & {
+            #metadata: {
+                #id: "database"
+                name: "postgres-db"
+                #traits: {
+                    Database: {
+                        name: "Database"
+                        traitScope: ["component"]
+                        category: "resource"
+                        provides: database: {...}
+                    }
+                }
+            }
             database: {
                 type: "postgres"
                 version: "14"
@@ -374,59 +538,148 @@ myApp: #Application & {
         }
     }
     
+    // Scopes are additions that apply cross-cutting concerns to components
     scopes: {
-        webTier: #NetworkScope & {
-            network: {
-                components: ["frontend", "backend"]
-                isolation: "namespace"
-                serviceMesh: {
-                    enabled: true
-                    mTLS: true
+        network: #Scope & {
+            #metadata: {
+                #id: "network"
+                name: "app-network"
+                #traits: {
+                    NetworkPolicy: {
+                        name: "NetworkPolicy"
+                        traitScope: ["scope"]
+                        category: "structural"
+                        provides: policy: {...}
+                    }
+                    ServiceMesh: {
+                        name: "ServiceMesh"
+                        traitScope: ["scope"]
+                        category: "structural"
+                        provides: mesh: {...}
+                    }
                 }
+            }
+            // Specifies which components this scope affects
+            affects: ["frontend", "backend"]
+            
+            policy: {
+                isolation: "namespace"
                 ingress: [{
                     from: [{namespaceSelector: {}}]
                     ports: [{protocol: "TCP", port: 80}]
                 }]
             }
+            mesh: {
+                enabled: true
+                mTLS: true
+            }
         }
         
-        dataLayer: #SecurityScope & {
-            security: {
-                components: ["database"]
-                podSecurityContext: {
-                    runAsNonRoot: true
-                    runAsUser: 999
+        security: #Scope & {
+            #metadata: {
+                #id: "security"
+                name: "app-security"
+                #traits: {
+                    RBAC: {
+                        name: "RBAC"
+                        traitScope: ["scope"]
+                        category: "contractual"
+                        provides: rbac: {...}
+                    }
+                    Compliance: {
+                        name: "Compliance"
+                        traitScope: ["scope"]
+                        category: "contractual"
+                        provides: compliance: {...}
+                    }
                 }
-                rbac: {
-                    enabled: true
-                    rules: [{
-                        apiGroups: [""]
-                        resources: ["secrets"]
-                        verbs: ["get", "list"]
-                    }]
+            }
+            // This scope affects only the database component
+            affects: ["database"]
+            
+            rbac: {
+                enabled: true
+                rules: [{
+                    apiGroups: [""]
+                    resources: ["secrets"]
+                    verbs: ["get", "list"]
+                }]
+            }
+            compliance: {
+                frameworks: ["SOC2"]
+            }
+        }
+        
+        resources: #Scope & {
+            #metadata: {
+                #id: "resources"
+                name: "resource-limits"
+                #traits: {
+                    ResourceQuota: {
+                        name: "ResourceQuota"
+                        traitScope: ["scope"]
+                        category: "resource"
+                        provides: quota: {...}
+                    }
                 }
-                compliance: {
-                    frameworks: ["SOC2"]
-                }
+            }
+            // This scope affects all components in the application
+            affects: ["frontend", "backend", "database"]
+            
+            quota: {
+                cpu: "2000m"
+                memory: "4Gi"
             }
         }
     }
-    
-    policies: {
-        resourceLimits: #ResourceScope & {
-            resources: {
-                components: ["frontend", "backend", "database"]
-                quota: {
-                    cpu: "2000m"
-                    memory: "4Gi"
-                }
-                limits: {
-                    cpu: "500m"
-                    memory: "1Gi"
-                }
-            }
+}
+```
+
+#### Composite Traits in Components and Scopes
+
+Both Components and Scopes can use composite traits:
+
+```cue
+// Composite trait for Components
+#WebService: #Component & {
+    #metadata: #traits: {
+        WebService: #TraitObject & {
+            name: "WebService"
+            traitScope: ["component"]
+            category: "operational"
+            composes: [
+                {name: "Workload", ...},
+                {name: "Expose", ...},
+                {name: "Monitoring", ...}
+            ]
+            provides: {...}
         }
     }
+    // Composed trait fields
+    workload: {...}
+    expose: {...}
+    monitoring: {...}
+}
+
+// Composite trait for Scopes
+#SecureNetwork: #Scope & {
+    #metadata: #traits: {
+        SecureNetwork: #TraitObject & {
+            name: "SecureNetwork"
+            traitScope: ["scope"]
+            category: "structural"
+            composes: [
+                {name: "NetworkPolicy", ...},
+                {name: "ServiceMesh", ...},
+                {name: "TLS", ...}
+            ]
+            provides: {...}
+        }
+    }
+    // Composed trait fields
+    policy: {...}
+    mesh: {...}
+    tls: {...}
 }
 ```
 
@@ -480,100 +733,44 @@ ecommerceBundle: #Bundle & {
 
 ### Provider Integration
 
-Providers translate scope traits into platform-specific resources:
+Providers handle both Component and Scope trait compositions:
 
 ```cue
-// Kubernetes provider handles scope traits
+// Kubernetes provider handles both types
 #KubernetesProvider: {
-    scopes: {
-        NetworkScope: {
-            transform: (scope) => {
-                // Create NetworkPolicy resources
-                for component in scope.network.components {
-                    "networkpolicy-\(component)": NetworkPolicy & {
-                        metadata: name: "\(scope.metadata.name)-\(component)"
-                        spec: {
-                            podSelector: matchLabels: component: component
-                            ingress: scope.network.ingress
-                            egress: scope.network.egress
-                        }
-                    }
-                }
-                
-                // Create service mesh resources if enabled
-                if scope.network.serviceMesh.enabled {
-                    "virtual-service": VirtualService & {
-                        metadata: name: scope.metadata.name
-                        spec: {
-                            hosts: [for c in scope.network.components {"\(c).local"}]
-                            http: [{
-                                route: [{destination: host: component}] 
-                                for component in scope.network.components
-                            }]
-                        }
-                    }
+    // Transform application with components and scopes
+    transform: (app: #Application) => {
+        // Process components
+        for componentKey, component in app.components {
+            // Generate resources for component traits
+            for traitName, traitMeta in component.#metadata.#traits {
+                if "component" in traitMeta.traitScope {
+                    // Generate Kubernetes resources for component traits
+                    ...
                 }
             }
         }
         
-        SecurityScope: {
-            transform: (scope) => {
-                // Create RBAC resources
-                if scope.security.rbac.enabled {
-                    "service-account": ServiceAccount & {
-                        metadata: name: scope.security.rbac.serviceAccount | scope.metadata.name
-                    }
-                    
-                    "role": Role & {
-                        metadata: name: scope.metadata.name
-                        rules: scope.security.rbac.rules
-                    }
-                    
-                    "role-binding": RoleBinding & {
-                        metadata: name: scope.metadata.name
-                        subjects: [{
-                            kind: "ServiceAccount"
-                            name: scope.security.rbac.serviceAccount | scope.metadata.name
-                        }]
-                        roleRef: {
-                            kind: "Role"
-                            name: scope.metadata.name
-                        }
-                    }
-                }
+        // Process scopes as additions to components
+        for scopeKey, scope in app.scopes {
+            // Apply scope effects to affected components
+            for componentKey in scope.affects {
+                component: app.components[componentKey]
                 
-                // Create Pod Security Policy
-                if scope.security.podSecurityContext != _|_ {
-                    "pod-security-policy": PodSecurityPolicy & {
-                        metadata: name: scope.metadata.name
-                        spec: {
-                            runAsNonRoot: scope.security.podSecurityContext.runAsNonRoot
-                            runAsUser: scope.security.podSecurityContext.runAsUser
+                // Generate scope resources that affect the component
+                for traitName, traitMeta in scope.#metadata.#traits {
+                    if "scope" in traitMeta.traitScope {
+                        switch traitName {
+                            case "NetworkPolicy":
+                                // Create NetworkPolicy for this component
+                                "networkpolicy-\(componentKey)": {...}
+                            case "RBAC":
+                                // Create RBAC rules for this component
+                                "role-\(componentKey)": {...}
+                            case "ResourceQuota":
+                                // Apply resource constraints to this component
+                                ...
                         }
-                    }
-                }
-            }
-        }
-        
-        ResourceScope: {
-            transform: (scope) => {
-                // Create ResourceQuota
-                if scope.resources.quota != _|_ {
-                    "resource-quota": ResourceQuota & {
-                        metadata: name: scope.metadata.name
-                        spec: hard: scope.resources.quota
-                    }
-                }
-                
-                // Create LimitRange
-                if scope.resources.limits != _|_ {
-                    "limit-range": LimitRange & {
-                        metadata: name: scope.metadata.name
-                        spec: limits: [{
-                            type: "Container"
-                            default: scope.resources.limits
-                            defaultRequest: scope.resources.requests
-                        }]
                     }
                 }
             }
@@ -582,59 +779,98 @@ Providers translate scope traits into platform-specific resources:
 }
 ```
 
+### Trait Discovery and Validation
+
+The system validates trait usage based on `traitScope`:
+
+```cue
+// Validation helper
+#ValidateTraitUsage: {
+    trait: #TraitObject
+    context: "component" | "scope" | "bundle" | "promise"
+    
+    valid: context in trait.traitScope
+    
+    if !valid {
+        error("Trait '\(trait.name)' cannot be used in \(context) context. Valid contexts: \(trait.traitScope)")
+    }
+}
+
+// Example validation
+myComponent: #Component & {
+    #metadata: #traits: {
+        // Valid: Workload can be used in components
+        Workload: #TraitObject & {
+            traitScope: ["component"]
+            ...
+        }
+        
+        // Invalid: NetworkPolicy can't be used in components
+        NetworkPolicy: #TraitObject & {
+            traitScope: ["scope"]  // Error: wrong context
+            ...
+        }
+    }
+}
+```
+
 ## Benefits
 
-1. **Clear Separation**: Components focus on workload concerns, scopes handle cross-cutting concerns
-2. **Trait Consistency**: Scopes use the same trait system as components
-3. **Flexible Grouping**: Components can belong to multiple scopes for different concerns
-4. **Platform Agnostic**: Scope definitions work across different deployment platforms
-5. **Bundle Distribution**: Bundle-level scopes handle deployment and compliance concerns
-6. **Provider Friendly**: Clear translation patterns for platform-specific implementations
+1. **Unified Architecture**: Components and Scopes both inherit from #Trait, providing consistency
+2. **Clear Separation**: Components handle workload concerns, Scopes add cross-cutting concerns
+3. **Explicit Relationships**: The `affects` field clearly shows which components a scope applies to
+4. **Type Safety**: The `traitScope` field ensures traits are only used in appropriate contexts
+5. **Composability**: Both Components and Scopes support atomic and composite trait patterns
+6. **Provider Clarity**: Clear semantics for how scopes augment component behavior
 
 ## Implementation Plan
 
 ### Phase 1: Foundation
 
-- [x] Define scope trait metadata patterns
-- [x] Implement basic Application scope integration
-- [ ] Create core scope types (Network, Security, Resource)
-- [ ] Add scope validation and component reference checking
+- [x] Establish unified #Trait base for Components and Scopes
+- [x] Define `traitScope` field in #TraitObject
+- [x] Implement #Component and #Scope as #Trait extensions
+- [ ] Create core scope-specific traits (NetworkPolicy, RBAC, ResourceQuota)
+- [ ] Add trait context validation
 
-### Phase 2: Bundle Integration  
+### Phase 2: Trait Development
 
-- [ ] Implement Bundle-level scope support
-- [ ] Create distribution and compliance scope types
-- [ ] Add bundle scope inheritance patterns
+- [ ] Define component-specific traits (Workload, Database, etc.)
+- [ ] Define scope-specific traits (NetworkPolicy, ServiceMesh, etc.)
+- [ ] Create dual-context traits (Monitoring, Logging, etc.)
+- [ ] Implement composite trait patterns for both types
 
-### Phase 3: Provider Support
+### Phase 3: Application Integration
 
-- [ ] Implement Kubernetes scope transformers
-- [ ] Add scope conflict resolution
-- [ ] Create scope dependency validation
+- [ ] Implement Application structure with components and scopes
+- [ ] Add Bundle-level scope support
+- [ ] Create trait dependency resolution
+- [ ] Implement trait composition validation
 
-### Phase 4: Advanced Features
+### Phase 4: Provider Support
 
-- [ ] Multi-scope component management
-- [ ] Scope composition and inheritance
-- [ ] Dynamic scope configuration
+- [ ] Implement unified trait transformation
+- [ ] Add Kubernetes provider for both component and scope traits
+- [ ] Create Docker Compose provider support
+- [ ] Implement trait conflict resolution
 
 ## Alternatives Considered
 
+### Separate Type Systems
+
+**Alternative**: Keep Components and Scopes as completely separate types
+**Rejected**: Would duplicate trait system logic and reduce consistency
+
 ### Application-Level Traits
 
-**Alternative**: Allow traits directly on Applications
-**Rejected**: Breaks the clean architectural separation where Applications orchestrate rather than implement
+**Alternative**: Allow traits directly on Applications without Scopes
+**Rejected**: Applications should orchestrate, not implement concerns directly
 
-### Component-Level Policy Duplication
+### Mixed Trait Usage
 
-**Alternative**: Apply all policies at individual component level
-**Rejected**: Creates maintenance burden and inconsistency across related components
-
-### Separate Scope Objects
-
-**Alternative**: Define scopes outside the trait system
-**Rejected**: Would fragment the unified trait architecture
+**Alternative**: Allow any trait to be used anywhere without restrictions
+**Rejected**: Would lose semantic clarity about trait purposes and contexts
 
 ## Conclusion
 
-The scope system extends the unified trait architecture to handle cross-cutting concerns at Application and Bundle levels. By maintaining trait consistency while providing clear component grouping and policy application, scopes enable sophisticated operational management without compromising architectural clarity. The system supports both runtime operational concerns (Network, Security, Resource scopes) and distribution concerns (Bundle-level scopes) while maintaining provider flexibility and platform agnosticism.
+The unified architecture where both Components and Scopes inherit from #Trait creates a consistent, powerful system for managing all aspects of applications. Components compose traits for workload-specific behavior, while Scopes serve as additions that compose traits for cross-cutting concerns. The `affects` field in Scopes explicitly declares which components are impacted, creating clear relationships between workloads and their operational policies. The `traitScope` field in #TraitObject ensures traits are used in appropriate contexts while allowing flexibility for traits that span multiple contexts. This design maintains architectural clarity, enables sophisticated composition patterns, and provides providers with a clear model for applying scope effects to components.
