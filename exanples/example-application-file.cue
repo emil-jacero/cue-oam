@@ -10,9 +10,13 @@ core.#Application
 // To illustrate how we can flatten the application structure when writing in a single file. Treat the whole file as one application definition.
 // This could be useful to simplify writing applications for users.
 #metadata: {
-	name: "my-app"
+	name:      "my-app"
+	namespace: "default"
+	version:   "0.1.0"
+	labels: {
+		"extra-label": "example"
+	}
 }
-
 components: {
 	web: {
 		standard.#ContainerSet
@@ -36,10 +40,12 @@ components: {
 				protocol: "TCP"
 			}]
 		}
+
 		standard.#Volume
 		volumes: dataVolume: {
 			name: "data-volume"
-			type: "emptyDir"
+			type: "volume"
+			size: "1Gi"
 		}
 	}
 }

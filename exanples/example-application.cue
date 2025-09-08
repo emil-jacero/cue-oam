@@ -39,6 +39,7 @@ myApp: core.#Application & {
 					protocol: "TCP"
 				}]
 			}
+
 			standard.#Volume
 			volumes: dataVolume: {
 				name: "data-volume"
