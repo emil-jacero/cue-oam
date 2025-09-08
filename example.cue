@@ -1,8 +1,8 @@
 package example
 
 import (
-	corev2 "jacero.io/oam/core/v2alpha1"
-	traits "jacero.io/oam/traits/standard"
+	corev2 "jacero.io/oam/core/v2alpha2"
+	trait "jacero.io/oam/catalog/traits/standard"
 	k8sprovider "jacero.io/oam/providers/kubernetes"
 )
 
@@ -20,7 +20,7 @@ webApp: corev2.#Application & {
 	components: {
 		frontend: {
 			// Workload trait
-			traits.#Workload
+			trait.#Workload
 			workload: {
 				replicas: 3
 				containers: {
@@ -57,13 +57,13 @@ webApp: corev2.#Application & {
 					}
 				}
 			}
-			traits.#Volume
+			trait.#Volume
 			volumes: nginx: {
 				type:    "configMap"
 				name:    "nginx-config"
 				config!: configMap.nginx
 			}
-			traits.#Config
+			trait.#Config
 			configMap: nginx: {
 				data: {
 					"index.html": """
@@ -84,7 +84,7 @@ webApp: corev2.#Application & {
 		}
 		api: {
 			// Workload trait
-			traits.#Workload
+			trait.#Workload
 			workload: {
 				replicas: 2
 				containers: {
@@ -143,7 +143,7 @@ webApp: corev2.#Application & {
 					}
 				}
 			}
-			traits.#Volume
+			trait.#Volume
 			volumes: main: {
 				type:             "volume"
 				name:             "api-data"
