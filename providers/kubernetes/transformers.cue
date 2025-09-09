@@ -20,17 +20,12 @@ import (
 			resources: [
 				// Deployment resource
 				schema.#Deployment & {
-					metadata: {
-						name:      meta.name
-						namespace: ctx.namespace
-						labels: {
-							"app.kubernetes.io/name":       meta.name
-							"app.kubernetes.io/managed-by": "cue-oam"
-							"app.kubernetes.io/instance":   ctx.appName
-							"app.kubernetes.io/version":    ctx.appVersion
-						} & ctx.appLabels
-						if meta.annotations != _|_ {
-							annotations: meta.annotations
+					metadata: #GenerateMetadata & {
+						_input: {
+							name:         meta.name
+							traitMeta:    meta
+							context:      ctx
+							resourceType: "deployment"
 						}
 					}
 					spec: {
@@ -41,11 +36,11 @@ import (
 							replicas: {for n, r in replicaSpec {r.count}}[0]
 						}
 						if len(replicaTrait) == 0 {
-							replicas: 1 // Default
+							replicas: 1
 						}
 						selector: matchLabels: {
-							"app.kubernetes.io/name":     meta.name
-							"app.kubernetes.io/instance": ctx.appName
+							"app.kubernetes.io/name":     meta.name // Name taken from the trait metadata in the component
+							"app.kubernetes.io/instance": ctx.metadata.application.name
 						}
 
 						// Check for UpdateStrategy trait and configure deployment strategy
@@ -73,11 +68,14 @@ import (
 						}
 
 						template: {
-							metadata: labels: {
-								"app.kubernetes.io/name":     meta.name
-								"app.kubernetes.io/instance": ctx.appName
-								"app.kubernetes.io/version":  ctx.appVersion
-							} & ctx.appLabels
+							metadata: #GenerateMetadata & {
+								_input: {
+									name:         meta.name + "-pod"
+									traitMeta:    meta
+									context:      ctx
+									resourceType: "pod"
+								}
+							}
 							spec: {
 								// Main containers
 								containers: [
@@ -248,15 +246,13 @@ import (
 			resources: [
 				// Service resource
 				schema.#Service & {
-					metadata: {
-						name:      meta.name
-						namespace: ctx.namespace
-						labels: {
-							"app.kubernetes.io/name":       meta.name
-							"app.kubernetes.io/managed-by": "cue-oam"
-							"app.kubernetes.io/instance":   ctx.appName
-							"app.kubernetes.io/version":    ctx.appVersion
-						} & ctx.appLabels
+					metadata: #GenerateMetadata & {
+						_input: {
+							name:         meta.name
+							traitMeta:    meta
+							context:      ctx
+							resourceType: "service"
+						}
 					}
 					spec: {
 						// Service type
@@ -274,7 +270,7 @@ import (
 						if exposeSpec.selector == _|_ {
 							selector: {
 								"app.kubernetes.io/name":     meta.name
-								"app.kubernetes.io/instance": ctx.appName
+								"app.kubernetes.io/instance": ctx.metadata.application.name
 							}
 						}
 
@@ -296,7 +292,7 @@ import (
 											targetPort: p.targetPort
 										}
 										if p.targetPort == _|_ {
-											targetPort: p.port
+											targetPort: p.exposedPort
 										}
 										if p.protocol != _|_ {
 											protocol: p.protocol
@@ -342,15 +338,13 @@ import (
 				for volumeName, volume in volumeSpec
 				if volume.type == "volume" {
 					schema.#PersistentVolumeClaim & {
-						metadata: {
-							name:      "\(meta.name)-\(volumeName)"
-							namespace: ctx.namespace
-							labels: {
-								"app.kubernetes.io/name":       meta.name
-								"app.kubernetes.io/managed-by": "cue-oam"
-								"app.kubernetes.io/instance":   ctx.appName
-								"app.kubernetes.io/component":  "volume"
-							} & ctx.appLabels
+						metadata: #GenerateMetadata & {
+							_input: {
+								name:         "\(meta.name)-\(volumeName)"
+								traitMeta:    meta
+								context:      ctx
+								resourceType: "persistent-volume-claim"
+							}
 						}
 						spec: {
 							if volume.accessModes != _|_ {
@@ -385,15 +379,13 @@ import (
 			resources: [
 				for secretName, secret in secretSpec {
 					schema.#Secret & {
-						metadata: {
-							name:      "\(meta.name)-\(secretName)"
-							namespace: ctx.namespace
-							labels: {
-								"app.kubernetes.io/name":       meta.name
-								"app.kubernetes.io/managed-by": "cue-oam"
-								"app.kubernetes.io/instance":   ctx.appName
-								"app.kubernetes.io/component":  "secret"
-							} & ctx.appLabels
+						metadata: #GenerateMetadata & {
+							_input: {
+								name:         "\(meta.name)-\(secretName)"
+								traitMeta:    meta
+								context:      ctx
+								resourceType: "secret"
+							}
 						}
 						type: secret.type | *"Opaque"
 						if secret.data != _|_ {
@@ -423,15 +415,13 @@ import (
 			resources: [
 				for configName, config in configSpec {
 					schema.#ConfigMap & {
-						metadata: {
-							name:      "\(meta.name)-\(configName)"
-							namespace: ctx.namespace
-							labels: {
-								"app.kubernetes.io/name":       meta.name
-								"app.kubernetes.io/managed-by": "cue-oam"
-								"app.kubernetes.io/instance":   ctx.appName
-								"app.kubernetes.io/component":  "config"
-							} & ctx.appLabels
+						metadata: #GenerateMetadata & {
+							_input: {
+								name:         "\(meta.name)-\(configName)"
+								traitMeta:    meta
+								context:      ctx
+								resourceType: "configmap"
+							}
 						}
 						if config.data != _|_ {
 							data: config.data
@@ -459,20 +449,17 @@ import (
 
 			resources: [
 				schema.#NetworkPolicy & {
-					metadata: {
-						name:      meta.name
-						namespace: ctx.namespace
-						labels: {
-							"app.kubernetes.io/name":       meta.name
-							"app.kubernetes.io/managed-by": "cue-oam"
-							"app.kubernetes.io/instance":   ctx.appName
-							"app.kubernetes.io/component":  "network-policy"
-						} & ctx.appLabels
+					metadata: #GenerateMetadata & {
+						_input: {
+							traitMeta:    meta
+							context:      ctx
+							resourceType: "network-policy"
+						}
 					}
 					spec: {
 						podSelector: matchLabels: {
 							"app.kubernetes.io/name":     meta.name
-							"app.kubernetes.io/instance": ctx.appName
+							"app.kubernetes.io/instance": ctx.metadata.application.name
 						}
 
 						// Apply default policies based on isolation level
@@ -487,7 +474,7 @@ import (
 								from: [{
 									podSelector: matchLabels: {
 										"app.kubernetes.io/name":     meta.name
-										"app.kubernetes.io/instance": ctx.appName
+										"app.kubernetes.io/instance": ctx.metadata.application.name
 									}
 								}]
 							}]
@@ -495,7 +482,7 @@ import (
 								to: [{
 									podSelector: matchLabels: {
 										"app.kubernetes.io/name":     meta.name
-										"app.kubernetes.io/instance": ctx.appName
+										"app.kubernetes.io/instance": ctx.metadata.application.name
 									}
 								}]
 							}]

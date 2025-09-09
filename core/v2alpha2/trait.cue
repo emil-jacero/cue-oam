@@ -30,6 +30,9 @@ import (
 	#kind:       string
 	#combinedVersion: "\(#apiVersion).\(#kind)"
 
+	labels?:      #LabelsType
+	annotations?: #AnnotationsType
+
 	// Human-readable description of the trait
 	description?: string
 

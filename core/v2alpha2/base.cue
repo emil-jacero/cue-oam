@@ -22,15 +22,3 @@ import (
 	}
 	...
 }
-
-// Provider context passed to transformers
-#ProviderContext: {
-	namespace:  string | *"default"
-	appName:    string
-	appVersion: string
-	appLabels: [string]: string
-	componentName?: string
-	componentId?:   string
-	capabilities: [...string] // Provider capabilities
-	config: {...} // Provider-specific config
-}

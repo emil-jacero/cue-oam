@@ -13,10 +13,12 @@ import (
 	domain: "structural"
 	scope:    ["component"]
 	requiredCapabilities: [
-		"core.oam.dev/v2alpha2.Exposeable",
+		"core.oam.dev/v2alpha2.Expose",
 	]
 	provides: {
-		exposable: {
+		expose: {
+			// Type of service to create
+			type: "LoadBalancer" | "NodePort" | "ClusterIP" | *"ClusterIP"
 			// Port mappings
 			ports: [...schema.#Port]
 		}
@@ -24,14 +26,11 @@ import (
 }
 #Expose: core.#Trait & {
 	#metadata: #traits: Expose: #ExposeTraitMeta
+
+	expose: #ExposeTraitMeta.provides.expose
 }
 
 // Network Isolation Scope - manages network boundaries and policies
-#NetworkIsolationScope: core.#Trait & {
-	#metadata: #traits: NetworkIsolationScope: #NetworkIsolationScopeTraitMeta
-
-	network: #NetworkIsolationScopeTraitMeta.provides.network
-}
 #NetworkIsolationScopeTraitMeta: core.#TraitMeta & {
 	#kind:    "NetworkIsolationScope"
 	type:     "atomic"
@@ -62,4 +61,9 @@ import (
 			}]
 		}
 	}
+}
+#NetworkIsolationScope: core.#Trait & {
+	#metadata: #traits: NetworkIsolationScope: #NetworkIsolationScopeTraitMeta
+
+	network: #NetworkIsolationScopeTraitMeta.provides.network
 }

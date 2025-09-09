@@ -4,6 +4,98 @@ import (
 	core "jacero.io/oam/core/v2alpha2"
 )
 
+// Kubernetes-specific metadata generation function
+#GenerateMetadata: {
+	_input: {
+		name?:         string
+		traitMeta:    _  // Accept any trait metadata structure
+		context:      core.#ProviderContext
+		resourceType: string  // "deployment", "service", "configmap", etc.
+	}
+
+	// Metadata structure
+	if _input.name != _|_ {
+		name:      _input.name
+	}
+	if _input.name == _|_ {
+		name:      _input.context.metadata.component.name
+	}
+	namespace: _input.context.namespace
+	
+	// Hierarchical label inheritance: System → Application → Component  
+	labels: {
+		// Standard Kubernetes recommended labels (system defaults)
+		"app.kubernetes.io/name":       _input.name
+		"app.kubernetes.io/instance":   _input.context.metadata.application.name
+		"app.kubernetes.io/version":    _input.context.metadata.application.version
+		"app.kubernetes.io/component":  _input.resourceType
+		"app.kubernetes.io/part-of":    _input.context.metadata.application.name
+		"app.kubernetes.io/managed-by": "cue-oam"
+		
+		// OAM-specific labels (conditionally added if fields exist)
+		if _input.traitMeta.domain != _|_ {
+			"oam.dev/trait-domain": _input.traitMeta.domain
+		}
+		if _input.traitMeta.type != _|_ {
+			"oam.dev/trait-type": _input.traitMeta.type
+		}
+		"oam.dev/application": _input.context.metadata.application.name
+		"oam.dev/component":   _input.context.metadata.component.name
+	}
+	
+	// Merge in application-level labels if present
+	if _input.context.metadata.application.labels != _|_ {
+		for lk, lv in _input.context.metadata.application.labels {
+			labels: "\(lk)": "\(lv)"
+		}
+	}
+	
+	// Merge in component-level labels if present  
+	if _input.context.metadata.component.labels != _|_ {
+		for lk, lv in _input.context.metadata.component.labels {
+			labels: "\(lk)": "\(lv)"
+		}
+	}
+	
+	// Merge in trait labels if present
+	if _input.traitMeta.labels != _|_ {
+		for lk, lv in _input.traitMeta.labels {
+			labels: "\(lk)": "\(lv)"
+		}
+	}
+
+	// System annotations
+	annotations: {
+		if _input.traitMeta.#combinedVersion != _|_ {
+			"oam.dev/trait-version": _input.traitMeta.#combinedVersion
+		}
+		"oam.dev/resource-type":       _input.resourceType
+		"oam.dev/generated-by":        "cue-oam-transformer"
+		"oam.dev/application-version": _input.context.metadata.application.version
+	}
+	
+	// Merge in application annotations if present
+	if _input.context.metadata.application.annotations != _|_ {
+		for ak, av in _input.context.metadata.application.annotations {
+			annotations: "\(ak)": "\(av)"
+		}
+	}
+	
+	// Merge in component annotations if present
+	if _input.context.metadata.component.annotations != _|_ {
+		for ak, av in _input.context.metadata.component.annotations {
+			annotations: "\(ak)": "\(av)"
+		}
+	}
+	
+	// Merge in trait annotations if present
+	if _input.traitMeta.annotations != _|_ {
+		for ak, av in _input.traitMeta.annotations {
+			annotations: "\(ak)": "\(av)"
+		}
+	}
+}
+
 #ProviderKubernetes: core.#Provider & {
 	#metadata: {
 		name:        "Kubernetes"
@@ -58,23 +150,50 @@ import (
 		output: {
 			resources: [
 				// Flatten all transformer outputs into a single array
-				for componentName, component in app.components
-				for traitName, trait in component.#metadata.#traits
-				if transformers[trait.#combinedVersion] != _|_
-				for resource in (transformers[trait.#combinedVersion].transform & {
-					input: component
-					context: core.#ProviderContext & {
-						namespace:     app.#metadata.namespace
-						appName:       app.#metadata.name
-						appVersion:    app.#metadata.version
-						appLabels:     app.#metadata.labels
-						componentName: componentName
-						componentId:   component.#metadata.#id
-						capabilities:  #metadata.capabilities
+				for componentName, comp in app.components
+				for traitName, trait in comp.#metadata.#traits
+				if transformers[trait.#combinedVersion] != _|_ {
+					if transformers[trait.#combinedVersion].accepts != trait.#combinedVersion {
+						error("Trait \(trait.#combinedVersion) not supported by provider")
 					}
-				}).output.resources {
-					resource
-				},
+					for resource in (transformers[trait.#combinedVersion].transform & {
+						input: comp
+						context: core.#ProviderContext & {
+							name:          app.#metadata.name
+							namespace:     app.#metadata.namespace
+							capabilities:  #metadata.capabilities
+							config:        {}
+							
+							metadata: {
+								application: {
+									id:   app.#metadata.#id
+									name: app.#metadata.name
+									namespace: app.#metadata.namespace
+									version: app.#metadata.version
+									if app.#metadata.labels != _|_ {
+										labels: app.#metadata.labels
+									}
+									if app.#metadata.annotations != _|_ {
+										annotations: app.#metadata.annotations
+									}
+								}
+								
+								component: {
+									id:   comp.#metadata.#id
+									name: comp.#metadata.name
+									if comp.#metadata.labels != _|_ {
+										labels: comp.#metadata.labels
+									}
+									if comp.#metadata.annotations != _|_ {
+										annotations: comp.#metadata.annotations
+									}
+								}
+							}
+						}
+					}).output.resources {
+						resource
+					},
+				}
 			]
 		}
 	}

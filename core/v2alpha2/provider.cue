@@ -30,3 +30,33 @@ package v2alpha2
 		output:  _
 	}
 }
+
+// Provider context passed to transformers
+// Can be constructed manually or from Application + Component
+#ProviderContext: {
+	name:       string // Application name
+	namespace:  string // Application namespace
+	capabilities: [...string] // Provider capabilities
+	config: {...} // Provider-specific config
+	
+	// Hierarchical metadata inheritance system
+	metadata: {
+		// Application-level metadata (applied to ALL resources in the application)
+		application: {
+			id:           string
+			name:         string
+			namespace:    string
+			version:      string
+			labels?:      #LabelsType
+			annotations?: #AnnotationsType
+		}
+		
+		// Component-level metadata (applied to all resources in this component)
+		component: {
+			id:           string
+			name:         string
+			labels?:      #LabelsType
+			annotations?: #AnnotationsType
+		}
+	}
+}
