@@ -127,8 +127,6 @@ import (
 	requiredCapabilities: [
 		"core.oam.dev/v2alpha1.Labels",
 	]
-	// This trait modifies resources created by ContainerSet
-	requires: [#ContainerSetTraitMeta]
 	provides: {
 		labels: [string]: string
 	}
@@ -148,8 +146,6 @@ import (
 	requiredCapabilities: [
 		"core.oam.dev/v2alpha1.Annotations",
 	]
-	// This trait modifies resources created by ContainerSet
-	requires: [#ContainerSetTraitMeta]
 	provides: {
 		annotations: [string]: string
 	}
