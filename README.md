@@ -174,7 +174,7 @@ Traits are the fundamental building blocks in CUE-OAM. Every trait belongs to on
 #Volume: #Trait & {
     #metadata: #traits: Volume: {
         type: "atomic"
-        category: "resource"
+        domain: "resource"
         scope: ["component"]
         provides: {volume: {...}}
     }
@@ -184,7 +184,7 @@ Traits are the fundamental building blocks in CUE-OAM. Every trait belongs to on
 #Database: #Trait & {
     #metadata: #traits: Database: {
         type: "composite"
-        category: "resource"
+        domain: "resource"
         composes: [#Workload, #Volume]
         // requiredCapabilities auto-computed
     }
@@ -256,7 +256,7 @@ import core "jacero.io/oam/core/v2alpha2"
 #CustomCache: core.#Trait & {
     #metadata: #traits: CustomCache: {
         type: "composite"
-        category: "resource"
+        domain: "resource"
         scope: ["component"]
         composes: [#Workload, #Volume]
         description: "Custom caching layer"

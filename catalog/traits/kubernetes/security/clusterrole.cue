@@ -13,7 +13,7 @@ import (
 	description: "Kubernetes ClusterRole contains rules that represent a set of permissions at the cluster level"
 	
 	type:     "atomic"
-	category: "behavioral"
+	domain: "behavioral"
 	scope: ["component"]
 	
 	requiredCapabilities: [
@@ -37,7 +37,7 @@ import (
 	description: "Kubernetes ClusterRoles contains rules that represent a set of permissions at the cluster level"
 
 	type:     "atomic"
-	category: "behavioral"
+	domain: "behavioral"
 	scope: ["component"]
 
 	requiredCapabilities: [

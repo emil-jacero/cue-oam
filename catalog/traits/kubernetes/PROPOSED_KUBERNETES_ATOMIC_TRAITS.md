@@ -17,8 +17,8 @@ This document outlines all proposed atomic traits specifically for Kubernetes re
 
 ### Must Have - Core Kubernetes resources required for production workloads
 
-| Trait | Category | Description | Justification | Kubernetes Resource |
-|-------|----------|-------------|---------------|-------------------|
+| Trait | Domain | Description | Justification | Kubernetes Resource |
+|-------|--------|-------------|---------------|-------------------|
 | **Deployment** | operational | Kubernetes Deployment for stateless workloads with rolling updates | Essential for running stateless applications with declarative updates and scaling | `apps/v1.Deployment` |
 | **StatefulSet** | operational | Kubernetes StatefulSet for stateful workloads with stable network identities and persistent storage | Required for databases, message queues, and other stateful services needing stable identities | `apps/v1.StatefulSet` |
 | **DaemonSet** | operational | Kubernetes DaemonSet ensures that all (or some) nodes run a copy of a pod | Essential for node-level services like monitoring agents, log collectors, and network proxies | `apps/v1.DaemonSet` |
@@ -38,8 +38,8 @@ This document outlines all proposed atomic traits specifically for Kubernetes re
 
 ### Should Have - Important Kubernetes features for enhanced functionality
 
-| Trait | Category | Description | Justification | Kubernetes Resource |
-|-------|----------|-------------|---------------|-------------------|
+| Trait | Domain | Description | Justification | Kubernetes Resource |
+|-------|--------|-------------|---------------|-------------------|
 | **HorizontalPodAutoscaler** | operational | Kubernetes HorizontalPodAutoscaler for automatic scaling of pods based on observed CPU utilization or custom metrics | Enables dynamic scaling to handle variable load, improving cost efficiency and availability | `autoscaling/v2.HorizontalPodAutoscaler` |
 | **VerticalPodAutoscaler** | operational | Kubernetes VerticalPodAutoscaler for automatic adjustment of resource requests based on usage | Optimizes resource allocation without manual tuning, reducing waste and improving performance | `autoscaling.k8s.io/v1.VerticalPodAutoscaler` |
 | **PodDisruptionBudget** | contractual | Kubernetes PodDisruptionBudget maintains availability during disruptions | Critical for high-availability services during maintenance operations and cluster updates | `policy/v1.PodDisruptionBudget` |
@@ -62,8 +62,8 @@ This document outlines all proposed atomic traits specifically for Kubernetes re
 
 ### Nice to Have - Additional Kubernetes features that improve developer experience
 
-| Trait | Category | Description | Justification | Kubernetes Resource |
-|-------|----------|-------------|---------------|-------------------|
+| Trait | Domain | Description | Justification | Kubernetes Resource |
+|-------|--------|-------------|---------------|-------------------|
 | **IngressClass** | structural | Kubernetes IngressClass for defining ingress controller classes | Enables multiple ingress controllers in the same cluster with different capabilities | `networking.k8s.io/v1.IngressClass` |
 | **Gateway** | structural | Gateway API Gateway for advanced traffic management | Next-generation ingress with more powerful routing and traffic management capabilities | `gateway.networking.k8s.io/v1.Gateway` |
 | **GatewayClass** | structural | Gateway API GatewayClass for defining gateway controller classes | Enables multiple gateway controllers with different feature sets | `gateway.networking.k8s.io/v1.GatewayClass` |
@@ -89,8 +89,8 @@ This document outlines all proposed atomic traits specifically for Kubernetes re
 
 ### Optional - Specialized Kubernetes features for specific use cases
 
-| Trait | Category | Description | Justification | Kubernetes Resource |
-|-------|----------|-------------|---------------|-------------------|
+| Trait | Domain | Description | Justification | Kubernetes Resource |
+|-------|--------|-------------|---------------|-------------------|
 | **Node** | structural | Kubernetes Node represents a worker machine | Low-level resource typically managed by cluster operators | `core/v1.Node` |
 | **Namespace** | structural | Kubernetes Namespace provides a mechanism for isolating groups of resources | Fundamental for multi-tenancy but usually managed at higher levels | `core/v1.Namespace` |
 | **PodTemplate** | structural | Kubernetes PodTemplate describes a pod that will be created | Building block for other controllers, rarely used directly | `core/v1.PodTemplate` |

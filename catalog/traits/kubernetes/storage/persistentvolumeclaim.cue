@@ -13,7 +13,7 @@ import (
 	description: "Kubernetes PersistentVolumeClaim for requesting persistent storage"
 	
 	type:     "atomic"
-	category: "resource"
+	domain: "resource"
 	scope: ["component"]
 	
 	requiredCapabilities: [
@@ -37,7 +37,7 @@ import (
 	description: "Kubernetes PersistentVolumeClaims for requesting persistent storage"
 
 	type:     "atomic"
-	category: "resource"
+	domain: "resource"
 	scope: ["component"]
 
 	requiredCapabilities: [

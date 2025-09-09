@@ -103,7 +103,7 @@ Design traits to be extensible:
     #metadata: #traits: MyTrait: #TraitObject & {
         description: "What this trait does"
         type: "atomic|composite"  // Required field
-        category: "operational|structural|behavioral|resource|contractual"
+        domain: "operational|structural|behavioral|resource|contractual"
         scope: ["component", "scope"]
         composes: [  // Only for composite traits (type must be "composite")
             #OtherTrait.#metadata.#traits.OtherTrait

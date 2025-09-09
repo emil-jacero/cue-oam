@@ -13,7 +13,7 @@ import (
 	description: "Kubernetes StorageClass for defining classes of storage"
 	
 	type:     "atomic"
-	category: "resource"
+	domain: "resource"
 	scope: ["component"]
 	
 	requiredCapabilities: [

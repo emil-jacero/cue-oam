@@ -13,7 +13,7 @@ import (
 	description: "Kubernetes DaemonSet ensures that all (or some) nodes run a copy of a pod"
 	
 	type:     "atomic"
-	category: "operational"
+	domain: "operational"
 	scope: ["component"]
 	
 	requiredCapabilities: [
@@ -37,7 +37,7 @@ import (
 	description: "Kubernetes DaemonSets ensure that all (or some) nodes run a copy of a pod"
 
 	type:     "atomic"
-	category: "operational"
+	domain: "operational"
 	scope: ["component"]
 
 	requiredCapabilities: [

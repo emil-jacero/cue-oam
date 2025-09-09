@@ -12,7 +12,7 @@ import (
 	description: "Kubernetes HorizontalPodAutoscaler for automatic scaling of pods based on observed CPU utilization or custom metrics"
 	
 	type:     "atomic"
-	category: "operational"
+	domain: "operational"
 	scope: ["component"]
 	
 	requiredCapabilities: [

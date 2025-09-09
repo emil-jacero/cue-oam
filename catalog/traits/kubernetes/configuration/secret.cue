@@ -12,7 +12,7 @@ import (
 	description: "Kubernetes Secrets for storing sensitive configuration data"
 
 	type:     "atomic"
-	category: "resource"
+	domain: "resource"
 	scope: ["component"]
 
 	requiredCapabilities: [
@@ -35,7 +35,7 @@ import (
 	description: "Kubernetes Secret for storing sensitive configuration data"
 
 	type:     "atomic"
-	category: "resource"
+	domain: "resource"
 	scope: ["component"]
 
 	requiredCapabilities: [

@@ -13,7 +13,7 @@ import (
 	description: "Kubernetes Job for running batch or one-time tasks"
 	
 	type:     "atomic"
-	category: "operational"
+	domain: "operational"
 	scope: ["component"]
 	
 	requiredCapabilities: [
@@ -37,7 +37,7 @@ import (
 	description: "Kubernetes Jobs for running batch or one-time tasks"
 
 	type:     "atomic"
-	category: "operational"
+	domain: "operational"
 	scope: ["component"]
 
 	requiredCapabilities: [

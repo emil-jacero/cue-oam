@@ -1,6 +1,6 @@
 # Kubernetes Atomic Traits
 
-This directory contains a comprehensive collection of atomic traits for Kubernetes resources, organized by functional category. These traits provide OAM v2alpha2 definitions for all major Kubernetes resource types.
+This directory contains a comprehensive collection of atomic traits for Kubernetes resources, organized by functional domain. These traits provide OAM v2alpha2 definitions for all major Kubernetes resource types.
 
 ## Directory Structure
 

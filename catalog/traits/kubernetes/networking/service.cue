@@ -13,7 +13,7 @@ import (
 	description: "Kubernetes Services for exposing an application running on a set of Pods as a network service"
 
 	type:     "atomic"
-	category: "structural"
+	domain: "structural"
 	scope: ["component"]
 	
 	requiredCapabilities: [
@@ -37,7 +37,7 @@ import (
 	description: "Kubernetes Service for exposing an application running on a set of Pods as a network service"
 
 	type:     "atomic"
-	category: "structural"
+	domain: "structural"
 	scope: ["component"]
 	
 	requiredCapabilities: [

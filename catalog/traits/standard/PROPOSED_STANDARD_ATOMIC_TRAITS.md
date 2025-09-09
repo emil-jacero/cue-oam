@@ -17,8 +17,8 @@ This document outlines all proposed atomic traits for the CUE-OAM system, organi
 
 ### Must Have - Core functionality required for production workloads
 
-| Trait | Category | Description | Justification | Dependencies |
-|-------|----------|-------------|---------------|--------------|
+| Trait | Domain | Description | Justification | Dependencies |
+|-------|--------|-------------|---------------|--------------|
 | **HealthCheck** | behavioral | Configures liveness, readiness, and startup probes for containers | Essential for production workloads to ensure containers are healthy and ready to receive traffic. Without health checks, failed containers may continue receiving traffic, causing service degradation. | Requires ContainerSet |
 | **ResourceLimits** | contractual | Sets CPU, memory, and other resource requests and limits | Critical for cluster stability and cost management. Prevents resource starvation and enables proper scheduling and autoscaling decisions. | Requires ContainerSet |
 | **Job** | operational | Defines one-time task execution that runs to completion | Fundamental for batch processing, data migrations, and initialization tasks. Many applications require one-time setup or periodic batch operations. | None |
@@ -37,8 +37,8 @@ This document outlines all proposed atomic traits for the CUE-OAM system, organi
 
 ### Should Have - Important features for enhanced functionality
 
-| Trait | Category | Description | Justification | Dependencies |
-|-------|----------|-------------|---------------|--------------|
+| Trait | Domain | Description | Justification | Dependencies |
+|-------|--------|-------------|---------------|--------------|
 | **Autoscaler** | operational | Configures horizontal pod autoscaling based on metrics | Enables dynamic scaling to handle variable load, improving cost efficiency and availability. | Requires Replica |
 | **VerticalAutoscaler** | operational | Automatically adjusts resource requests/limits based on usage | Optimizes resource allocation without manual tuning, reducing waste and improving performance. | Requires ResourceLimits |
 | **Sidecar** | structural | Injects additional containers alongside the main container | Common pattern for service meshes, logging agents, and proxy containers. Enables separation of concerns. | Requires ContainerSet |
@@ -67,8 +67,8 @@ This document outlines all proposed atomic traits for the CUE-OAM system, organi
 
 ### Nice to Have - Features that improve developer experience
 
-| Trait | Category | Description | Justification | Dependencies |
-|-------|----------|-------------|---------------|--------------|
+| Trait | Domain | Description | Justification | Dependencies |
+|-------|--------|-------------|---------------|--------------|
 | **Schedule** | operational | Unified trait for both Job and CronJob functionality | Simplifies the API by combining related scheduling concepts into a single trait. | None |
 | **Probe** | behavioral | Unified health checking trait for all probe types | Separates health checking concerns from ContainerSet, providing more flexibility and reusability. | Requires ContainerSet |
 | **RollingUpdate** | operational | Detailed rolling update strategy configuration | Provides fine-grained control over deployment strategies beyond basic UpdateStrategy. | Requires UpdateStrategy |
@@ -105,8 +105,8 @@ This document outlines all proposed atomic traits for the CUE-OAM system, organi
 
 ### Optional - Specialized features for specific use cases
 
-| Trait | Category | Description | Justification | Dependencies |
-|-------|----------|-------------|---------------|--------------|
+| Trait | Domain | Description | Justification | Dependencies |
+|-------|--------|-------------|---------------|--------------|
 | **DaemonSet** | operational | Ensures one pod runs on each node | Required for node-level services like monitoring agents and log collectors. | Requires ContainerSet |
 | **StatefulSet** | operational | Manages stateful applications with stable network identities | Essential for databases, message queues, and other stateful services. | Requires ContainerSet, Volume |
 | **License** | resource | Manages software license keys | Required for commercial software deployments. | Usually leverages Secret |

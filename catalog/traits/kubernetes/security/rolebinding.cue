@@ -13,7 +13,7 @@ import (
 	description: "Kubernetes RoleBinding grants permissions defined in a Role to a user or set of users"
 	
 	type:     "atomic"
-	category: "behavioral"
+	domain: "behavioral"
 	scope: ["component"]
 	
 	requiredCapabilities: [
@@ -37,7 +37,7 @@ import (
 	description: "Kubernetes RoleBindings grants permissions defined in a Role to a user or set of users"
 
 	type:     "atomic"
-	category: "behavioral"
+	domain: "behavioral"
 	scope: ["component"]
 
 	requiredCapabilities: [

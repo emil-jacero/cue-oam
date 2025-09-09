@@ -12,7 +12,7 @@ import (
 	description: "Prometheus PodMonitor for scraping metrics directly from pods"
 	
 	type:     "atomic"
-	category: "operational"
+	domain: "operational"
 	scope: ["component"]
 	
 	requiredCapabilities: [

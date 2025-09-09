@@ -5,11 +5,13 @@ import (
 )
 
 #TraitTypes:    "atomic" | "composite"
-#TraitCategory: "operational" | "structural" | "behavioral" | "resource" | "contractual"
+#TraitDomain: "operational" | "structural" | "behavioral" | "resource" | "contractual"
 #TraitScope:    "component" | "scope"
 
 #Trait: {
-	#metadata: #ComponentMeta & {
+	#metadata: {
+		#id:  #NameType
+		name: #NameType | *#id
 		#traits: [traitName=string]: #TraitMeta & {
 			#kind: traitName
 		}
@@ -35,9 +37,9 @@ import (
 	// Can be one of "atomic" or "composite"
 	type!: #TraitTypes
 
-	// The category of this trait
+	// The domain of this trait
 	// Can be one of "operational", "structural", "behavioral", "resource", "contractual"
-	category!: #TraitCategory
+	domain!: #TraitDomain
 
 	// Where can this trait be applied
 	// Can be one or more of "component", "scope"

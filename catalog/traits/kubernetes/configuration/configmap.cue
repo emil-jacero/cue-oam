@@ -12,7 +12,7 @@ import (
 	description: "Kubernetes ConfigMaps for storing configuration data as key-value pairs"
 
 	type:     "atomic"
-	category: "resource"
+	domain: "resource"
 	scope: ["component"]
 	
 	requiredCapabilities: [
@@ -36,7 +36,7 @@ import (
 	description: "Kubernetes ConfigMap for storing configuration data as key-value pairs"
 
 	type:     "atomic"
-	category: "resource"
+	domain: "resource"
 	scope: ["component"]
 	
 	requiredCapabilities: [

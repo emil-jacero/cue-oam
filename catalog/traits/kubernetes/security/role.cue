@@ -13,7 +13,7 @@ import (
 	description: "Kubernetes Role contains rules that represent a set of permissions within a namespace"
 	
 	type:     "atomic"
-	category: "behavioral"
+	domain: "behavioral"
 	scope: ["component"]
 	
 	requiredCapabilities: [
@@ -37,7 +37,7 @@ import (
 	description: "Kubernetes Roles contains rules that represent a set of permissions within a namespace"
 
 	type:     "atomic"
-	category: "behavioral"
+	domain: "behavioral"
 	scope: ["component"]
 
 	requiredCapabilities: [

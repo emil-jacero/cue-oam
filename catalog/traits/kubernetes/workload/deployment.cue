@@ -13,7 +13,7 @@ import (
 	description: "Kubernetes Deployment for stateless workloads with rolling updates"
 	
 	type:     "atomic"
-	category: "operational"
+	domain: "operational"
 	scope: ["component"]
 	
 	requiredCapabilities: [
@@ -37,7 +37,7 @@ import (
 	description: "Kubernetes Deployments for stateless workloads with rolling updates"
 
 	type:     "atomic"
-	category: "operational"
+	domain: "operational"
 	scope: ["component"]
 
 	requiredCapabilities: [

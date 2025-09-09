@@ -4,16 +4,11 @@ package v2alpha2
 #Component: {
 	#apiVersion: "core.oam.dev/v2alpha2"
 	#kind:       "Component"
-	#metadata: #ComponentMeta & {
+	#metadata: {
+		#id:  #NameType
+		name: #NameType | *#id
 		labels?:      #LabelsType
 		annotations?: #AnnotationsType
 	}
 	#Trait
-}
-
-// Component metadata
-#ComponentMeta: {
-	#id:  #NameType
-	name: #NameType | *#id
-	...
 }

@@ -13,7 +13,7 @@ import (
 	description: "Kubernetes StatefulSet for stateful workloads with stable network identities and persistent storage"
 	
 	type:     "atomic"
-	category: "operational"
+	domain: "operational"
 	scope: ["component"]
 	
 	requiredCapabilities: [
@@ -37,7 +37,7 @@ import (
 	description: "Kubernetes StatefulSets for stateful workloads with stable network identities and persistent storage"
 
 	type:     "atomic"
-	category: "operational"
+	domain: "operational"
 	scope: ["component"]
 
 	requiredCapabilities: [

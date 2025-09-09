@@ -13,7 +13,7 @@ import (
 	description: "Kubernetes ServiceAccount provides an identity for processes that run in a Pod"
 	
 	type:     "atomic"
-	category: "resource"
+	domain: "resource"
 	scope: ["component"]
 	
 	requiredCapabilities: [
@@ -37,7 +37,7 @@ import (
 	description: "Kubernetes ServiceAccounts provides an identity for processes that run in a Pod"
 
 	type:     "atomic"
-	category: "resource"
+	domain: "resource"
 	scope: ["component"]
 
 	requiredCapabilities: [

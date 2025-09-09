@@ -16,8 +16,8 @@ This document outlines all proposed composite traits for the CUE-OAM system, org
 
 ### Basic patterns combining 2-3 atomic traits
 
-| Trait | Category | Composes | Description | Justification |
-|-------|----------|----------|-------------|---------------|
+| Trait | Domain | Composes | Description | Justification |
+|-------|--------|----------|-------------|---------------|
 | **SimpleWorkload** | operational | ContainerSet + Replica | Basic containerized workload with replica control | Simplest possible deployable unit, reduces boilerplate for basic services without networking needs. |
 | **WebEndpoint** | structural | Expose + Route + HealthCheck | Basic web service exposure with health monitoring | Common pattern for exposing HTTP services with basic health checking. |
 | **ScalableWorkload** | operational | ContainerSet + Replica + Autoscaler | Auto-scaling containerized workload | Enables dynamic scaling without manual configuration complexity. |
@@ -40,8 +40,8 @@ This document outlines all proposed composite traits for the CUE-OAM system, org
 
 ### Production-ready patterns combining 4-6 traits
 
-| Trait | Category | Composes | Description | Justification |
-|-------|----------|----------|-------------|---------------|
+| Trait | Domain | Composes | Description | Justification |
+|-------|--------|----------|-------------|---------------|
 | **WebService** | structural | ContainerSet + Replica + Expose + Route + HealthCheck + Metrics | Complete web service with monitoring | Standard pattern for production web services, provides everything needed for a basic HTTP service. |
 | **APIService** | structural | WebService + RateLimiter + Autoscaler + Certificate | Production-ready API with rate limiting and auto-scaling | APIs need additional protection and scaling capabilities beyond basic web services. |
 | **SecureWebService** | contractual | WebService + Certificate + SecurityPolicy + RBAC | Web service with enhanced security | Required for services handling sensitive data or exposed to the internet. |
@@ -69,8 +69,8 @@ This document outlines all proposed composite traits for the CUE-OAM system, org
 
 ### Enterprise patterns combining 7+ traits or other composites
 
-| Trait | Category | Composes | Description | Justification |
-|-------|----------|----------|-------------|---------------|
+| Trait | Domain | Composes | Description | Justification |
+|-------|--------|----------|-------------|---------------|
 | **EnterpriseAPI** | structural | APIService + CompliancePolicy + Audit + SLA + LoadBalancer | Enterprise-grade API with compliance and SLA | Large organizations need APIs that meet regulatory and business requirements. |
 | **GlobalWebService** | structural | WebService + LoadBalancer + TopologySpread + AffinityRules + CDN | Globally distributed web service | Services requiring global reach need sophisticated distribution and caching strategies. |
 | **DataPlatform** | resource | DatabaseService + DataReplication + DataGovernance + Audit + Metrics + Alerts | Complete data platform with governance | Enterprise data platforms need comprehensive data management capabilities. |

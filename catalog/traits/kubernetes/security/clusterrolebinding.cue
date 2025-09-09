@@ -13,7 +13,7 @@ import (
 	description: "Kubernetes ClusterRoleBinding grants permissions defined in a ClusterRole to a user or set of users cluster-wide"
 	
 	type:     "atomic"
-	category: "behavioral"
+	domain: "behavioral"
 	scope: ["component"]
 	
 	requiredCapabilities: [
@@ -37,7 +37,7 @@ import (
 	description: "Kubernetes ClusterRoleBindings grants permissions defined in a ClusterRole to a user or set of users cluster-wide"
 
 	type:     "atomic"
-	category: "behavioral"
+	domain: "behavioral"
 	scope: ["component"]
 
 	requiredCapabilities: [

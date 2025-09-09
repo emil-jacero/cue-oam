@@ -10,7 +10,7 @@ import (
 	#kind:    "Expose"
 	description: "Marks a component as exposable for external access"
 	type:     "atomic"
-	category: "structural"
+	domain: "structural"
 	scope:    ["component"]
 	requiredCapabilities: [
 		"core.oam.dev/v2alpha2.Exposeable",
@@ -35,7 +35,7 @@ import (
 #NetworkIsolationScopeTraitMeta: core.#TraitMeta & {
 	#kind:    "NetworkIsolationScope"
 	type:     "atomic"
-	category: "structural"
+	domain: "structural"
 	scope: ["component", "scope"]
 	requiredCapabilities: [
 		"k8s.io/api/networking/v1.NetworkPolicy",

@@ -10,7 +10,7 @@ import (
 #VolumeTraitMeta: core.#TraitMeta & {
 	#kind:    "Volume"
 	type:     "atomic"
-	category: "resource"
+	domain: "resource"
 	scope: ["component"]
 	requiredCapabilities: [
 		"core.oam.dev/v2alpha1.Volume",
@@ -37,7 +37,7 @@ import (
 #SecretTraitMeta: core.#TraitMeta & {
 	#kind:    "Secret"
 	type:     "atomic"
-	category: "resource"
+	domain: "resource"
 	scope: ["component"]
 	requiredCapabilities: [
 		"core.oam.dev/v2alpha1.Secret",
@@ -58,7 +58,7 @@ import (
 #ConfigTraitMeta: core.#TraitMeta & {
 	#kind:    "Config"
 	type:     "atomic"
-	category: "resource"
+	domain: "resource"
 	scope: ["component"]
 	requiredCapabilities: [
 		"core.oam.dev/v2alpha1.Config",

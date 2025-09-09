@@ -16,8 +16,8 @@ This document outlines all proposed composite traits specifically for Kubernetes
 
 ### Basic Kubernetes patterns combining 2-3 atomic traits
 
-| Trait | Category | Composes | Description | Justification |
-|-------|----------|----------|-------------|---------------|
+| Trait | Domain | Composes | Description | Justification |
+|-------|--------|----------|-------------|---------------|
 | **SimpleDeployment** | operational | Deployment + Service | Basic stateless workload with internal service exposure | Simplest deployable Kubernetes application pattern, reduces boilerplate for basic web services |
 | **ConfiguredDeployment** | operational | Deployment + ConfigMap + Secret | Deployment with external configuration and secrets | Most applications need configuration and credentials separated from container images |
 | **PersistentDeployment** | operational | Deployment + PersistentVolumeClaim + Service | Deployment with persistent storage and service | Common pattern for applications needing data persistence with network access |
@@ -40,8 +40,8 @@ This document outlines all proposed composite traits specifically for Kubernetes
 
 ### Production-ready Kubernetes patterns combining 4-6 traits
 
-| Trait | Category | Composes | Description | Justification |
-|-------|----------|----------|-------------|---------------|
+| Trait | Domain | Composes | Description | Justification |
+|-------|--------|----------|-------------|---------------|
 | **ProductionDeployment** | operational | Deployment + Service + ConfigMap + Secret + HorizontalPodAutoscaler + PodDisruptionBudget | Complete production-ready stateless workload | Standard pattern for production Kubernetes applications with scaling and availability |
 | **ProductionStatefulSet** | operational | StatefulSet + Service + PersistentVolumeClaim + ConfigMap + Secret + VolumeSnapshot | Production-ready stateful workload with backups | Complete pattern for production databases and stateful services |
 | **HighAvailabilityDeployment** | operational | Deployment + Service + HorizontalPodAutoscaler + PodDisruptionBudget + NetworkPolicy + Ingress | Highly available web application | Ensures availability, security, and external access for critical applications |
@@ -69,8 +69,8 @@ This document outlines all proposed composite traits specifically for Kubernetes
 
 ### Enterprise Kubernetes patterns combining 7+ traits or other composites
 
-| Trait | Category | Composes | Description | Justification |
-|-------|----------|----------|-------------|---------------|
+| Trait | Domain | Composes | Description | Justification |
+|-------|--------|----------|-------------|---------------|
 | **EnterpriseApplication** | operational | ProductionDeployment + MonitoringStack + BackupSolution + CertificateManager | Complete enterprise application stack | Full enterprise deployment with all production requirements |
 | **MultiTenantPlatform** | contractual | ResourceQuota + LimitRange + NetworkPolicy + ServiceAccount + Role + RoleBinding + PodSecurityPolicy | Multi-tenant Kubernetes platform | Comprehensive tenant isolation and resource management |
 | **ServiceMeshPlatform** | structural | ServiceMeshSidecar + CertificateManager + MonitoringStack + PolicyEngine | Complete service mesh infrastructure | Full service mesh deployment with security and observability |

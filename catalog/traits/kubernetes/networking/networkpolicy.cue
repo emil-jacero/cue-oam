@@ -12,7 +12,7 @@ import (
 	description: "Kubernetes NetworkPolicy for controlling network traffic to and from pods"
 	
 	type:     "atomic"
-	category: "behavioral"
+	domain: "behavioral"
 	scope: ["component"]
 	
 	requiredCapabilities: [

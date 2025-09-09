@@ -12,7 +12,7 @@ import (
 	description: "Kubernetes VerticalPodAutoscaler for automatic adjustment of resource requests based on usage"
 	
 	type:     "atomic"
-	category: "operational"
+	domain: "operational"
 	scope: ["component"]
 	
 	requiredCapabilities: [

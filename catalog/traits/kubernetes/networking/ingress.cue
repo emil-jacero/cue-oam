@@ -12,7 +12,7 @@ import (
 	description: "Kubernetes Ingress for HTTP and HTTPS access to services from outside the cluster"
 	
 	type:     "atomic"
-	category: "structural"
+	domain: "structural"
 	scope: ["component"]
 	
 	requiredCapabilities: [

@@ -12,7 +12,7 @@ import (
 	description: "Prometheus ServiceMonitor for scraping metrics from services"
 	
 	type:     "atomic"
-	category: "operational"
+	domain: "operational"
 	scope: ["component"]
 	
 	requiredCapabilities: [

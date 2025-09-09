@@ -56,7 +56,7 @@ The current trait system faces several limitations:
 All traits in CUE-OAM belong to one of five fundamental categories:
 
 ```cue
-#TraitCategory: "operational" | "structural" | "behavioral" | "resource" | "contractual"
+#TraitDomain: "operational" | "structural" | "behavioral" | "resource" | "contractual"
 ```
 
 1. **Operational** - How things execute (runtime behavior)
@@ -89,7 +89,7 @@ All traits in CUE-OAM belong to one of five fundamental categories:
     type: #TraitTypes
 
     // Primary category - what this trait mainly does
-    category!: #TraitCategory
+    domain!: #TraitDomain
 
     // Where can this trait be applied
     // Can be one or more of "component", "scope"
@@ -190,7 +190,7 @@ Traits are either **atomic** (fundamental building blocks) or **composite** (bui
 ```cue
 #Workload: #Trait & {
     #metadata: #traits: Workload: {
-        category: "operational"
+        domain: "operational"
         provides: workload: #Workload.workload
         type: "atomic"
         requiredCapabilities: [
@@ -207,7 +207,7 @@ Traits are either **atomic** (fundamental building blocks) or **composite** (bui
 
 #Volume: #Trait & {
     #metadata: #traits: Volume: {
-        category: "resource"
+        domain: "resource"
         provides: volumes: #Volume.volumes
         type: "atomic"
         requiredCapabilities: [
@@ -240,7 +240,7 @@ Traits are either **atomic** (fundamental building blocks) or **composite** (bui
 #Database: #Trait & {
     #metadata: #traits: Database: {
         type: "composite"
-        category: "operational"
+        domain: "operational"
         composes: [#Workload.#metadata.#traits.Workload, #Volume.#metadata.#traits.Volume]
         provides: database: #Database.database
         scope: ["component"]
@@ -362,7 +362,7 @@ The current implementation includes working examples:
 // Test composite trait that works correctly
 testValidWebService: #TraitObject & {
     type: "composite"
-    category: "operational"
+    domain: "operational"
     composes: [
         testAtomicWorkload,
         testAtomicExposable, 

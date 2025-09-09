@@ -15,7 +15,7 @@ import (
 	#kind:    "ContainerSet"
 	description: "Container specification with main and init containers support"
 	type:     "atomic"
-	category: "operational"
+	domain: "operational"
 	scope: ["component"]
 	requiredCapabilities: [
 		"core.oam.dev/v2alpha1.ContainerSet",
@@ -44,7 +44,7 @@ import (
 	#kind:    "Replica"
 	description: "Specifies the number of replicas to run"
 	type:     "atomic"
-	category: "operational"
+	domain: "operational"
 	scope: ["component"]
 	requiredCapabilities: [
 		"core.oam.dev/v2alpha1.Replica",
@@ -68,7 +68,7 @@ import (
 	#kind:    "RestartPolicy"
 	description: "Defines restart behavior for containers"
 	type:     "atomic"
-	category: "operational"
+	domain: "operational"
 	scope: ["component"]
 	requiredCapabilities: [
 		"core.oam.dev/v2alpha1.RestartPolicy",
@@ -90,7 +90,7 @@ import (
 	#kind:    "UpdateStrategy"
 	description: "Defines how updates are applied to running instances"
 	type:     "atomic"
-	category: "operational"
+	domain: "operational"
 	scope: ["component"]
 	requiredCapabilities: [
 		"core.oam.dev/v2alpha1.UpdateStrategy",
@@ -122,7 +122,7 @@ import (
 	#kind:    "Labels"
 	description: "Adds custom labels to the workload"
 	type:     "atomic"
-	category: "operational"
+	domain: "operational"
 	scope: ["component"]
 	requiredCapabilities: [
 		"core.oam.dev/v2alpha1.Labels",
@@ -141,7 +141,7 @@ import (
 	#kind:    "Annotations"
 	description: "Adds custom annotations to the workload"
 	type:     "atomic"
-	category: "operational"
+	domain: "operational"
 	scope: ["component"]
 	requiredCapabilities: [
 		"core.oam.dev/v2alpha1.Annotations",
@@ -165,7 +165,7 @@ import (
 	#kind:    "Workload"
 	description: "Generic workload trait for defining containerized applications with deployment strategies and network exposure"
 	type:     "composite"
-	category: "operational"
+	domain: "operational"
 	scope: ["component"]
 	composes: [
 		#ContainerSetTraitMeta,
@@ -232,7 +232,7 @@ import (
 	#kind:    "Database"
 	description: "Managed database service with persistence support"
 	type:     "composite"
-	category: "operational"
+	domain: "operational"
 	scope: ["component"]
 	composes: [
 		#ContainerSetTraitMeta,

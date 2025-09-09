@@ -13,7 +13,7 @@ import (
 	description: "Kubernetes CronJob for running jobs on a scheduled basis"
 	
 	type:     "atomic"
-	category: "operational"
+	domain: "operational"
 	scope: ["component"]
 	
 	requiredCapabilities: [

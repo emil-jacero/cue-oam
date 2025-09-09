@@ -109,7 +109,7 @@ Both Components and Scopes inherit from #Trait, creating a unified system where 
 ```cue
 // Base trait definition (from trait.cue)
 #Trait: {
-    #metadata: #ComponentMeta & {
+    #metadata: {
         #traits: [traitName=string]: #TraitObject & {
             name: traitName
         }
@@ -122,7 +122,7 @@ Both Components and Scopes inherit from #Trait, creating a unified system where 
 #Component: {
     #apiVersion: "core.oam.dev/v2alpha1"
     #kind:       "Component"
-    #metadata: #ComponentMeta & {
+    #metadata: {
         labels?:      #LabelsType
         annotations?: #AnnotationsType
     }
@@ -142,19 +142,6 @@ Both Components and Scopes inherit from #Trait, creating a unified system where 
     // Specifies which components this scope affects
     affects: [...string]
 }
-
-// Metadata structures
-#ComponentMeta: {
-    #id:  #NameType
-    name: #NameType | *#id
-    ...
-}
-
-#ScopeMeta: {
-    #id:  #NameType
-    name: #NameType | *#id
-    ...
-}
 ```
 
 ### Trait Scope Field
@@ -171,7 +158,7 @@ The `traitScope` field in #TraitObject determines where traits can be applied:
     traitScope: [...#TraitScope]
     
     // Category of concern this trait addresses
-    category: #TraitCategory
+    domain: #TraitDomain
     
     // What this trait provides
     provides: {...}
@@ -198,7 +185,7 @@ A scope that manages network policies and connectivity:
     #metadata: #traits: NetworkScope: #TraitObject & {
         name: "NetworkScope"
         traitScope: ["scope"]  // This trait applies to scopes
-        category: "structural"
+        domain: "structural"
         provides: network: #NetworkScope.network
         requires: [
             "core.oam.dev/v1.NetworkPolicy",
@@ -248,7 +235,7 @@ A scope that manages security policies and RBAC:
     #metadata: #traits: SecurityScope: #TraitObject & {
         name: "SecurityScope"
         traitScope: ["scope"]
-        category: "contractual"
+        domain: "contractual"
         provides: security: #SecurityScope.security
         requires: [
             "core.oam.dev/v1.RBAC",
@@ -307,7 +294,7 @@ A scope that manages resource allocation and constraints:
     #metadata: #traits: ResourceScope: #TraitObject & {
         name: "ResourceScope"
         traitScope: ["scope"]
-        category: "resource"
+        domain: "resource"
         provides: resources: #ResourceScope.resources
         requires: [
             "core.oam.dev/v1.ResourceQuota",
@@ -366,7 +353,7 @@ The key distinction is in the `traitScope` field:
     #metadata: #traits: Workload: #TraitObject & {
         name: "Workload"
         traitScope: ["component"]  // Only for components
-        category: "operational"
+        domain: "operational"
         provides: workload: {...}
     }
     workload: {...}
@@ -377,7 +364,7 @@ The key distinction is in the `traitScope` field:
     #metadata: #traits: NetworkPolicy: #TraitObject & {
         name: "NetworkPolicy"
         traitScope: ["scope"]  // Only for scopes
-        category: "structural"
+        domain: "structural"
         provides: policy: {...}
     }
     policy: {...}
@@ -388,7 +375,7 @@ The key distinction is in the `traitScope` field:
     #metadata: #traits: Monitoring: #TraitObject & {
         name: "Monitoring"
         traitScope: ["component", "scope"]  // Both
-        category: "operational"
+        domain: "operational"
         provides: monitoring: {...}
     }
     monitoring: {...}
@@ -408,7 +395,7 @@ A scope for regulatory and organizational requirements:
     #metadata: #traits: ComplianceScope: #TraitObject & {
         name: "ComplianceScope"
         traitScope: ["bundle"]
-        category: "contractual"
+        domain: "contractual"
         provides: compliance: #ComplianceScope.compliance
         requires: [
             "core.oam.dev/v1.PolicyEngine",
@@ -456,7 +443,7 @@ Applications contain components with scopes as additional cross-cutting concerns
 #Application: {
     #apiVersion: "core.oam.dev/v2alpha1"
     #kind:       "Application"
-    #metadata: #ComponentMeta & {
+    #metadata: {
         name:         #NameType
         namespace?:   #NameType
         labels?:      #LabelsType
@@ -488,13 +475,13 @@ myApp: #Application & {
                     Workload: {
                         name: "Workload"
                         traitScope: ["component"]
-                        category: "operational"
+                        domain: "operational"
                         provides: workload: {...}
                     }
                     Expose: {
                         name: "Expose"
                         traitScope: ["component"]
-                        category: "structural"
+                        domain: "structural"
                         provides: expose: port: 3000
                     }
                 }
@@ -526,7 +513,7 @@ myApp: #Application & {
                     Database: {
                         name: "Database"
                         traitScope: ["component"]
-                        category: "resource"
+                        domain: "resource"
                         provides: database: {...}
                     }
                 }
@@ -548,13 +535,13 @@ myApp: #Application & {
                     NetworkPolicy: {
                         name: "NetworkPolicy"
                         traitScope: ["scope"]
-                        category: "structural"
+                        domain: "structural"
                         provides: policy: {...}
                     }
                     ServiceMesh: {
                         name: "ServiceMesh"
                         traitScope: ["scope"]
-                        category: "structural"
+                        domain: "structural"
                         provides: mesh: {...}
                     }
                 }
@@ -583,13 +570,13 @@ myApp: #Application & {
                     RBAC: {
                         name: "RBAC"
                         traitScope: ["scope"]
-                        category: "contractual"
+                        domain: "contractual"
                         provides: rbac: {...}
                     }
                     Compliance: {
                         name: "Compliance"
                         traitScope: ["scope"]
-                        category: "contractual"
+                        domain: "contractual"
                         provides: compliance: {...}
                     }
                 }
@@ -618,7 +605,7 @@ myApp: #Application & {
                     ResourceQuota: {
                         name: "ResourceQuota"
                         traitScope: ["scope"]
-                        category: "resource"
+                        domain: "resource"
                         provides: quota: {...}
                     }
                 }
@@ -646,7 +633,7 @@ Both Components and Scopes can use composite traits:
         WebService: #TraitObject & {
             name: "WebService"
             traitScope: ["component"]
-            category: "operational"
+            domain: "operational"
             composes: [
                 {name: "Workload", ...},
                 {name: "Expose", ...},
@@ -667,7 +654,7 @@ Both Components and Scopes can use composite traits:
         SecureNetwork: #TraitObject & {
             name: "SecureNetwork"
             traitScope: ["scope"]
-            category: "structural"
+            domain: "structural"
             composes: [
                 {name: "NetworkPolicy", ...},
                 {name: "ServiceMesh", ...},
