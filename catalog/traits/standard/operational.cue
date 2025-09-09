@@ -201,6 +201,7 @@ import (
 		#ReplicaTraitMeta,
 		#RestartPolicyTraitMeta,
 		#VolumeTraitMeta,
+		#SecretTraitMeta,
 	]
 	provides: {database: #Database.database}
 }
@@ -213,6 +214,26 @@ import (
 		persistence: {
 			enabled: bool | *true
 			size:    string | *"10Gi"
+		}
+		credentials: {
+			username?: string | *"admin"
+			password?: string | *"password"
+		}
+	}
+
+	secrets: {
+		if database.credentials.username != _|_ || database.credentials.password != _|_ {
+			dbCredentials: {
+				type: "Opaque"
+				data: {
+					if database.credentials.username != _|_ {
+						username: database.credentials.username
+					}
+					if database.credentials.password != _|_ {
+						password: database.credentials.password
+					}
+				}
+			}
 		}
 	}
 
