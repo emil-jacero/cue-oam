@@ -35,8 +35,10 @@ CUE-OAM implements a hierarchical, trait-based system where **"everything is a t
 ## Features
 
 ✅ **Trait-Based Composition**: Atomic and composite traits with validation  
-✅ **Five-Category System**: Operational, Structural, Behavioral, Resource, Contractual  
+✅ **Five-Domain System**: Operational, Structural, Behavioral, Resource, Contractual  
 ✅ **Provider System**: Pluggable providers for Kubernetes, Docker Compose  
+✅ **Hierarchical Metadata**: Application → Component → Resource inheritance  
+✅ **Capability Verification**: Automatic validation of core vs modifier traits  
 ✅ **Type Safety**: Built-in validation with CUE constraints  
 ✅ **Composition Depth Control**: Maximum 3-level nesting with circular dependency detection  
 ✅ **Rich Metadata**: Self-documenting traits with capability requirements  
@@ -110,28 +112,52 @@ cue mod tidy
 
     import (
         core "jacero.io/oam/core/v2alpha2"
-        traits "jacero.io/oam/catalog/traits/standard"
+        trait "jacero.io/oam/catalog/traits/standard"
+        k8s "jacero.io/oam/providers/kubernetes"
     )
 
     app: core.#Application & {
         #metadata: {
             name: "my-app"
             namespace: "default"
+            version: "1.0.0"
+            labels: {
+                team: "platform"
+                env: "production"
+            }
         }
         
         components: {
             web: {
-                traits.#Workload
-                workload: {
+                #metadata: {
+                    labels: {tier: "frontend"}
+                }
+                
+                trait.#ContainerSet
+                trait.#Expose
+                
+                containerSet: {
                     containers: main: {
+                        name: "nginx"
                         image: {
                             repository: "nginx"
                             tag: "1.24"
                         }
                         ports: [{
-                            containerPort: 80
+                            name: "http"
+                            targetPort: 80
+                            protocol: "TCP"
                         }]
                     }
+                }
+                
+                expose: {
+                    type: "ClusterIP"
+                    ports: [{
+                        name: "http"
+                        targetPort: 80
+                        exposedPort: 80
+                    }]
                 }
             }
         }
@@ -140,24 +166,31 @@ cue mod tidy
 
 2. **Export to Kubernetes**
 
-    ```bash
-    # Export application definition
-    cue export myapp.cue --out yaml
+    ```cue
+    // Render Kubernetes manifests
+    k8sManifests: k8s.#ProviderKubernetes.render & {
+        app: app
+    }
+    ```
 
-    # Render for Kubernetes
-    cue eval myapp.cue -e "k8s.render(app)" --out yaml
+    ```bash
+    # Export rendered Kubernetes resources
+    cue eval myapp.cue -e "k8sManifests.output" --out yaml
+
+    # Apply to Kubernetes
+    cue eval myapp.cue -e "k8sManifests.output" --out yaml | kubectl apply -f -
     ```
 
 ## Core Concepts
 
 ### Traits
 
-Traits are the fundamental building blocks in CUE-OAM. Every trait belongs to one of five categories:
+Traits are the fundamental building blocks in CUE-OAM. Every trait belongs to one of five domains:
 
-#### Trait Categories
+#### Trait Domains
 
-| Category | Purpose | Examples |
-|----------|---------|----------|
+| Domain | Purpose | Examples |
+|--------|---------|----------|
 | **Operational** | Runtime behavior and workload management | Workload, Task, Scaling |
 | **Structural** | Organization and relationships | Network, ServiceMesh |
 | **Behavioral** | Logic and patterns | Retry, CircuitBreaker |
@@ -268,6 +301,36 @@ import core "jacero.io/oam/core/v2alpha2"
 
 ## Providers
 
+Providers translate OAM definitions to target platforms with intelligent capability verification and hierarchical metadata management.
+
+### Provider Features
+
+#### Capability Verification
+
+Providers distinguish between:
+
+- **Core Traits**: Create primary resources (must be supported, errors if missing)
+- **Modifier Traits**: Enhance existing resources (safely ignored if unsupported)
+
+#### Hierarchical Metadata
+
+Automatic metadata inheritance from Application → Component → Resource:
+
+```cue
+app: #Application & {
+    #metadata: {
+        labels: {team: "platform"}  // Applied to ALL resources
+    }
+    components: {
+        web: {
+            #metadata: {
+                labels: {tier: "frontend"}  // Merged with app labels
+            }
+        }
+    }
+}
+```
+
 ### Kubernetes Provider
 
 Full support for Kubernetes resources with automatic transformation:
@@ -276,13 +339,21 @@ Full support for Kubernetes resources with automatic transformation:
 - Services and Ingress
 - ConfigMaps and Secrets
 - PersistentVolumes
+- NetworkPolicies
 - RBAC resources
 
 ```cue
 import k8s "jacero.io/oam/providers/kubernetes"
 
 // Render application for Kubernetes
-resources: k8s.render(app)
+k8sManifests: k8s.#ProviderKubernetes.render & {
+    app: myApp
+}
+
+// Resources will have:
+// - Standard Kubernetes labels (app.kubernetes.io/*)
+// - OAM metadata (oam.dev/*)
+// - Hierarchical labels/annotations from app & components
 ```
 
 ### Docker Compose Provider
@@ -293,7 +364,33 @@ Basic support for Docker Compose format (in development):
 import compose "jacero.io/oam/providers/compose"
 
 // Render application for Docker Compose
-composeFile: compose.render(app)
+composeFile: compose.#ProviderCompose.render & {
+    app: myApp
+}
+```
+
+### Creating Custom Providers
+
+Providers implement a pluggable interface:
+
+```cue
+#CustomProvider: core.#Provider & {
+    #metadata: {
+        name: "CustomProvider"
+        capabilities: [...]      // Supported traits
+        coreTraits: [...]       // Must support these
+        modifierTraits: [...]   // Can safely ignore these
+    }
+    
+    transformers: {
+        "core.oam.dev/v2alpha2.ContainerSet": #MyTransformer
+    }
+    
+    render: {
+        app: core.#Application
+        output: {...}  // Provider-specific output
+    }
+}
 ```
 
 ## Examples
@@ -378,16 +475,18 @@ done
 ### ✅ Completed
 
 - Core v2alpha2 API
-- Trait composition system
+- Trait composition system with domains
 - Standard trait catalog
-- Kubernetes provider
-- Basic examples
+- Kubernetes provider with full metadata support
+- Hierarchical metadata inheritance system
+- Provider capability verification (core vs modifier traits)
+- Basic and advanced examples
 
 ### 🚧 In Progress
 
 - Scope system implementation
 - Database traits enhancement
-- Provider capability discovery
+- Docker Compose provider completion
 
 ### 📅 Planned
 
@@ -412,9 +511,8 @@ done
 
 ## Known Issues
 
-- Directory typo: `/exanples/` should be `/examples/`
-- Docker Compose provider incomplete
-- Some import path inconsistencies between v2alpha1/v2alpha2
+- Docker Compose provider incomplete (basic support only)
+- Some trait implementations pending (Workflow, Pipeline)
 
 ## Contributing
 
