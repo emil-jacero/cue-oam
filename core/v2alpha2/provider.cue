@@ -48,7 +48,6 @@ package v2alpha2
 	name:      string // Application name
 	namespace: string // Application namespace
 	capabilities: [...string] // Provider capabilities
-	config: {...} // Provider-specific config
 
 	// Hierarchical metadata inheritance system
 	metadata: {

@@ -226,7 +226,6 @@ import (
 							name:         app.#metadata.name
 							namespace:    app.#metadata.namespace
 							capabilities: #metadata.capabilities
-							config: {}
 
 							metadata: {
 								application: {

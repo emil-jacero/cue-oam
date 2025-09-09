@@ -65,17 +65,15 @@ import (
 //// Description: Trait definitions provide the structure and metadata for defining traits.
 //// They include atomic traits, composite traits, and the relationships between them.
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
+//#TraitMetaAtomic | #TraitMetaComposite | #TraitMetaModifier &
 #Trait: {
 	#metadata: {
 		#id:  #NameType
 		name: #NameType | *#id
-		#traits: [traitName=string]: (#TraitMetaAtomic | #TraitMetaComposite) & {
+		#traits: [traitName=string]: {
 			#kind: traitName
+			...
 		}
-	}
-
-	for traitName, t in #metadata.#traits {
-		t.provides
 	}
 
 	// Trait-specific fields
@@ -83,7 +81,6 @@ import (
 }
 
 #TraitMetaAtomic: #TraitMetaBase & {
-	#kind: string
 	type:  "atomic"
 
 	// The domain of this trait
@@ -91,77 +88,95 @@ import (
 	domain!: #TraitDomain
 
 	// External dependencies (not composition)
-	requiredCapability!: string
+	// requiredCapability!: string
 }
 
 #TraitMetaComposite: #TraitMetaBase & {
 	#kind: string
 	type:  "composite"
 
+	// Composition - list of traits this trait is built from
+	composes!: [...#TraitMetaAtomic | #TraitMetaComposite] & [_, ...]
+
 	// The domains of this trait
 	// Can be one or more of "operational", "structural", "behavioral", "resource", "contractual", "security", "observability", "integration"
 	// Computed as the union of domains of composed traits
-	domains!: [...#TraitDomain]
+	domains: {
+		// Gather items from both sources, only if they exist
+		let items = [
+			for trait in composes if trait.domain != _|_ { trait.domain },
+			for trait in composes if trait.domains != _|_ {
+				for d in trait.domains { d }
+			},
+		]
 
-	// Composition - list of traits this trait is built from
-	composes!: [...(#TraitMetaAtomic | #TraitMetaComposite)]
-
-	// Dependencies on other traits
-	// Lists traits that must be present for this trait to function
-	// Used for modifier traits that patch resources created by other traits
-	dependencies?: [...(#TraitMetaAtomic | #TraitMetaComposite)]
+		// Deduplicate via map-keys, then sort for stable output
+		let set = { for v in items { (v): _ } }
+		list.SortStrings([for k, _ in set { k }])
+	}
 
 	// External dependencies (not composition)
 	// For composite traits: automatically computed from composed traits
 	// Computed as the union of requiredCapabilities of composed traits
-	requiredCapabilities: [...string]
+	requiredCapabilities: {
+		// Gather items from both sources, only if they exist
+		let items = [
+			for trait in composes if trait.type == "atomic" { trait.#combinedVersion },
+			for trait in composes if trait.type == "composite" {
+				for rc in trait.requiredCapabilities { rc }
+			},
+		]
+
+		// Deduplicate via map-keys, then sort for stable output
+		let set = { for v in items { (v): _ } }
+		list.SortStrings([for k, _ in set { k }])
+	}
+
 
 	///////////////////////////////////////////////////////////////////////
-	// Computed requirements for composite traits
-	// #computedRequiredCapabilities: {}
 
 	// Composition depth tracking and validation
-	#compositionDepth: {
-		if len(composes) > 0 {
-			// Composite trait - maximum depth of composed traits + 1
-			composedDepths: [for trait in composes {trait.#compositionDepth.depth}]
-			maxDepth: list.Max(composedDepths)
-			depth:    maxDepth + 1
-		}
-	}
+	// #compositionDepth: {
+	// 	if len(composes) > 0 {
+	// 		// Composite trait - maximum depth of composed traits + 1
+	// 		composedDepths: [for trait in composes {trait.#compositionDepth.depth}]
+	// 		maxDepth: list.Max(composedDepths)
+	// 		depth:    maxDepth + 1
+	// 	}
+	// }
 
-	// Circular dependency detection
-	#circularDependencyCheck: {
-		if len(composes) == 0 {
-			// Empty composes - no circular dependencies
-			valid: true
-		}
-		if len(composes) > 0 {
-			// For now, we perform basic validation that doesn't create circular references
-			// This is a simplified check that ensures structural soundness
-			// More sophisticated cycle detection would require a different approach
-			valid: true
-		}
-	}
+	// // Circular dependency detection
+	// #circularDependencyCheck: {
+	// 	if len(composes) == 0 {
+	// 		// Empty composes - no circular dependencies
+	// 		valid: true
+	// 	}
+	// 	if len(composes) > 0 {
+	// 		// For now, we perform basic validation that doesn't create circular references
+	// 		// This is a simplified check that ensures structural soundness
+	// 		// More sophisticated cycle detection would require a different approach
+	// 		valid: true
+	// 	}
+	// }
 
-	// Validation: composition depth cannot exceed 3 (atomic=0, max composite=3)
-	if len(composes) > 0 {
-		if #compositionDepth.depth > 3 {
-			error("Composition depth cannot exceed 3. Current depth: \(#compositionDepth.depth)")
-		}
-	}
+	// // Validation: composition depth cannot exceed 3 (atomic=0, max composite=3)
+	// if len(composes) > 0 {
+	// 	if #compositionDepth.depth > 3 {
+	// 		error("Composition depth cannot exceed 3. Current depth: \(#compositionDepth.depth)")
+	// 	}
+	// }
 
-	// Validation: circular dependency detection
-	if len(composes) > 0 {
-		if !#circularDependencyCheck.valid {
-			error("Circular dependency detected in trait composition. Trait '\(#kind)' creates a cycle in the composition chain.")
-		}
-	}
+	// // Validation: circular dependency detection
+	// if len(composes) > 0 {
+	// 	if !#circularDependencyCheck.valid {
+	// 		error("Circular dependency detected in trait composition. Trait '\(#kind)' creates a cycle in the composition chain.")
+	// 	}
+	// }
 }
 
 #TraitMetaModifier: #TraitMetaBase & {
 	#kind: string
-	type: "modifier"
+	// type: "modifier"
 
 	// The domains of this trait
 	// Can be one or more of "operational", "structural", "behavioral", "resource", "contractual", "security", "observability", "integration"
@@ -171,7 +186,7 @@ import (
 	// Dependencies on other traits
 	// Lists traits that must be present for this trait to function
 	// Used for modifier traits that patch resources created by other traits
-	dependencies?: [...(#TraitMetaAtomic | #TraitMetaComposite)]
+	dependencies?: [...#TraitMetaAtomic | #TraitMetaComposite] & [_, ...]
 }
 
 #TraitMetaBase: {
@@ -188,7 +203,7 @@ import (
 
 	// The type of this trait
 	// Can be one of "atomic", "composite", "modifier", "custom"
-	type!: #TraitTypes
+	// type!: #TraitTypes
 
 	// Where can this trait be applied
 	// Can be one or more of "component", "scope"

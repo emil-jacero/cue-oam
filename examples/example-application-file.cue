@@ -104,6 +104,15 @@ components: {
 					env: [{
 						name:  "NODE_ENV"
 						value: "production"
+					}, {
+						name:  "DB_HOST"
+						value: "postgres-main"
+					}, {
+						name:  "DB_PORT"
+						value: "5432"
+					}, {
+						name:  "DB_NAME"
+						value: "my-web-app"
 					}]
 				}
 			}
@@ -116,6 +125,31 @@ components: {
 				targetPort:  3000
 				exposedPort: 3000
 			}]
+		}
+	}
+
+	// PostgreSQL database component
+	"postgres-main": {
+		#metadata: {
+			labels: {
+				"tier": "database"
+				"database-type": "postgres"
+			}
+			annotations: {
+				"app.company.com/persistent": "true"
+			}
+		}
+
+		// Add basic container and volume traits
+		trait.#Database
+
+		database: {
+			type:    "postgres"
+			version: "15"
+			persistence: {
+				enabled: true
+				size:    "20Gi"
+			}
 		}
 	}
 }

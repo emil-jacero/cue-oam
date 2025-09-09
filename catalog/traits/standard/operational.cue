@@ -231,9 +231,9 @@ import (
 	restartPolicy: #RestartPolicy.restartPolicy & {"Always"}
 
 	// Configure containers based on database type
-	containers: #ContainerSet.containers & {
-		if database.type == "postgres" {
-			main: main: {
+	containerSet: #ContainerSet.containerSet & {
+		containers: main: {
+			if database.type == "postgres" {
 				name: "postgres"
 				image: {
 					repository: "postgres"
@@ -242,7 +242,7 @@ import (
 				ports: [{
 					name:          "postgres"
 					protocol:      "TCP"
-					containerPort: 5432
+					targetPort: 5432
 				}]
 				env: [
 					{name: "POSTGRES_DB", value: #metadata.name},
@@ -250,15 +250,10 @@ import (
 					{name: "POSTGRES_PASSWORD", value: "password"},
 				]
 				if database.persistence.enabled {
-					volumeMounts: [{
-						name:      "db-data"
-						mountPath: "/var/lib/postgresql/data"
-					}]
+					volumeMounts: [volumes.dbData]
 				}
 			}
-		}
-		if database.type == "mysql" {
-			main: main: {
+			if database.type == "mysql" {
 				name: "mysql"
 				image: {
 					repository: "mysql"
@@ -267,7 +262,7 @@ import (
 				ports: [{
 					name:          "mysql"
 					protocol:      "TCP"
-					containerPort: 3306
+					targetPort: 3306
 				}]
 				env: [
 					{name: "MYSQL_DATABASE", value: #metadata.name},
@@ -275,20 +270,16 @@ import (
 					{name: "MYSQL_PASSWORD", value: "password"},
 				]
 				if database.persistence.enabled {
-					volumeMounts: [{
-						name:      "db-data"
-						mountPath: "/var/lib/mysql"
-					}]
+					volumeMounts: [volumes.dbData]
 				}
 			}
 		}
 	}
-
 	// Volume configuration
 	volumes: {
 		if database.persistence.enabled {
 			dbData: {
-				scope:     "volume"
+				type:     "volume"
 				name:      "db-data"
 				size:      database.persistence.size
 				mountPath: string | *"/var/lib/data"

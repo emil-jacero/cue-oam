@@ -11,4 +11,7 @@ package v2alpha2
 		annotations?: #AnnotationsType
 	}
 	#Trait
+	for traitName, t in #metadata.#traits {
+		t.provides
+	}
 }
