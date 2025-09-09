@@ -2,7 +2,7 @@
 
 ## Executive Summary
 
-CUE-OAM traits are the fundamental building blocks for defining cloud-native applications. They follow a unified architecture where **everything is a trait**, organized into five fundamental categories. Traits can be either **atomic** (fundamental building blocks) or **composite** (built from other traits), and they operate at different architectural levels (component, application, scope, bundle, promise).
+CUE-OAM traits are the fundamental building blocks for defining cloud-native applications. They follow a unified architecture where **everything is a trait**, organized into eight fundamental categories. Traits can be either **atomic** (fundamental building blocks) or **composite** (built from other traits), and they operate at different architectural levels (component, application, scope, bundle, promise).
 
 The trait system emphasizes:
 
@@ -16,13 +16,16 @@ The trait system emphasizes:
 
 ### 1. **Trait Categorization Rule**
 
-Every trait MUST belong to exactly ONE of five fundamental categories:
+Every trait MUST belong to exactly ONE of eight fundamental categories:
 
 - `operational` - Runtime behavior (Workload, Task, Scaling)
-- `structural` - Organization & relationships (Network, ServiceMesh)
+- `structural` - Organization & relationships
 - `behavioral` - Logic & patterns (Retry, CircuitBreaker)
 - `resource` - State & data (Volume, Config, Database)
-- `contractual` - Constraints & policies (Policy, SLA, Security)
+- `contractual` - Constraints & policies (Policy, SLA)
+- `security` - Protection & control (RBAC, NetworkPolicy, Certificates)
+- `observability` - Monitoring & understanding (ServiceMonitor, Logging, Tracing)
+- `integration` - Connectivity & communication (ServiceMesh, MessageQueue, APIGateway)
 
 ### 2. **Metadata Requirements Rule**
 
@@ -103,7 +106,7 @@ Design traits to be extensible:
     #metadata: #traits: MyTrait: #TraitObject & {
         description: "What this trait does"
         type: "atomic|composite"  // Required field
-        domain: "operational|structural|behavioral|resource|contractual"
+        domain: "operational|structural|behavioral|resource|contractual|security|observability|integration"
         scope: ["component", "scope"]
         composes: [  // Only for composite traits (type must be "composite")
             #OtherTrait.#metadata.#traits.OtherTrait
@@ -131,7 +134,10 @@ Design traits to be extensible:
 | Structural | How things organize | scope | Network, ServiceMesh, Topology |
 | Behavioral | How things react | component | Retry, CircuitBreaker, Throttle |
 | Resource | What things have/need | component | Volume, Config, Database |
-| Contractual | What things guarantee | all levels | Policy, SLA, Security |
+| Contractual | What things guarantee | all levels | Policy, SLA |
+| Security | How things are protected | all levels | RBAC, NetworkPolicy, Certificates |
+| Observability | How things are monitored | all levels | ServiceMonitor, Logging, Tracing |
+| Integration | How things connect | all levels | ServiceMesh, MessageQueue, APIGateway |
 
 ### Scope Selection Guide
 

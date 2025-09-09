@@ -11,20 +11,17 @@ import (
 //////////////////////////////////////////////
 
 // ContainerSet - Handles main containers and init containers
-#ContainerSetTraitMeta: core.#TraitMeta & {
-	#kind:    "ContainerSet"
+#ContainerSetTraitMeta: core.#TraitMetaAtomic & {
+	#kind:       "ContainerSet"
 	description: "Container specification with main and init containers support"
-	type:     "atomic"
-	domain: "operational"
+	domain:      "operational"
 	scope: ["component"]
-	requiredCapabilities: [
-		"core.oam.dev/v2alpha1.ContainerSet",
-	]
+	requiredCapability: "core.oam.dev/v2alpha1.ContainerSet"
 	provides: {
 		containerSet: {
 			// Main containers (at least one required)
 			containers: [string]: schema.#ContainerSpec
-			
+
 			// Optional init containers that run before main containers
 			init?: [string]: schema.#ContainerSpec
 		}
@@ -40,15 +37,12 @@ import (
 }
 
 // Replica - Controls the number of instances
-#ReplicaTraitMeta: core.#TraitMeta & {
-	#kind:    "Replica"
+#ReplicaTraitMeta: core.#TraitMetaAtomic & {
+	#kind:       "Replica"
 	description: "Specifies the number of replicas to run"
-	type:     "atomic"
-	domain: "operational"
+	domain:      "operational"
 	scope: ["component"]
-	requiredCapabilities: [
-		"core.oam.dev/v2alpha1.Replica",
-	]
+	requiredCapability: "core.oam.dev/v2alpha1.Replica"
 	// This trait modifies resources created by ContainerSet
 	dependencies: [#ContainerSetTraitMeta]
 	provides: {
@@ -64,15 +58,12 @@ import (
 }
 
 // RestartPolicy - Controls restart behavior
-#RestartPolicyTraitMeta: core.#TraitMeta & {
-	#kind:    "RestartPolicy"
+#RestartPolicyTraitMeta: core.#TraitMetaAtomic & {
+	#kind:       "RestartPolicy"
 	description: "Defines restart behavior for containers"
-	type:     "atomic"
-	domain: "operational"
+	domain:      "operational"
 	scope: ["component"]
-	requiredCapabilities: [
-		"core.oam.dev/v2alpha1.RestartPolicy",
-	]
+	requiredCapability: "core.oam.dev/v2alpha1.RestartPolicy"
 	// This trait modifies Pod spec created by ContainerSet
 	dependencies: [#ContainerSetTraitMeta]
 	provides: {
@@ -86,21 +77,18 @@ import (
 }
 
 // UpdateStrategy - Controls how updates are applied
-#UpdateStrategyTraitMeta: core.#TraitMeta & {
-	#kind:    "UpdateStrategy"
+#UpdateStrategyTraitMeta: core.#TraitMetaAtomic & {
+	#kind:       "UpdateStrategy"
 	description: "Defines how updates are applied to running instances"
-	type:     "atomic"
-	domain: "operational"
+	domain:      "operational"
 	scope: ["component"]
-	requiredCapabilities: [
-		"core.oam.dev/v2alpha1.UpdateStrategy",
-	]
+	requiredCapability: "core.oam.dev/v2alpha1.UpdateStrategy"
 	// This trait modifies Deployment/StatefulSet created by ContainerSet
 	dependencies: [#ContainerSetTraitMeta]
 	provides: {
 		updateStrategy: {
 			type: *"RollingUpdate" | "Recreate"
-			
+
 			// Only applicable when type is "RollingUpdate"
 			if type == "RollingUpdate" {
 				rollingUpdate?: {
@@ -111,6 +99,7 @@ import (
 		}
 	}
 }
+
 #UpdateStrategy: core.#Trait & {
 	#metadata: #traits: UpdateStrategy: #UpdateStrategyTraitMeta
 
@@ -123,11 +112,10 @@ import (
 
 // Workload trait definition (now composite, built from atomic traits)
 // Provides a generic workload definition with support for containers, init containers, deployment strategies, and port exposure
-#WorkloadTraitMeta: core.#TraitMeta & {
-	#kind:    "Workload"
+#WorkloadTraitMeta: core.#TraitMetaComposite & {
+	#kind:       "Workload"
 	description: "Generic workload trait for defining containerized applications with deployment strategies and network exposure"
-	type:     "composite"
-	domain: "operational"
+	domain:      "operational"
 	scope: ["component"]
 	composes: [
 		#ContainerSetTraitMeta,
@@ -139,10 +127,10 @@ import (
 	provides: {
 		workload: {
 			// Legacy interface for backward compatibility
-			container: #ContainerSet.containerSet.containers
+			container:       #ContainerSet.containerSet.containers
 			initContainers?: #ContainerSet.containerSet.init
-			restart: #RestartPolicy.restartPolicy
-			replicas?: #Replica.replica.count
+			restart:         #RestartPolicy.restartPolicy
+			replicas?:       #Replica.replica.count
 			updateStrategy?: #UpdateStrategy.updateStrategy.type
 			if #UpdateStrategy.updateStrategy.type == "RollingUpdate" {
 				rollingUpdate?: #UpdateStrategy.updateStrategy.rollingUpdate
@@ -160,10 +148,10 @@ import (
 					}
 				}
 				if deploymentType == "StatefulSet" {
-					replicas?: replicas.count
-					serviceName!: string & strings.MaxRunes(253)
+					replicas?:            replicas.count
+					serviceName!:         string & strings.MaxRunes(253)
 					podManagementPolicy?: *"OrderedReady" | "Parallel"
-					updateStrategy?: *"OnDelete" | "RollingUpdate"
+					updateStrategy?:      *"OnDelete" | "RollingUpdate"
 					if updateStrategy == "RollingUpdate" {
 						rollingUpdate?: {
 							partition?: uint | *0
@@ -190,11 +178,10 @@ import (
 
 // Database trait definition (composite trait using atomic traits)
 // Provides a managed database service (PostgreSQL or MySQL)
-#DatabaseTraitMeta: core.#TraitMeta & {
-	#kind:    "Database"
+#DatabaseTraitMeta: core.#TraitMetaComposite & {
+	#kind:       "Database"
 	description: "Managed database service with persistence support"
-	type:     "composite"
-	domain: "operational"
+	domain:      "operational"
 	scope: ["component"]
 	composes: [
 		#ContainerSetTraitMeta,
@@ -209,8 +196,8 @@ import (
 	#metadata: #traits: Database: #DatabaseTraitMeta
 
 	database: {
-		type!:     "postgres" | "mysql"
-		version!:  string
+		type!:    "postgres" | "mysql"
+		version!: string
 		persistence: {
 			enabled: bool | *true
 			size:    string | *"10Gi"

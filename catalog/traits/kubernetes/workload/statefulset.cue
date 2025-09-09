@@ -9,17 +9,17 @@ import (
 #StatefulSetTrait: core.#TraitObject & {
 	#apiVersion: "core.oam.dev/v2alpha2"
 	#kind:       "StatefulSet"
-	
+
 	description: "Kubernetes StatefulSet for stateful workloads with stable network identities and persistent storage"
-	
-	type:     "atomic"
+
+	type:   "atomic"
 	domain: "operational"
 	scope: ["component"]
-	
+
 	requiredCapabilities: [
 		"k8s.io/api/apps/v1.StatefulSet",
 	]
-	
+
 	provides: {
 		statefulset: schema.StatefulSetSpec
 	}
@@ -36,7 +36,7 @@ import (
 
 	description: "Kubernetes StatefulSets for stateful workloads with stable network identities and persistent storage"
 
-	type:     "atomic"
+	type:   "atomic"
 	domain: "operational"
 	scope: ["component"]
 

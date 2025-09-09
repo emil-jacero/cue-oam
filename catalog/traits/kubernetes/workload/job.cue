@@ -9,17 +9,17 @@ import (
 #JobTrait: core.#TraitObject & {
 	#apiVersion: "core.oam.dev/v2alpha2"
 	#kind:       "Job"
-	
+
 	description: "Kubernetes Job for running batch or one-time tasks"
-	
-	type:     "atomic"
+
+	type:   "atomic"
 	domain: "operational"
 	scope: ["component"]
-	
+
 	requiredCapabilities: [
 		"k8s.io/api/batch/v1.Job",
 	]
-	
+
 	provides: {
 		job: schema.#JobSpec
 	}
@@ -36,7 +36,7 @@ import (
 
 	description: "Kubernetes Jobs for running batch or one-time tasks"
 
-	type:     "atomic"
+	type:   "atomic"
 	domain: "operational"
 	scope: ["component"]
 

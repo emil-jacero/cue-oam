@@ -9,17 +9,17 @@ import (
 #PersistentVolumeClaimTrait: core.#TraitObject & {
 	#apiVersion: "core.oam.dev/v2alpha2"
 	#kind:       "PersistentVolumeClaim"
-	
+
 	description: "Kubernetes PersistentVolumeClaim for requesting persistent storage"
-	
-	type:     "atomic"
+
+	type:   "atomic"
 	domain: "resource"
 	scope: ["component"]
-	
+
 	requiredCapabilities: [
 		"k8s.io/api/core/v1.PersistentVolumeClaim",
 	]
-	
+
 	provides: {
 		persistentvolumeclaim: schema.PersistentVolumeClaim
 	}
@@ -36,7 +36,7 @@ import (
 
 	description: "Kubernetes PersistentVolumeClaims for requesting persistent storage"
 
-	type:     "atomic"
+	type:   "atomic"
 	domain: "resource"
 	scope: ["component"]
 

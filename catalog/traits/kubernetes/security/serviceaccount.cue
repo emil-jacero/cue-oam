@@ -9,17 +9,17 @@ import (
 #ServiceAccountTrait: core.#TraitObject & {
 	#apiVersion: "core.oam.dev/v2alpha2"
 	#kind:       "ServiceAccount"
-	
+
 	description: "Kubernetes ServiceAccount provides an identity for processes that run in a Pod"
-	
-	type:     "atomic"
+
+	type:   "atomic"
 	domain: "resource"
 	scope: ["component"]
-	
+
 	requiredCapabilities: [
 		"k8s.io/api/core/v1.ServiceAccount",
 	]
-	
+
 	provides: {
 		serviceaccount: schema.ServiceAccount
 	}
@@ -36,7 +36,7 @@ import (
 
 	description: "Kubernetes ServiceAccounts provides an identity for processes that run in a Pod"
 
-	type:     "atomic"
+	type:   "atomic"
 	domain: "resource"
 	scope: ["component"]
 

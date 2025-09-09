@@ -7,14 +7,12 @@ import (
 
 // Volume trait definition
 // Describes a set of volumes
-#VolumeTraitMeta: core.#TraitMeta & {
-	#kind:    "Volume"
-	type:     "atomic"
-	domain: "resource"
+#VolumeTraitMeta: core.#TraitMetaAtomic & {
+	#kind:       "Volume"
+	description: "Describes a set of volumes to be used by containers"
+	domain:      "resource"
 	scope: ["component"]
-	requiredCapabilities: [
-		"core.oam.dev/v2alpha1.Volume",
-	]
+	requiredCapability: "core.oam.dev/v2alpha1.Volume"
 	provides: {
 		volumes: [string]: schema.#VolumeSpec
 	}
@@ -34,14 +32,12 @@ import (
 
 // Secret trait definition
 // Describes a set of secrets
-#SecretTraitMeta: core.#TraitMeta & {
-	#kind:    "Secret"
-	type:     "atomic"
-	domain: "resource"
+#SecretTraitMeta: core.#TraitMetaAtomic & {
+	#kind:       "Secret"
+	description: "Describes a set of secrets to be used by containers"
+	domain:      "resource"
 	scope: ["component"]
-	requiredCapabilities: [
-		"core.oam.dev/v2alpha1.Secret",
-	]
+	requiredCapability: "core.oam.dev/v2alpha1.Secret"
 	provides: {
 		secrets: [string]: schema.#SecretSpec
 	}
@@ -55,14 +51,12 @@ import (
 
 // Config trait definition
 // Defines one or more configurations
-#ConfigTraitMeta: core.#TraitMeta & {
-	#kind:    "Config"
-	type:     "atomic"
-	domain: "resource"
+#ConfigTraitMeta: core.#TraitMetaAtomic & {
+	#kind:       "Config"
+	description: "Describes one or more configurations to be used by containers"
+	domain:      "resource"
 	scope: ["component"]
-	requiredCapabilities: [
-		"core.oam.dev/v2alpha1.Config",
-	]
+	requiredCapability: "core.oam.dev/v2alpha1.Config"
 	provides: {
 		configMap: [string]: schema.#ConfigSpec
 	}

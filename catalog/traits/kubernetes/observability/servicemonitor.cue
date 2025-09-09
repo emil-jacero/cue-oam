@@ -8,17 +8,17 @@ import (
 #ServiceMonitorTrait: core.#TraitObject & {
 	#apiVersion: "core.oam.dev/v2alpha2"
 	#kind:       "ServiceMonitor"
-	
+
 	description: "Prometheus ServiceMonitor for scraping metrics from services"
-	
-	type:     "atomic"
-	domain: "operational"
+
+	type:   "atomic"
+	domain: "observability"
 	scope: ["component"]
-	
+
 	requiredCapabilities: [
 		"monitoring.coreos.com/v1.ServiceMonitor",
 	]
-	
+
 	provides: {
 		servicemonitor: schema.ServiceMonitor
 	}

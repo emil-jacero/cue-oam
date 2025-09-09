@@ -9,17 +9,17 @@ import (
 #DaemonSetTrait: core.#TraitObject & {
 	#apiVersion: "core.oam.dev/v2alpha2"
 	#kind:       "DaemonSet"
-	
+
 	description: "Kubernetes DaemonSet ensures that all (or some) nodes run a copy of a pod"
-	
-	type:     "atomic"
+
+	type:   "atomic"
 	domain: "operational"
 	scope: ["component"]
-	
+
 	requiredCapabilities: [
 		"k8s.io/api/apps/v1.DaemonSet",
 	]
-	
+
 	provides: {
 		daemonset: schema.DaemonSetSpec
 	}
@@ -36,7 +36,7 @@ import (
 
 	description: "Kubernetes DaemonSets ensure that all (or some) nodes run a copy of a pod"
 
-	type:     "atomic"
+	type:   "atomic"
 	domain: "operational"
 	scope: ["component"]
 

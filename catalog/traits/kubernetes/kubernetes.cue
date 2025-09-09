@@ -18,19 +18,19 @@ import (
 //////////////////////////////////////////////
 
 // Kubernetes Deployment for stateless workloads with rolling updates
-#Deployment: workload.#Deployment
+#Deployment:  workload.#Deployment
 #Deployments: workload.#Deployments
 
 // Kubernetes StatefulSet for stateful workloads with stable network identities and persistent storage
-#StatefulSet: workload.#StatefulSet
+#StatefulSet:  workload.#StatefulSet
 #StatefulSets: workload.#StatefulSets
 
 // Kubernetes DaemonSet ensures that all (or some) nodes run a copy of a pod
-#DaemonSet: workload.#DaemonSet
+#DaemonSet:  workload.#DaemonSet
 #DaemonSets: workload.#DaemonSets
 
 // Kubernetes Job for running batch or one-time tasks
-#Job: workload.#Job
+#Job:  workload.#Job
 #Jobs: workload.#Jobs
 
 // Kubernetes CronJob for running jobs on a scheduled basis
@@ -41,7 +41,7 @@ import (
 //////////////////////////////////////////////
 
 // Kubernetes Service for exposing an application running on a set of Pods as a network service
-#Service: networking.#Service
+#Service:  networking.#Service
 #Services: networking.#Services
 
 // Kubernetes Ingress for HTTP and HTTPS access to services from outside the cluster
@@ -55,7 +55,7 @@ import (
 //////////////////////////////////////////////
 
 // Kubernetes PersistentVolumeClaim for requesting persistent storage
-#PersistentVolumeClaim: storage.#PersistentVolumeClaim
+#PersistentVolumeClaim:  storage.#PersistentVolumeClaim
 #PersistentVolumeClaims: storage.#PersistentVolumeClaims
 
 // Kubernetes StorageClass for defining classes of storage
@@ -66,11 +66,12 @@ import (
 //////////////////////////////////////////////
 
 // Kubernetes ConfigMap for storing configuration data as key-value pairs
-#ConfigMap: configuration.#ConfigMap
+#ConfigMap:  configuration.#ConfigMap
 #ConfigMaps: configuration.#ConfigMaps
 
 // Kubernetes Secret for storing sensitive configuration data
 #Secret: configuration.#Secret
+
 #Secrets: configuration.#Secrets
 
 //////////////////////////////////////////////
@@ -88,23 +89,24 @@ import (
 //////////////////////////////////////////////
 
 // Kubernetes ServiceAccount provides an identity for processes that run in a Pod
-#ServiceAccount: security.#ServiceAccount
+#ServiceAccount:  security.#ServiceAccount
 #ServiceAccounts: security.#ServiceAccounts
 
 // Kubernetes Role contains rules that represent a set of permissions within a namespace
-#Role: security.#Role
+#Role:  security.#Role
 #Roles: security.#Roles
 
 // Kubernetes RoleBinding grants permissions defined in a Role to a user or set of users
-#RoleBinding: security.#RoleBinding
+#RoleBinding:  security.#RoleBinding
 #RoleBindings: security.#RoleBindings
 
 // Kubernetes ClusterRole contains rules that represent a set of permissions at the cluster level
-#ClusterRole: security.#ClusterRole
+#ClusterRole:  security.#ClusterRole
 #ClusterRoles: security.#ClusterRoles
 
 // Kubernetes ClusterRoleBinding grants permissions defined in a ClusterRole to a user or set of users cluster-wide
 #ClusterRoleBinding: security.#ClusterRoleBinding
+
 #ClusterRoleBindings: security.#ClusterRoleBindings
 
 //////////////////////////////////////////////

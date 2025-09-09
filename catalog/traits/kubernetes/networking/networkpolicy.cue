@@ -8,17 +8,17 @@ import (
 #NetworkPolicyTrait: core.#TraitObject & {
 	#apiVersion: "core.oam.dev/v2alpha2"
 	#kind:       "NetworkPolicy"
-	
+
 	description: "Kubernetes NetworkPolicy for controlling network traffic to and from pods"
-	
-	type:     "atomic"
-	domain: "behavioral"
+
+	type:   "atomic"
+	domain: "security"
 	scope: ["component"]
-	
+
 	requiredCapabilities: [
 		"k8s.io/api/networking/v1.NetworkPolicy",
 	]
-	
+
 	provides: {
 		networkpolicy: schema.NetworkPolicy
 	}

@@ -12,14 +12,14 @@ import (
 
 	description: "Kubernetes Services for exposing an application running on a set of Pods as a network service"
 
-	type:     "atomic"
+	type:   "atomic"
 	domain: "structural"
 	scope: ["component"]
-	
+
 	requiredCapabilities: [
 		"k8s.io/api/core/v1.Service",
 	]
-	
+
 	provides: {
 		services: [string]: schema.Service
 	}
@@ -36,14 +36,14 @@ import (
 
 	description: "Kubernetes Service for exposing an application running on a set of Pods as a network service"
 
-	type:     "atomic"
+	type:   "atomic"
 	domain: "structural"
 	scope: ["component"]
-	
+
 	requiredCapabilities: [
 		"k8s.io/api/core/v1.Service",
 	]
-	
+
 	provides: {
 		service: schema.Service
 	}

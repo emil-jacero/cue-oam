@@ -9,17 +9,17 @@ import (
 #RoleBindingTrait: core.#TraitObject & {
 	#apiVersion: "core.oam.dev/v2alpha2"
 	#kind:       "RoleBinding"
-	
+
 	description: "Kubernetes RoleBinding grants permissions defined in a Role to a user or set of users"
-	
-	type:     "atomic"
-	domain: "behavioral"
+
+	type:   "atomic"
+	domain: "security"
 	scope: ["component"]
-	
+
 	requiredCapabilities: [
 		"k8s.io/api/rbac/v1.RoleBinding",
 	]
-	
+
 	provides: {
 		rolebinding: schema.RoleBinding
 	}
@@ -36,8 +36,8 @@ import (
 
 	description: "Kubernetes RoleBindings grants permissions defined in a Role to a user or set of users"
 
-	type:     "atomic"
-	domain: "behavioral"
+	type:   "atomic"
+	domain: "security"
 	scope: ["component"]
 
 	requiredCapabilities: [

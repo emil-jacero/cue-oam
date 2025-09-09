@@ -9,17 +9,17 @@ import (
 #ClusterRoleTrait: core.#TraitObject & {
 	#apiVersion: "core.oam.dev/v2alpha2"
 	#kind:       "ClusterRole"
-	
+
 	description: "Kubernetes ClusterRole contains rules that represent a set of permissions at the cluster level"
-	
-	type:     "atomic"
-	domain: "behavioral"
+
+	type:   "atomic"
+	domain: "security"
 	scope: ["component"]
-	
+
 	requiredCapabilities: [
 		"k8s.io/api/rbac/v1.ClusterRole",
 	]
-	
+
 	provides: {
 		clusterrole: schema.ClusterRole
 	}
@@ -36,8 +36,8 @@ import (
 
 	description: "Kubernetes ClusterRoles contains rules that represent a set of permissions at the cluster level"
 
-	type:     "atomic"
-	domain: "behavioral"
+	type:   "atomic"
+	domain: "security"
 	scope: ["component"]
 
 	requiredCapabilities: [

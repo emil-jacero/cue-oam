@@ -9,17 +9,17 @@ import (
 #CronJobTrait: core.#TraitObject & {
 	#apiVersion: "core.oam.dev/v2alpha2"
 	#kind:       "CronJob"
-	
+
 	description: "Kubernetes CronJob for running jobs on a scheduled basis"
-	
-	type:     "atomic"
+
+	type:   "atomic"
 	domain: "operational"
 	scope: ["component"]
-	
+
 	requiredCapabilities: [
 		"k8s.io/api/batch/v1.CronJob",
 	]
-	
+
 	provides: {
 		cronjob: schema.CronJob
 	}

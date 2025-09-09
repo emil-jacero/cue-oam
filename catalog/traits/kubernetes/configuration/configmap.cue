@@ -11,14 +11,14 @@ import (
 
 	description: "Kubernetes ConfigMaps for storing configuration data as key-value pairs"
 
-	type:     "atomic"
+	type:   "atomic"
 	domain: "resource"
 	scope: ["component"]
-	
+
 	requiredCapabilities: [
 		"k8s.io/api/core/v1.ConfigMap",
 	]
-	
+
 	provides: {
 		configmap: schema.ConfigMap
 		configmaps: [string]: schema.ConfigMap
@@ -35,14 +35,14 @@ import (
 
 	description: "Kubernetes ConfigMap for storing configuration data as key-value pairs"
 
-	type:     "atomic"
+	type:   "atomic"
 	domain: "resource"
 	scope: ["component"]
-	
+
 	requiredCapabilities: [
 		"k8s.io/api/core/v1.ConfigMap",
 	]
-	
+
 	provides: {
 		configmap: schema.ConfigMap
 	}

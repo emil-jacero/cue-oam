@@ -14,7 +14,7 @@ package v2alpha2
 	components: [Id=string]: #Component & {
 		#metadata: #id: Id
 	}
-	scopes: [Id=string]:     #Scope & {
+	scopes: [Id=string]: #Scope & {
 		#metadata: #id: Id
 	}
 }

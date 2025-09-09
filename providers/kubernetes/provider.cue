@@ -3,28 +3,28 @@ package kubernetes
 import (
 	"list"
 	"strings"
-	
+
 	core "jacero.io/oam/core/v2alpha2"
 )
 
 // Kubernetes-specific metadata generation function
 #GenerateMetadata: {
 	_input: {
-		name?:         string
-		traitMeta:    _  // Accept any trait metadata structure
+		name?:        string
+		traitMeta:    _ // Accept any trait metadata structure
 		context:      core.#ProviderContext
-		resourceType: string  // "deployment", "service", "configmap", etc.
+		resourceType: string // "deployment", "service", "configmap", etc.
 	}
 
 	// Metadata structure
 	if _input.name != _|_ {
-		name:      _input.name
+		name: _input.name
 	}
 	if _input.name == _|_ {
-		name:      _input.context.metadata.component.name
+		name: _input.context.metadata.component.name
 	}
 	namespace: _input.context.namespace
-	
+
 	// Hierarchical label inheritance: System → Application → Component  
 	labels: {
 		// Standard Kubernetes recommended labels (system defaults)
@@ -34,7 +34,7 @@ import (
 		"app.kubernetes.io/component":  _input.resourceType
 		"app.kubernetes.io/part-of":    _input.context.metadata.application.name
 		"app.kubernetes.io/managed-by": "cue-oam"
-		
+
 		// OAM-specific labels (conditionally added if fields exist)
 		if _input.traitMeta.domain != _|_ {
 			"oam.dev/trait-domain": _input.traitMeta.domain
@@ -45,21 +45,21 @@ import (
 		"oam.dev/application": _input.context.metadata.application.name
 		"oam.dev/component":   _input.context.metadata.component.name
 	}
-	
+
 	// Merge in application-level labels if present
 	if _input.context.metadata.application.labels != _|_ {
 		for lk, lv in _input.context.metadata.application.labels {
 			labels: "\(lk)": "\(lv)"
 		}
 	}
-	
+
 	// Merge in component-level labels if present  
 	if _input.context.metadata.component.labels != _|_ {
 		for lk, lv in _input.context.metadata.component.labels {
 			labels: "\(lk)": "\(lv)"
 		}
 	}
-	
+
 	// Merge in trait labels if present
 	if _input.traitMeta.labels != _|_ {
 		for lk, lv in _input.traitMeta.labels {
@@ -76,21 +76,21 @@ import (
 		"oam.dev/generated-by":        "cue-oam-transformer"
 		"oam.dev/application-version": _input.context.metadata.application.version
 	}
-	
+
 	// Merge in application annotations if present
 	if _input.context.metadata.application.annotations != _|_ {
 		for ak, av in _input.context.metadata.application.annotations {
 			annotations: "\(ak)": "\(av)"
 		}
 	}
-	
+
 	// Merge in component annotations if present
 	if _input.context.metadata.component.annotations != _|_ {
 		for ak, av in _input.context.metadata.component.annotations {
 			annotations: "\(ak)": "\(av)"
 		}
 	}
-	
+
 	// Merge in trait annotations if present
 	if _input.traitMeta.annotations != _|_ {
 		for ak, av in _input.traitMeta.annotations {
@@ -134,23 +134,23 @@ import (
 			"k8s.io/api/core/v1.Secret",
 			"k8s.io/api/core/v1.PersistentVolumeClaim",
 		]
-		
+
 		// Core traits that create primary resources - MUST be supported
 		// If these are missing transformers, the provider should error
 		coreTraits: [
 			"core.oam.dev/v2alpha2.ContainerSet",
 			"core.oam.dev/v2alpha2.Expose",
-			"core.oam.dev/v2alpha2.Volume", 
+			"core.oam.dev/v2alpha2.Volume",
 			"core.oam.dev/v2alpha2.Secret",
 			"core.oam.dev/v2alpha2.Config",
 			"core.oam.dev/v2alpha2.NetworkIsolationScope",
 		]
-		
+
 		// Modifier traits that depend on other traits - can be safely ignored if unsupported
 		// These traits modify resources created by core traits
 		modifierTraits: [
 			"core.oam.dev/v2alpha2.Replica",
-			"core.oam.dev/v2alpha2.RestartPolicy", 
+			"core.oam.dev/v2alpha2.RestartPolicy",
 			"core.oam.dev/v2alpha2.UpdateStrategy",
 			"core.oam.dev/v2alpha1.Labels",
 			"core.oam.dev/v2alpha1.Annotations",
@@ -159,17 +159,17 @@ import (
 
 	transformers: {
 		// Primary trait transformers (handle modifier traits internally)
-		"core.oam.dev/v2alpha2.ContainerSet":           #ContainerSetTransformer
-		"core.oam.dev/v2alpha2.Expose":                 #ExposeTransformer
-		"core.oam.dev/v2alpha2.Volume":                 #VolumeTransformer
-		"core.oam.dev/v2alpha2.Secret":                 #SecretTransformer
-		"core.oam.dev/v2alpha2.Config":                 #ConfigTransformer
-		"core.oam.dev/v2alpha2.NetworkIsolationScope":  #NetworkIsolationScopeTransformer
+		"core.oam.dev/v2alpha2.ContainerSet":          #ContainerSetTransformer
+		"core.oam.dev/v2alpha2.Expose":                #ExposeTransformer
+		"core.oam.dev/v2alpha2.Volume":                #VolumeTransformer
+		"core.oam.dev/v2alpha2.Secret":                #SecretTransformer
+		"core.oam.dev/v2alpha2.Config":                #ConfigTransformer
+		"core.oam.dev/v2alpha2.NetworkIsolationScope": #NetworkIsolationScopeTransformer
 	}
 
 	render: {
 		app: core.#Application
-		
+
 		// Capability verification - check all traits used in the application
 		#traitVerification: {
 			// Collect all trait types used in the application
@@ -177,31 +177,31 @@ import (
 				for componentName, comp in app.components
 				for traitName, trait in comp.#metadata.#traits {
 					trait.#combinedVersion
-				}
+				},
 			]
-			
+
 			// Check for unsupported core traits (these should error)
 			unsupportedCoreTraits: [
 				for usedTrait in usedTraits
-				if list.Contains(#metadata.coreTraits, usedTrait) && transformers[usedTrait] == _|_  {
+				if list.Contains(#metadata.coreTraits, usedTrait) && transformers[usedTrait] == _|_ {
 					usedTrait
-				}
+				},
 			]
-			
+
 			// Check for unsupported modifier traits (these are safely ignored)
 			unsupportedModifierTraits: [
-				for usedTrait in usedTraits  
+				for usedTrait in usedTraits
 				if list.Contains(#metadata.modifierTraits, usedTrait) && transformers[usedTrait] == _|_ {
 					usedTrait
-				}
+				},
 			]
-			
+
 			// Error if core traits are unsupported
 			if len(unsupportedCoreTraits) > 0 {
 				error("Core traits not supported by Kubernetes provider: \(strings.Join(unsupportedCoreTraits, ", ")). These traits create primary resources and must have transformers implemented.")
 			}
 		}
-		
+
 		output: {
 			// Kubernetes List object format
 			apiVersion: "v1"
@@ -219,21 +219,21 @@ import (
 					if transformers[trait.#combinedVersion].accepts != trait.#combinedVersion {
 						error("Transformer mismatch: trait \(trait.#combinedVersion) cannot be handled by its assigned transformer")
 					}
-					
+
 					for resource in (transformers[trait.#combinedVersion].transform & {
 						input: comp
 						context: core.#ProviderContext & {
-							name:          app.#metadata.name
-							namespace:     app.#metadata.namespace
-							capabilities:  #metadata.capabilities
-							config:        {}
-							
+							name:         app.#metadata.name
+							namespace:    app.#metadata.namespace
+							capabilities: #metadata.capabilities
+							config: {}
+
 							metadata: {
 								application: {
-									id:   app.#metadata.#id
-									name: app.#metadata.name
+									id:        app.#metadata.#id
+									name:      app.#metadata.name
 									namespace: app.#metadata.namespace
-									version: app.#metadata.version
+									version:   app.#metadata.version
 									if app.#metadata.labels != _|_ {
 										labels: app.#metadata.labels
 									}
@@ -241,7 +241,7 @@ import (
 										annotations: app.#metadata.annotations
 									}
 								}
-								
+
 								component: {
 									id:   comp.#metadata.#id
 									name: comp.#metadata.name
@@ -256,8 +256,8 @@ import (
 						}
 					}).output.resources {
 						resource
-					},
-				}
+					}
+				},
 			]
 		}
 	}

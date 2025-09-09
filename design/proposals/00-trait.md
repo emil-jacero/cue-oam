@@ -53,10 +53,10 @@ The current trait system faces several limitations:
 
 ### Core Trait Categories
 
-All traits in CUE-OAM belong to one of five fundamental categories:
+All traits in CUE-OAM belong to one of eight fundamental categories:
 
 ```cue
-#TraitDomain: "operational" | "structural" | "behavioral" | "resource" | "contractual"
+#TraitDomain: "operational" | "structural" | "behavioral" | "resource" | "contractual" | "security" | "observability" | "integration"
 ```
 
 1. **Operational** - How things execute (runtime behavior)
@@ -72,7 +72,16 @@ All traits in CUE-OAM belong to one of five fundamental categories:
    - Examples: Volume, Config, Database, Secret, Cache
 
 5. **Contractual** - What things must guarantee (constraints and policies)
-   - Examples: Policy, SLA, Schema, Validation, Security, Compliance
+   - Examples: Policy, SLA, Schema, Validation, Compliance
+
+6. **Security** - How things are protected and controlled (authentication, authorization, encryption)
+   - Examples: RBAC, NetworkPolicy, PodSecurityPolicy, ServiceAccount, Certificates
+
+7. **Observability** - How things are monitored and understood (metrics, logs, tracing)
+   - Examples: ServiceMonitor, PodMonitor, Logging, Tracing, HealthChecks
+
+8. **Integration** - How things connect and communicate (service connectivity)
+   - Examples: ServiceMesh, MessageQueue, EventSourcing, APIGateway
 
 ### Trait Metadata Structure
 

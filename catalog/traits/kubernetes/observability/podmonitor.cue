@@ -8,17 +8,17 @@ import (
 #PodMonitorTrait: core.#TraitObject & {
 	#apiVersion: "core.oam.dev/v2alpha2"
 	#kind:       "PodMonitor"
-	
+
 	description: "Prometheus PodMonitor for scraping metrics directly from pods"
-	
-	type:     "atomic"
-	domain: "operational"
+
+	type:   "atomic"
+	domain: "observability"
 	scope: ["component"]
-	
+
 	requiredCapabilities: [
 		"monitoring.coreos.com/v1.PodMonitor",
 	]
-	
+
 	provides: {
 		podmonitor: schema.PodMonitor
 	}

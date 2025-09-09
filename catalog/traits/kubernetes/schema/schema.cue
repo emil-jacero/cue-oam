@@ -20,7 +20,8 @@ import (
 //////////////////////////////////////////////
 
 // Core metadata definitions
-#Object:     meta.#Object
+#Object: meta.#Object
+
 #ObjectMeta: meta.#ObjectMeta
 
 //////////////////////////////////////////////
@@ -45,8 +46,9 @@ import (
 #JobSpec:   workload.#JobSpec
 #JobStatus: workload.#JobStatus
 
-#CronJob:       workload.#CronJob
-#CronJobSpec:   workload.#CronJobSpec
+#CronJob:     workload.#CronJob
+#CronJobSpec: workload.#CronJobSpec
+
 #CronJobStatus: workload.#CronJobStatus
 
 //////////////////////////////////////////////
@@ -64,8 +66,9 @@ import (
 #IngressSpec:   networking.#IngressSpec
 #IngressStatus: networking.#IngressStatus
 
-#NetworkPolicy:       networking.#NetworkPolicy
-#NetworkPolicySpec:   networking.#NetworkPolicySpec
+#NetworkPolicy:     networking.#NetworkPolicy
+#NetworkPolicySpec: networking.#NetworkPolicySpec
+
 #NetworkPolicyStatus: networking.#NetworkPolicyStatus
 
 //////////////////////////////////////////////
@@ -80,7 +83,8 @@ import (
 // Storage/v1 resources
 #StorageClass:           storage.#StorageClass
 #StorageClassParameters: storage.#StorageClassParameters
-#TopologySelectorTerm:   storage.#TopologySelectorTerm
+
+#TopologySelectorTerm: storage.#TopologySelectorTerm
 
 //////////////////////////////////////////////
 // Configuration Schemas
@@ -88,7 +92,8 @@ import (
 
 // Core/v1 configuration
 #ConfigMap: configuration.#ConfigMap
-#Secret:    configuration.#Secret
+
+#Secret: configuration.#Secret
 
 //////////////////////////////////////////////
 // Scaling Schemas
@@ -100,8 +105,9 @@ import (
 #HorizontalPodAutoscalerStatus: scaling.#HorizontalPodAutoscalerStatus
 
 // External autoscaling resources
-#VerticalPodAutoscaler:       scaling.#VerticalPodAutoscaler
-#VerticalPodAutoscalerSpec:   scaling.#VerticalPodAutoscalerSpec
+#VerticalPodAutoscaler:     scaling.#VerticalPodAutoscaler
+#VerticalPodAutoscalerSpec: scaling.#VerticalPodAutoscalerSpec
+
 #VerticalPodAutoscalerStatus: scaling.#VerticalPodAutoscalerStatus
 
 //////////////////////////////////////////////

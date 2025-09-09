@@ -9,17 +9,17 @@ import (
 #RoleTrait: core.#TraitObject & {
 	#apiVersion: "core.oam.dev/v2alpha2"
 	#kind:       "Role"
-	
+
 	description: "Kubernetes Role contains rules that represent a set of permissions within a namespace"
-	
-	type:     "atomic"
-	domain: "behavioral"
+
+	type:   "atomic"
+	domain: "security"
 	scope: ["component"]
-	
+
 	requiredCapabilities: [
 		"k8s.io/api/rbac/v1.Role",
 	]
-	
+
 	provides: {
 		role: schema.Role
 	}
@@ -36,8 +36,8 @@ import (
 
 	description: "Kubernetes Roles contains rules that represent a set of permissions within a namespace"
 
-	type:     "atomic"
-	domain: "behavioral"
+	type:   "atomic"
+	domain: "security"
 	scope: ["component"]
 
 	requiredCapabilities: [

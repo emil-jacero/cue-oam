@@ -9,17 +9,17 @@ import (
 #DeploymentTrait: core.#TraitObject & {
 	#apiVersion: "core.oam.dev/v2alpha2"
 	#kind:       "Deployment"
-	
+
 	description: "Kubernetes Deployment for stateless workloads with rolling updates"
-	
-	type:     "atomic"
+
+	type:   "atomic"
 	domain: "operational"
 	scope: ["component"]
-	
+
 	requiredCapabilities: [
 		"k8s.io/api/apps/v1.Deployment",
 	]
-	
+
 	provides: {
 		deployment: schema.Deployment
 	}
@@ -36,7 +36,7 @@ import (
 
 	description: "Kubernetes Deployments for stateless workloads with rolling updates"
 
-	type:     "atomic"
+	type:   "atomic"
 	domain: "operational"
 	scope: ["component"]
 

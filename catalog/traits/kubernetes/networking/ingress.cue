@@ -8,17 +8,17 @@ import (
 #IngressTrait: core.#TraitObject & {
 	#apiVersion: "core.oam.dev/v2alpha2"
 	#kind:       "Ingress"
-	
+
 	description: "Kubernetes Ingress for HTTP and HTTPS access to services from outside the cluster"
-	
-	type:     "atomic"
+
+	type:   "atomic"
 	domain: "structural"
 	scope: ["component"]
-	
+
 	requiredCapabilities: [
 		"k8s.io/api/networking/v1.Ingress",
 	]
-	
+
 	provides: {
 		ingress: schema.Ingress
 	}
