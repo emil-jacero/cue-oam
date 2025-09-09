@@ -203,7 +203,14 @@ import (
 		}
 		
 		output: {
-			resources: [
+			// Kubernetes List object format
+			apiVersion: "v1"
+			kind:       "List"
+			metadata: {
+				name:      app.#metadata.name
+				namespace: app.#metadata.namespace
+			}
+			items: [
 				// Flatten all transformer outputs into a single array
 				for componentName, comp in app.components
 				for traitName, trait in comp.#metadata.#traits
