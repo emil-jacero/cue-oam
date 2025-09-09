@@ -1,6 +1,9 @@
 package kubernetes
 
 import (
+	"list"
+	"strings"
+	
 	core "jacero.io/oam/core/v2alpha2"
 )
 
@@ -131,6 +134,27 @@ import (
 			"k8s.io/api/core/v1.Secret",
 			"k8s.io/api/core/v1.PersistentVolumeClaim",
 		]
+		
+		// Core traits that create primary resources - MUST be supported
+		// If these are missing transformers, the provider should error
+		coreTraits: [
+			"core.oam.dev/v2alpha2.ContainerSet",
+			"core.oam.dev/v2alpha2.Expose",
+			"core.oam.dev/v2alpha2.Volume", 
+			"core.oam.dev/v2alpha2.Secret",
+			"core.oam.dev/v2alpha2.Config",
+			"core.oam.dev/v2alpha2.NetworkIsolationScope",
+		]
+		
+		// Modifier traits that depend on other traits - can be safely ignored if unsupported
+		// These traits modify resources created by core traits
+		modifierTraits: [
+			"core.oam.dev/v2alpha2.Replica",
+			"core.oam.dev/v2alpha2.RestartPolicy", 
+			"core.oam.dev/v2alpha2.UpdateStrategy",
+			"core.oam.dev/v2alpha1.Labels",
+			"core.oam.dev/v2alpha1.Annotations",
+		]
 	}
 
 	transformers: {
@@ -141,21 +165,54 @@ import (
 		"core.oam.dev/v2alpha2.Secret":                 #SecretTransformer
 		"core.oam.dev/v2alpha2.Config":                 #ConfigTransformer
 		"core.oam.dev/v2alpha2.NetworkIsolationScope":  #NetworkIsolationScopeTransformer
-		// "core.oam.dev/v2alpha1.Labels":                 #LabelsTransformer
-		// "core.oam.dev/v2alpha1.Annotations":            #AnnotationsTransformer
 	}
 
 	render: {
 		app: core.#Application
+		
+		// Capability verification - check all traits used in the application
+		#traitVerification: {
+			// Collect all trait types used in the application
+			usedTraits: [
+				for componentName, comp in app.components
+				for traitName, trait in comp.#metadata.#traits {
+					trait.#combinedVersion
+				}
+			]
+			
+			// Check for unsupported core traits (these should error)
+			unsupportedCoreTraits: [
+				for usedTrait in usedTraits
+				if list.Contains(#metadata.coreTraits, usedTrait) && transformers[usedTrait] == _|_  {
+					usedTrait
+				}
+			]
+			
+			// Check for unsupported modifier traits (these are safely ignored)
+			unsupportedModifierTraits: [
+				for usedTrait in usedTraits  
+				if list.Contains(#metadata.modifierTraits, usedTrait) && transformers[usedTrait] == _|_ {
+					usedTrait
+				}
+			]
+			
+			// Error if core traits are unsupported
+			if len(unsupportedCoreTraits) > 0 {
+				error("Core traits not supported by Kubernetes provider: \(strings.Join(unsupportedCoreTraits, ", ")). These traits create primary resources and must have transformers implemented.")
+			}
+		}
+		
 		output: {
 			resources: [
 				// Flatten all transformer outputs into a single array
 				for componentName, comp in app.components
 				for traitName, trait in comp.#metadata.#traits
 				if transformers[trait.#combinedVersion] != _|_ {
+					// Verify transformer accepts the trait (additional safety check)
 					if transformers[trait.#combinedVersion].accepts != trait.#combinedVersion {
-						error("Trait \(trait.#combinedVersion) not supported by provider")
+						error("Transformer mismatch: trait \(trait.#combinedVersion) cannot be handled by its assigned transformer")
 					}
+					
 					for resource in (transformers[trait.#combinedVersion].transform & {
 						input: comp
 						context: core.#ProviderContext & {

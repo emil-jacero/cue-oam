@@ -9,6 +9,17 @@ package v2alpha2
 		description: string // A brief description of the provider
 		minVersion:  string // The minimum version of the provider
 		capabilities: [...string] // What this provider supports
+		
+		// Optional: Core traits that create primary resources - MUST be supported
+		// If these are missing transformers, the provider should error
+		coreTraits?: [...string]
+		
+		// Optional: Modifier traits that depend on other traits - can be safely ignored if unsupported
+		// These traits modify resources created by core traits
+		modifierTraits?: [...string]
+		
+		// Allow additional provider-specific metadata
+		...
 	}
 
 	// Transformer registry - maps traits to transformers
