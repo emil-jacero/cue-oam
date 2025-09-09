@@ -62,7 +62,7 @@ import (
 	// Dependencies on other traits
 	// Lists traits that must be present for this trait to function
 	// Used for modifier traits that patch resources created by other traits
-	requires?: [...#TraitMeta]
+	dependencies?: [...#TraitMeta]
 
 	// Fields this trait provides to a component, scope, or promise
 	provides: {...}

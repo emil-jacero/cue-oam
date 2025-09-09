@@ -50,7 +50,7 @@ import (
 		"core.oam.dev/v2alpha1.Replica",
 	]
 	// This trait modifies resources created by ContainerSet
-	requires: [#ContainerSetTraitMeta]
+	dependencies: [#ContainerSetTraitMeta]
 	provides: {
 		replica: {
 			count: uint | *1
@@ -74,7 +74,7 @@ import (
 		"core.oam.dev/v2alpha1.RestartPolicy",
 	]
 	// This trait modifies Pod spec created by ContainerSet
-	requires: [#ContainerSetTraitMeta]
+	dependencies: [#ContainerSetTraitMeta]
 	provides: {
 		restartPolicy: string | *"Always" | "OnFailure" | "Never"
 	}
@@ -96,7 +96,7 @@ import (
 		"core.oam.dev/v2alpha1.UpdateStrategy",
 	]
 	// This trait modifies Deployment/StatefulSet created by ContainerSet
-	requires: [#ContainerSetTraitMeta]
+	dependencies: [#ContainerSetTraitMeta]
 	provides: {
 		updateStrategy: {
 			type: *"RollingUpdate" | "Recreate"
