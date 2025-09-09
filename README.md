@@ -395,17 +395,51 @@ Providers implement a pluggable interface:
 
 ## Examples
 
+### Running the Examples
+
+The project includes two example applications demonstrating different approaches:
+
+#### 1. Standard CUE Application (`example-application.cue`)
+
+Traditional CUE format with explicit application definition:
+
+```bash
+# View the application structure
+cue eval examples/example-application.cue -e myApp
+
+# Render Kubernetes manifests
+cue eval examples/example-application.cue -e "k8sManifests.output" --out yaml
+```
+
+#### 2. Flattened Application Format (`example-application-file.cue`)
+
+Simplified format where the entire file represents one application - designed for easier developer experience:
+
+```bash
+# View the flattened application
+cue eval examples/example-application-file.cue
+
+# Export as YAML to see the structure
+cue export examples/example-application-file.cue --out yaml
+```
+
+Both examples create the same application with:
+
+- **Frontend component**: nginx web server with exposure
+- **Backend component**: Node.js API service
+- **Hierarchical metadata**: Labels and annotations inherited from app → component → resource
+
 ### Simple Web Application
 
 ```cue
 webApp: #Application & {
     components: web: {
-        #Workload
-        workload: {
-            replicas: 3
+        trait.#ContainerSet
+        containerSet: {
             containers: main: {
+                name: "nginx"
                 image: {repository: "nginx", tag: "1.24"}
-                ports: [{containerPort: 80}]
+                ports: [{name: "http", targetPort: 80, protocol: "TCP"}]
                 resources: {
                     requests: {cpu: "100m", memory: "128Mi"}
                     limits: {cpu: "500m", memory: "512Mi"}
@@ -420,20 +454,35 @@ webApp: #Application & {
 
 ```cue
 database: #Component & {
-    #Database
+    trait.#Database
     database: {
-        databaseType: "postgres"
+        engine: "postgres"
         version: "15"
-        storage: {size: "20Gi"}
+        persistence: {
+            enabled: true
+            size: "20Gi"
+        }
         credentials: {
             username: "admin"
-            secretRef: "db-secret"
+            passwordFrom: {
+                secretKeyRef: {
+                    name: "db-secret"
+                    key: "password"
+                }
+            }
         }
     }
 }
 ```
 
-### Full examples available in `/examples/` directory
+### More Examples
+
+Full examples available in `/examples/` directory:
+
+- `example-application.cue` - Standard CUE application format
+- `example-application-file.cue` - Flattened developer-friendly format
+- `metadata-inheritance-example.cue` - Demonstrates hierarchical metadata
+- Additional trait examples in `/catalog/traits/`
 
 ## Development
 
@@ -453,8 +502,11 @@ cue eval <file.cue>
 cue export <file.cue> --out json
 cue export <file.cue> --out yaml
 
-# Test examples
-cue export examples/example-application.cue
+# Run the standard application example
+cue eval examples/example-application.cue -e "k8sManifests.output" --out yaml
+
+# Run the flattened application example
+cue export examples/example-application-file.cue --out yaml
 ```
 
 ### Testing
@@ -463,11 +515,20 @@ cue export examples/example-application.cue
 # Run validation tests
 cue vet ./...
 
+# Test standard application example
+cue eval examples/example-application.cue -e myApp > /dev/null && echo "✓ Standard example valid"
+
+# Test flattened application example
+cue export examples/example-application-file.cue > /dev/null && echo "✓ Flattened example valid"
+
 # Export and validate all examples
 for f in examples/*.cue; do
     echo "Testing $f"
     cue export "$f" > /dev/null || exit 1
 done
+
+# Test Kubernetes provider rendering
+cue eval examples/example-application.cue -e "k8sManifests.output" > /dev/null && echo "✓ Kubernetes rendering works"
 ```
 
 ## Roadmap
