@@ -19,20 +19,11 @@ This document outlines all proposed composite traits for the CUE-OAM system, org
 | Trait | Domain | Composes | Description | Justification |
 |-------|--------|----------|-------------|---------------|
 | **SimpleWorkload** | operational | ContainerSet + Replica | Basic containerized workload with replica control | Simplest possible deployable unit, reduces boilerplate for basic services without networking needs. |
-| **WebEndpoint** | structural | Expose + Route + HealthCheck | Basic web service exposure with health monitoring | Common pattern for exposing HTTP services with basic health checking. |
+| **WebEndpoint** | operational | Expose + Route + HealthCheck | Basic web service exposure with health monitoring | Common pattern for exposing HTTP services with basic health checking. |
 | **ScalableWorkload** | operational | ContainerSet + Replica + Autoscaler | Auto-scaling containerized workload | Enables dynamic scaling without manual configuration complexity. |
-| **PersistentWorkload** | resource | ContainerSet + Volume + BackupPolicy | Workload with persistent storage and backups | Basic pattern for any service needing data persistence. |
-| **ConfiguredWorkload** | operational | ContainerSet + Config + Secret | Workload with configuration management | Most services need both configuration and secrets management. |
-| **BasicMicroservice** | structural | ContainerSet + ServiceDiscovery + HealthCheck | Minimal microservice with discovery | Simplest viable microservice that can participate in service mesh. |
+| **PersistentWorkload** | operational | ContainerSet + Volume + BackupPolicy | Workload with persistent storage and backups | Basic pattern for any service needing data persistence. |
 | **ScheduledTask** | operational | CronJob + Config + Secret | Scheduled task with configuration | Common pattern for scheduled maintenance and batch jobs. |
-| **OneTimeJob** | operational | Job + Config + Volume | One-time job with storage | Jobs often need configuration and temporary storage for processing. |
-| **ObservableWorkload** | structural | ContainerSet + Metrics + Logging | Basic workload with observability | Minimum observability for production workloads. |
-| **MonitoredEndpoint** | structural | Expose + HealthCheck + Metrics | Endpoint with health and metrics | External endpoints need monitoring for SLA compliance. |
-| **SecureWorkload** | contractual | ContainerSet + SecurityPolicy + SecurityContext | Basic secure workload | Minimum security for production workloads. |
-| **AuthenticatedService** | contractual | WebService + RBAC + Certificate | Service with authentication | Services need authentication for access control. |
-| **ReplicatedService** | operational | ContainerSet + Replica + PodDisruptionBudget | Basic high-availability service | Minimum HA configuration for production services. |
-| **DevWorkload** | operational | ContainerSet + Config + Logging + DebugMode | Development-optimized workload | Development needs different configuration than production. |
-| **TestEnvironment** | structural | DevWorkload + MockServices + TestData + Ephemeral | Complete test environment | Testing needs isolated, repeatable environments. |
+| **Task** | operational | Job + Config + Volume | One-time job with storage | Jobs often need configuration and temporary storage for processing. |
 
 ---
 
@@ -42,8 +33,8 @@ This document outlines all proposed composite traits for the CUE-OAM system, org
 
 | Trait | Domain | Composes | Description | Justification |
 |-------|--------|----------|-------------|---------------|
-| **WebService** | structural | ContainerSet + Replica + Expose + Route + HealthCheck + Metrics | Complete web service with monitoring | Standard pattern for production web services, provides everything needed for a basic HTTP service. |
-| **APIService** | structural | WebService + RateLimiter + Autoscaler + Certificate | Production-ready API with rate limiting and auto-scaling | APIs need additional protection and scaling capabilities beyond basic web services. |
+| **WebService** | operational | ContainerSet + Replica + Expose + Route + HealthCheck + Metrics | Complete web service with monitoring | Standard pattern for production web services, provides everything needed for a basic HTTP service. |
+| **APIService** | operational | WebService + RateLimiter + Autoscaler + Certificate | Production-ready API with rate limiting and auto-scaling | APIs need additional protection and scaling capabilities beyond basic web services. |
 | **SecureWebService** | contractual | WebService + Certificate + SecurityPolicy + RBAC | Web service with enhanced security | Required for services handling sensitive data or exposed to the internet. |
 | **StatefulService** | resource | ContainerSet + Volume + ServiceDiscovery + BackupPolicy + Replica | Stateful service with discovery and persistence | Standard pattern for databases, caches, and other stateful services. |
 | **DatabaseService** | resource | StatefulService + Migration + Schema + Snapshot | Managed database with migrations and snapshots | Databases need additional capabilities for schema management and point-in-time recovery. |
