@@ -10,7 +10,7 @@ import (
 myApp: core.#Application & {
 	#metadata: {
 		name:      "my-web-app"
-		namespace: "production"
+		namespace: "default"
 		version:   "2.1.0"
 		// Application-level metadata applied to ALL resources
 		labels: {
