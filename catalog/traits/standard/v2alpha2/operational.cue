@@ -168,6 +168,7 @@ import (
 // Database trait definition (composite trait using atomic traits)
 // Provides a managed database service (PostgreSQL or MySQL)
 #DatabaseTraitMeta: #Database.#metadata.#traits.Database
+
 #Database: core.#Trait & {
 	#metadata: #traits: Database: core.#TraitMetaComposite & {
 		#kind:       "Database"

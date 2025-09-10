@@ -84,7 +84,6 @@ import (
 	#apiVersion:      string
 	#kind:            string
 	#combinedVersion: "\(#apiVersion).\(#kind)"
-
 	type:  "atomic"
 
 	// The domain of this trait

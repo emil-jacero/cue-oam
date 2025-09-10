@@ -356,12 +356,223 @@ if composes != _|_  {
 ### Key Features Implemented
 
 1. **Automatic Requirement Computation**: Composite traits automatically compute requirements from their composed traits
-2. **Type Field Enforcement**: Required `type` field must match presence of `composes` field
-3. **Validation with Error Messages**: Uses CUE's `error()` builtin for proper error handling
-4. **Self-Documenting Structure**: `type` field explicitly declares atomic vs composite
-5. **Name Population**: Trait names are automatically populated from the key in the `#traits` map
-6. **Composition Depth Limiting**: Atomic traits at level 0, composite traits up to level 3
-7. **Circular Dependency Detection**: Prevents traits from composing themselves directly or indirectly
+2. **Validation with Error Messages**: Uses CUE's `error()` builtin for proper error handling
+3. **Self-Documenting Structure**: `type` field explicitly declares `atomic`, `composite`, `modifier`, or `custom`.
+4. **Name Population**: Trait names are automatically populated from the key in the `#traits` map
+5. **Composition Depth Limiting**: Atomic traits at level 0, composite traits up to level 3
+6. **Circular Dependency Detection**: Prevents traits from composing themselves directly or indirectly
+
+### Trait Classification System
+
+Understanding the different trait classifications is crucial for building effective CUE-OAM applications. Each classification serves a specific purpose in the architecture:
+
+#### Atomic Traits
+
+**Purpose**: Fundamental building blocks that provide single, focused capabilities.
+
+**Characteristics**:
+
+- Self-contained functionality with no dependencies on other traits
+- Directly map to provider implementations
+- Cannot be decomposed further
+- Composition depth of 0
+
+**When to use**: When you need a basic capability that doesn't require other traits to function.
+
+**Example**: `#Volume`, `#Secret`, `#Replica` - these provide specific functionality without needing other traits.
+
+#### Composite Traits
+
+**Purpose**: Higher-level abstractions built by combining multiple traits.
+
+**Characteristics**:
+
+- Compose 2 or more atomic or other composite traits
+- Automatically inherit required capabilities from composed traits
+- Maximum composition depth of 3 to prevent complexity
+- Provide simplified interfaces for common patterns
+
+**When to use**: When you want to package multiple related capabilities into a single, reusable abstraction.
+
+**Example**: `#Database` composes `#Workload` and `#Volume` to create a complete database deployment pattern.
+
+#### Modifier Traits
+
+**Purpose**: Enhance or modify existing resources without creating primary resources themselves.
+
+**Characteristics**:
+
+- Applied to existing components or resources
+- Can be safely ignored by providers that don't support them
+- Often provide cross-cutting concerns (monitoring, security policies)
+- Don't create standalone resources
+
+**When to use**: When adding optional enhancements that shouldn't break if unsupported.
+
+**Example**: `#RateLimiter`, `#CircuitBreaker` - these modify behavior but don't create primary resources.
+
+#### Custom Traits
+
+**Purpose**: Last-resort mechanism for platform engineers to implement organization-specific or proprietary functionality that cannot be achieved through standard composition patterns.
+
+**Characteristics**:
+
+- Designed as an escape hatch for edge cases and proprietary integrations
+- Can target completely different APIs or platforms outside the standard OAM model
+- Follow the same `#TraitObject` structure but with relaxed composition rules
+- May bypass standard validation for compatibility with external systems
+- Can be atomic or composite-like without strict adherence to composition patterns
+- Support optional `requiredCapabilities` for custom provider requirements
+
+**When to use**:
+
+- When integrating with proprietary or legacy systems that don't fit the OAM model
+- When standard composition patterns are insufficient for complex business logic
+- When you need to wrap external APIs that have fundamentally different resource models
+- As a temporary solution while proper traits are being developed
+
+**Example**:
+
+- A `#LegacyMainframe` trait that interfaces with IBM z/OS systems
+- A `#CloudProviderSpecific` trait using proprietary AWS/Azure/GCP APIs
+- A `#PaymentGateway` trait integrating with third-party payment processors
+
+**Important**: Custom traits should be used sparingly. Before creating a custom trait, always attempt to:
+
+1. Use existing atomic traits
+2. Compose standard traits
+3. Extend standard traits with additional fields
+Only resort to custom traits when these approaches are genuinely insufficient.
+
+#### Classification Guidelines
+
+1. **Start with Atomic**: Build atomic traits for fundamental capabilities
+2. **Compose for Patterns**: Create composite traits for common usage patterns
+3. **Modify Carefully**: Use modifier traits for optional enhancements
+4. **Custom as Last Resort**: Only create custom traits when standard patterns truly cannot meet requirements
+
+The classification system ensures:
+
+- **Clarity**: Clear understanding of what each trait does and how it behaves
+- **Reusability**: Traits can be combined in predictable ways
+- **Provider Compatibility**: Providers know which traits are essential vs optional
+- **Maintainability**: Limited composition depth prevents unmaintainable complexity
+- **Flexibility**: Custom traits provide an escape hatch for edge cases
+
+### Extending Traits in Components
+
+While traits have fixed schemas, CUE-OAM provides flexibility for developers to extend trait functionality at the component level without modifying the trait definitions themselves.
+
+#### Extending Composite Traits
+
+When using composite traits in a component, developers can directly access and extend the underlying atomic traits:
+
+```cue
+// Using a Database composite trait but adding custom volumes
+myDatabase: #Component & {
+
+    // The normal trait fields
+    #Database
+    database: {
+        type: "postgres"
+        version: "15"
+    }
+
+    // You can modify the fields of the atomic traits like this,
+    // as long as the modifications does not collide with the begavior of the trait.
+    containerSet: {
+        containers: logging: {
+            image: {
+                repository: "company/best-logging-container"
+                tag:        "1337"
+            }
+        }
+    }
+}
+```
+
+#### Extending Atomic Traits
+
+Most atomic traits are designed with extensibility in mind through named structs:
+
+```cue
+// Atomic traits typically use named maps for resources
+myComponent: #Component & {
+    #Volume
+    volumes: {
+        // Standard volumes
+        appData: {
+            type: "volume"
+            size: "10Gi"
+            mountPath: "/data"
+        }
+        // Add any number of additional volumes
+        cache: {
+            type: "emptyDir"
+            mountPath: "/cache"
+        }
+        temp: {
+            type: "emptyDir"
+            mountPath: "/tmp"
+        }
+    }
+
+    #Secret
+    secrets: {
+        // Add multiple secrets as needed
+        apiKeys: {
+            name: "api-keys"
+            data: {...}
+        }
+        dbCredentials: {
+            name: "db-creds"
+            data: {...}
+        }
+    }
+}
+```
+
+#### Extension Patterns
+
+**1. Named Maps Pattern**: Most resource traits use `[string]: {...}` allowing unlimited named entries:
+
+- `volumes: [string]: #VolumeSpec`
+- `secrets: [string]: #SecretSpec`
+- `configs: [string]: #ConfigSpec`
+- `containers: [string]: #ContainerSpec`
+
+**2. Direct Field Access**: Composite traits expose their composed traits' fields:
+
+- Access `database.volumes` to add storage
+- Access `database.workload` to modify containers
+- All composed trait fields remain accessible
+
+**3. CUE Unification**: Extensions merge with defaults through CUE's unification:
+
+```cue
+// Trait provides defaults
+// E.g. "name" defaults to the key
+volumes: dataVolume: {
+    type: "volume"
+    size: "10Gi"
+}
+
+// Component extends
+volumes: dataVolume: {
+    size: "50Gi"  // Override size
+    storageClass: "fast-ssd"  // Add new field
+}
+```
+
+#### Best Practices for Extensions
+
+1. **Preserve Trait Semantics**: Extensions should complement, not contradict, the trait's purpose
+2. **Use Consistent Naming**: Follow the trait's naming conventions for added resources
+3. **Document Extensions**: Comment why additional resources are needed
+4. **Avoid Deep Nesting**: Keep extensions at the immediate trait level when possible
+5. **Validate Compatibility**: Ensure extensions work with the target provider
+
+This extensibility model provides flexibility while maintaining the benefits of structured traits, allowing developers to handle edge cases without creating custom traits for minor variations.
 
 ### Working Example
 
@@ -369,9 +580,9 @@ The current implementation includes working examples:
 
 ```cue
 // Test composite trait that works correctly
-testValidWebService: #TraitObject & {
-    type: "composite"
+testValidWebService: #TraitMetaComposite & {
     domain: "operational"
+    scope: ["component"]
     composes: [
         testAtomicWorkload,
         testAtomicExposable, 
@@ -382,11 +593,10 @@ testValidWebService: #TraitObject & {
         expose: {}
         health: {}
     }
-    scope: ["component"]
 }
 
 // Computed requirements will be:
-// ["core.oam.dev/v2alpha1.HealthProvider", "core.oam.dev/v2alpha1.NetworkProvider", "core.oam.dev/v2alpha1.Runtime"]
+// ["core.oam.dev/v2alpha2.HealthCheck", "core.oam.dev/v2alpha2.Network", "core.oam.dev/v2alpha2.Runtime"]
 ```
 
 ## Benefits
@@ -395,7 +605,7 @@ testValidWebService: #TraitObject & {
 2. **Maximum Reusability**: Traits work at any appropriate level
 3. **Self-Documenting**: Structure itself shows atomic vs composite
 4. **Type Safety**: CUE's type system ensures valid compositions
-5. **Clear Categories**: Five categories cover all use cases
+5. **Clear Categories**: Eight categories cover all use cases
 6. **Natural Composition**: Complex traits built from simple ones
 7. **Better Discovery**: Easy to find and understand traits
 8. **Extensible**: New traits fit naturally into categories
@@ -411,7 +621,7 @@ testValidWebService: #TraitObject & {
 
 ### More Categories
 
-Having 10+ categories was considered but rejected as too complex. Five categories provide sufficient organization without overwhelming users.
+Having 10+ categories was considered but rejected as too complex. Eight categories provide sufficient organization without overwhelming users.
 
 ### Type Field Implementation
 
@@ -431,9 +641,8 @@ Traditional inheritance (`extends`) was considered but composition (`composes`) 
    - Should incompatibilities be declared at the trait level or component level?
    - How should incompatibilities work with trait composition?
    - Should incompatibilities be category-based, trait-specific, or both?
-   - How should the validation system work (compile-time vs runtime)?
    - Should we support conditional incompatibilities based on configuration?
 
 ## Conclusion
 
-This unified trait architecture makes CUE-OAM incredibly flexible while maintaining structure through five fundamental categories. By making everything a trait with clear composition patterns, we achieve maximum reusability and a consistent mental model across the entire system. The self-documenting nature of the metadata structure ensures that traits are easy to understand, compose, and validate.
+This unified trait architecture makes CUE-OAM incredibly flexible while maintaining structure through eight fundamental categories. By making everything a trait with clear composition patterns, we achieve maximum reusability and a consistent mental model across the entire system. The self-documenting nature of the metadata structure ensures that traits are easy to understand, compose, and validate.

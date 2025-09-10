@@ -55,8 +55,8 @@ Bundle [planned]
   └── Application(s)
         ├── Component(s)
         │     └── Trait(s) [Atomic or Composite]
-        ├── Scope(s) [in progress]
-        └── Policy(s) [planned]
+        └── Scope(s) [in progress]
+              └── Trait(s) [Atomic or Composite]
 ```
 
 ### Directory Structure
@@ -70,8 +70,8 @@ cue-oam/
 │   ├── scope.cue        # Scope definitions
 │   └── provider.cue     # Provider interfaces
 ├── catalog/             # Standard trait implementations
-│   └── traits/
-│       └── standard/
+│   └── traits/standard/
+│       └── v2alpha2/
 │           ├── workload.cue    # Workload trait
 │           ├── database.cue    # Database trait
 │           ├── volume.cue      # Volume trait
@@ -272,12 +272,20 @@ ecommerce: #Application & {
 
 | Trait | Category | Type | Description |
 |-------|----------|------|-------------|
-| `#Workload` | Operational | Atomic | Container workload with deployment options |
-| `#Database` | Resource | Composite | Database with persistent storage |
-| `#Volume` | Resource | Atomic | Persistent or temporary storage |
-| `#Secret` | Resource | Atomic | Secret management |
-| `#Config` | Resource | Atomic | Configuration via ConfigMap |
-| `#NetworkIsolationScope` | Structural | Atomic | Network policy management |
+| `#Workload` | Operational | Composite | Generic workload trait for containerized applications |
+| `#Database` | Operational | Composite | Managed database service with persistence support |
+| `#ContainerSet` | Operational | Atomic | Container specification with main and init containers |
+| `#Replica` | Operational | Atomic | Specifies the number of replicas to run |
+| `#RestartPolicy` | Operational | Atomic | Defines restart behavior for containers |
+| `#UpdateStrategy` | Operational | Atomic | Defines how updates are applied to running instances |
+| `#Volume` | Resource | Atomic | Describes a set of volumes to be used by containers |
+| `#Secret` | Resource | Atomic | Describes a set of secrets to be used by containers |
+| `#Config` | Resource | Atomic | Describes configurations to be used by containers |
+| `#Expose` | Structural | Atomic | Marks a component as exposable for external access |
+| `#NetworkIsolationScope` | Structural | Atomic | Manages network boundaries for components or scopes |
+| `#SharedNetwork` | Structural | Atomic | Defines a shared network policy for all components |
+| `#NamespaceIsolationScope` | Contractual | Atomic | Enforces namespace boundaries and isolation |
+| `#NamespaceQuota` | Contractual | Atomic | Sets resource limits for all components in namespace |
 
 ### Creating Custom Traits
 

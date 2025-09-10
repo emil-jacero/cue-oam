@@ -39,7 +39,7 @@ This document outlines all proposed atomic traits for the CUE-OAM system, organi
 
 | Trait | Domain | Description | Justification | Dependencies |
 |-------|--------|-------------|---------------|--------------|
-| **Autoscaler** | operational | Configures horizontal pod autoscaling based on metrics | Enables dynamic scaling to handle variable load, improving cost efficiency and availability. | Requires Replica |
+| **HorizontalAutoscaler** | operational | Configures horizontal pod autoscaling based on metrics | Enables dynamic scaling to handle variable load, improving cost efficiency and availability. | Requires Replica |
 | **VerticalAutoscaler** | operational | Automatically adjusts resource requests/limits based on usage | Optimizes resource allocation without manual tuning, reducing waste and improving performance. | Requires ResourceLimits |
 | **Sidecar** | structural | Injects additional containers alongside the main container | Common pattern for service meshes, logging agents, and proxy containers. Enables separation of concerns. | Requires ContainerSet |
 | **InitContainer** | operational | Defines initialization containers that run before main containers | Critical for setup tasks like database migrations, volume permissions, and dependency checks. | Requires ContainerSet |
