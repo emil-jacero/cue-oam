@@ -23,8 +23,9 @@ The unified trait architecture provides a foundation where both Components and S
 - Components compose traits to define workload behavior
 - Scopes compose traits to define cross-cutting concerns that affect components
 - Both inherit from #Trait, providing a unified architecture
-- Applications contain components with scopes as additions that apply policies and concerns
+- Applications contain components with scopes as additions that apply policies and cross-cutting concerns
 - Scopes reference components via an `affects` field to specify which components they apply to
+- Scopes are inherently a `Modifier` trait
 
 ### Problem Statement
 
@@ -79,7 +80,6 @@ myApp: #Application & {
 - [x] **Trait Composition**: Scopes compose traits just like Components
 - [x] **Application Integration**: Applications contain components with scopes as additions
 - [x] **Explicit Relationships**: Scopes explicitly declare which components they affect
-- [ ] **Bundle Integration**: Support scopes at Bundle level for distribution concerns
 - [ ] **Cross-Cutting Management**: Scopes manage concerns that span multiple components
 - [ ] **Provider Translation**: Enable platform-specific scope implementations
 
@@ -95,11 +95,11 @@ myApp: #Application & {
 
 The unified architecture where both Components and Scopes inherit from #Trait:
 
-- **Common Base**: Both #Component and #Scope extend #Trait
+- **Common Base**: Both #Component and #Scope are composed from #Trait
 - **Trait Metadata**: Components and Scopes have #metadata with #traits field
 - **Application Structure**: Applications contain components as primary workloads, with scopes as additions that apply cross-cutting concerns
 - **Scope-Component Relationship**: Scopes use an `affects` field to specify which components they apply to
-- **Trait Scope Field**: The `traitScope` field in #TraitObject determines where traits can be applied
+- **Trait Scope Field**: The `scope` field in #TraitMeta determines where traits can be applied
 - **Provider Requirements**: Providers process components first, then apply scope effects to affected components
 
 ### Unified Architecture
@@ -110,7 +110,7 @@ Both Components and Scopes inherit from #Trait, creating a unified system where 
 // Base trait definition (from trait.cue)
 #Trait: {
     #metadata: {
-        #traits: [traitName=string]: #TraitObject & {
+        #traits: [traitName=string]: #TraitMeta & {
             name: traitName
         }
     }
@@ -144,36 +144,6 @@ Both Components and Scopes inherit from #Trait, creating a unified system where 
 }
 ```
 
-### Trait Scope Field
-
-The `traitScope` field in #TraitObject determines where traits can be applied:
-
-```cue
-#TraitScope: "component" | "scope" | "bundle" | "promise"
-
-#TraitObject: {
-    name: #NameType
-    
-    // Where this trait can be applied
-    traitScope: [...#TraitScope]
-    
-    // Category of concern this trait addresses
-    domain: #TraitDomain
-    
-    // What this trait provides
-    provides: {...}
-    
-    // Dependencies
-    requires?: [...string]
-    
-    // Composition (for composite traits)
-    composes?: [...#TraitObject]
-    
-    // Attributes
-    attributes: [string]: bool
-}
-```
-
 ### Core Scope Types
 
 #### Network Scope
@@ -181,8 +151,8 @@ The `traitScope` field in #TraitObject determines where traits can be applied:
 A scope that manages network policies and connectivity:
 
 ```cue
-#NetworkScope: #Scope & {
-    #metadata: #traits: NetworkScope: #TraitObject & {
+#NetworkScope: #Trait & {
+    #metadata: #traits: NetworkScope: #TraitMeta & {
         name: "NetworkScope"
         traitScope: ["scope"]  // This trait applies to scopes
         domain: "structural"
@@ -232,7 +202,7 @@ A scope that manages security policies and RBAC:
 
 ```cue
 #SecurityScope: #Scope & {
-    #metadata: #traits: SecurityScope: #TraitObject & {
+    #metadata: #traits: SecurityScope: #TraitMeta & {
         name: "SecurityScope"
         traitScope: ["scope"]
         domain: "contractual"
@@ -291,7 +261,7 @@ A scope that manages resource allocation and constraints:
 
 ```cue
 #ResourceScope: #Scope & {
-    #metadata: #traits: ResourceScope: #TraitObject & {
+    #metadata: #traits: ResourceScope: #TraitMeta & {
         name: "ResourceScope"
         traitScope: ["scope"]
         domain: "resource"
@@ -350,7 +320,7 @@ The key distinction is in the `traitScope` field:
 ```cue
 // A trait that can be used in Components
 #Workload: #Trait & {
-    #metadata: #traits: Workload: #TraitObject & {
+    #metadata: #traits: Workload: #TraitMeta & {
         name: "Workload"
         traitScope: ["component"]  // Only for components
         domain: "operational"
@@ -361,7 +331,7 @@ The key distinction is in the `traitScope` field:
 
 // A trait that can be used in Scopes
 #NetworkPolicy: #Trait & {
-    #metadata: #traits: NetworkPolicy: #TraitObject & {
+    #metadata: #traits: NetworkPolicy: #TraitMeta & {
         name: "NetworkPolicy"
         traitScope: ["scope"]  // Only for scopes
         domain: "structural"
@@ -372,7 +342,7 @@ The key distinction is in the `traitScope` field:
 
 // A trait that can be used in both
 #Monitoring: #Trait & {
-    #metadata: #traits: Monitoring: #TraitObject & {
+    #metadata: #traits: Monitoring: #TraitMeta & {
         name: "Monitoring"
         traitScope: ["component", "scope"]  // Both
         domain: "operational"
@@ -392,7 +362,7 @@ A scope for regulatory and organizational requirements:
 
 ```cue
 #ComplianceScope: #Scope & {
-    #metadata: #traits: ComplianceScope: #TraitObject & {
+    #metadata: #traits: ComplianceScope: #TraitMeta & {
         name: "ComplianceScope"
         traitScope: ["bundle"]
         domain: "contractual"
@@ -630,7 +600,7 @@ Both Components and Scopes can use composite traits:
 // Composite trait for Components
 #WebService: #Component & {
     #metadata: #traits: {
-        WebService: #TraitObject & {
+        WebService: #TraitMeta & {
             name: "WebService"
             traitScope: ["component"]
             domain: "operational"
@@ -651,7 +621,7 @@ Both Components and Scopes can use composite traits:
 // Composite trait for Scopes
 #SecureNetwork: #Scope & {
     #metadata: #traits: {
-        SecureNetwork: #TraitObject & {
+        SecureNetwork: #TraitMeta & {
             name: "SecureNetwork"
             traitScope: ["scope"]
             domain: "structural"
@@ -773,7 +743,7 @@ The system validates trait usage based on `traitScope`:
 ```cue
 // Validation helper
 #ValidateTraitUsage: {
-    trait: #TraitObject
+    trait: #TraitMeta
     context: "component" | "scope" | "bundle" | "promise"
     
     valid: context in trait.traitScope
@@ -787,13 +757,13 @@ The system validates trait usage based on `traitScope`:
 myComponent: #Component & {
     #metadata: #traits: {
         // Valid: Workload can be used in components
-        Workload: #TraitObject & {
+        Workload: #TraitMeta & {
             traitScope: ["component"]
             ...
         }
         
         // Invalid: NetworkPolicy can't be used in components
-        NetworkPolicy: #TraitObject & {
+        NetworkPolicy: #TraitMeta & {
             traitScope: ["scope"]  // Error: wrong context
             ...
         }
@@ -815,7 +785,7 @@ myComponent: #Component & {
 ### Phase 1: Foundation
 
 - [x] Establish unified #Trait base for Components and Scopes
-- [x] Define `traitScope` field in #TraitObject
+- [x] Define `traitScope` field in #TraitMeta
 - [x] Implement #Component and #Scope as #Trait extensions
 - [ ] Create core scope-specific traits (NetworkPolicy, RBAC, ResourceQuota)
 - [ ] Add trait context validation
@@ -860,4 +830,4 @@ myComponent: #Component & {
 
 ## Conclusion
 
-The unified architecture where both Components and Scopes inherit from #Trait creates a consistent, powerful system for managing all aspects of applications. Components compose traits for workload-specific behavior, while Scopes serve as additions that compose traits for cross-cutting concerns. The `affects` field in Scopes explicitly declares which components are impacted, creating clear relationships between workloads and their operational policies. The `traitScope` field in #TraitObject ensures traits are used in appropriate contexts while allowing flexibility for traits that span multiple contexts. This design maintains architectural clarity, enables sophisticated composition patterns, and provides providers with a clear model for applying scope effects to components.
+The unified architecture where both Components and Scopes inherit from #Trait creates a consistent, powerful system for managing all aspects of applications. Components compose traits for workload-specific behavior, while Scopes serve as additions that compose traits for cross-cutting concerns. The `affects` field in Scopes explicitly declares which components are impacted, creating clear relationships between workloads and their operational policies. The `traitScope` field in #TraitMeta ensures traits are used in appropriate contexts while allowing flexibility for traits that span multiple contexts. This design maintains architectural clarity, enables sophisticated composition patterns, and provides providers with a clear model for applying scope effects to components.

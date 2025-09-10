@@ -2,7 +2,7 @@ package examples
 
 import (
 	core "jacero.io/oam/core/v2alpha2"
-	trait "jacero.io/oam/catalog/traits/standard"
+	trait "jacero.io/oam/catalog/traits/standard/v2alpha2"
 )
 
 core.#Application

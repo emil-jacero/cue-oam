@@ -4,17 +4,14 @@ package v2alpha2
 #Scope: {
 	#apiVersion: "core.oam.dev/v2alpha2"
 	#kind:       "Scope"
-	#metadata: #ScopeMeta & {
+	#metadata: {
+		#id:  #NameType
+		name: #NameType | *#id
 		labels?:      #LabelsType
 		annotations?: #AnnotationsType
 	}
+	// A list of components affected by this scope
 	affects: [...#Component]
-	#Trait
-}
 
-// Scope metadata
-#ScopeMeta: {
-	#id:  #NameType
-	name: #NameType | *#id
-	...
+	#Trait
 }

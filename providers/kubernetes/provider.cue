@@ -69,8 +69,11 @@ import (
 
 	// System annotations
 	annotations: {
-		if _input.traitMeta.#combinedVersion != _|_ {
-			"oam.dev/trait-version": _input.traitMeta.#combinedVersion
+		if _input.traitMeta.requiredCapability != _|_ {
+			"oam.dev/required-capabilities": _input.traitMeta.requiredCapability
+		}
+		if _input.traitMeta.requiredCapabilities != _|_ {
+			"oam.dev/required-capabilities": _input.traitMeta.requiredCapabilities
 		}
 		"oam.dev/resource-type":       _input.resourceType
 		"oam.dev/generated-by":        "cue-oam-transformer"

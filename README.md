@@ -43,7 +43,7 @@ CUE-OAM implements a hierarchical, trait-based system where **"everything is a t
 ✅ **Composition Depth Control**: Maximum 3-level nesting with circular dependency detection  
 ✅ **Rich Metadata**: Self-documenting traits with capability requirements  
 🚧 **Scope System**: Cross-cutting concerns management (in progress)  
-🚧 **Policy Framework**: Operational rules and behaviors (planned)  
+📅 **Policy Framework**: Operational rules and behaviors (planned)  
 📅 **Bundle System**: Multi-application deployment packages (planned)
 
 ## Architecture
@@ -554,12 +554,8 @@ cue eval examples/example-application.cue -e "k8sManifests.output" > /dev/null &
 - [ ] Policy framework
 - [ ] Bundle system
 - [ ] CLI tooling (`oam` command)
-- [ ] Workflow/pipeline support
 - [ ] OSCAL compliance integration
 - [ ] Helm chart generation
-- [ ] Terraform provider
-- [ ] Advanced networking traits
-- [ ] Service mesh integration
 
 ## Design Principles
 

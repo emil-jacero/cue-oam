@@ -51,7 +51,7 @@ import (
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 //// Description: Trait scopes define where a trait can be applied within the system.
 //// They indicate whether a trait is relevant to individual components or broader scopes.
-////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #TraitScopeComponent: "component" // Traits that apply to individual components.
 
@@ -81,14 +81,17 @@ import (
 }
 
 #TraitMetaAtomic: #TraitMetaBase & {
+	#apiVersion:      string
+	#kind:            string
+	#combinedVersion: "\(#apiVersion).\(#kind)"
+
 	type:  "atomic"
 
 	// The domain of this trait
 	// Can be one of "operational", "structural", "behavioral", "resource", "contractual", "security", "observability", "integration"
 	domain!: #TraitDomain
 
-	// External dependencies (not composition)
-	// requiredCapability!: string
+	requiredCapability?: string | *#combinedVersion
 }
 
 #TraitMetaComposite: #TraitMetaBase & {
@@ -121,7 +124,7 @@ import (
 	requiredCapabilities: {
 		// Gather items from both sources, only if they exist
 		let items = [
-			for trait in composes if trait.type == "atomic" { trait.#combinedVersion },
+			for trait in composes if trait.type == "atomic" { trait.requiredCapability },
 			for trait in composes if trait.type == "composite" {
 				for rc in trait.requiredCapabilities { rc }
 			},
@@ -176,7 +179,7 @@ import (
 
 #TraitMetaModifier: #TraitMetaBase & {
 	#kind: string
-	// type: "modifier"
+	type: "modifier"
 
 	// The domains of this trait
 	// Can be one or more of "operational", "structural", "behavioral", "resource", "contractual", "security", "observability", "integration"
@@ -203,7 +206,7 @@ import (
 
 	// The type of this trait
 	// Can be one of "atomic", "composite", "modifier", "custom"
-	// type!: #TraitTypes
+	type!: #TraitTypes
 
 	// Where can this trait be applied
 	// Can be one or more of "component", "scope"

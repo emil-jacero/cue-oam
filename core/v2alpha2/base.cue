@@ -14,7 +14,7 @@ import (
 #Object: {
 	#apiVersion:      string | *"core.oam.dev/v2alpha2"
 	#kind:            string & strings.MinRunes(1) & strings.MaxRunes(254)
-	#combinedVersion: string | "\(#apiVersion).\(#kind)"
+	#combinedVersion: "\(#apiVersion).\(#kind)"
 	#metadata: {
 		#id:  #NameType
 		name: #NameType | *#id

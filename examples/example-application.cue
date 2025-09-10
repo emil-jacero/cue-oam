@@ -2,7 +2,7 @@ package examples
 
 import (
 	core "jacero.io/oam/core/v2alpha2"
-	trait "jacero.io/oam/catalog/traits/standard"
+	trait "jacero.io/oam/catalog/traits/standard/v2alpha2"
 	k8sprovider "jacero.io/oam/providers/kubernetes"
 )
 
@@ -23,9 +23,22 @@ myApp: core.#Application & {
 		}
 	}
 
+	scopes: {
+		frontend: {
+			trait.#SharedNetwork
+			affects: [components.web, components.api]
+			sharedNetwork: {}
+		}
+		backend: {
+			trait.#SharedNetwork
+			affects: [components.api, components.db]
+			sharedNetwork: {}
+		}
+	}
+
 	components: {
 		// Frontend component with its own metadata
-		"web-frontend": {
+		web: {
 			#metadata: {
 				// Component-specific metadata
 				labels: {
@@ -72,7 +85,7 @@ myApp: core.#Application & {
 		}
 
 		// Backend API component
-		"api-backend": {
+		api: {
 			#metadata: {
 				labels: {
 					"tier":            "backend"
@@ -105,7 +118,7 @@ myApp: core.#Application & {
 							value: "production"
 						}, {
 							name:  "DB_HOST"
-							value: "postgres-main"
+							value: "db"
 						}, {
 							name:  "DB_PORT"
 							value: "5432"
@@ -128,7 +141,7 @@ myApp: core.#Application & {
 		}
 
 		// PostgreSQL database component
-		"postgres-main": {
+		db: {
 			#metadata: {
 				labels: {
 					"tier": "database"

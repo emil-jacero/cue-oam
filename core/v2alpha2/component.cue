@@ -11,6 +11,9 @@ package v2alpha2
 		annotations?: #AnnotationsType
 	}
 	#Trait
+
+	// Add fields from all traits applied to this component
+	// Merges the 'provides' fields from each trait
 	for traitName, t in #metadata.#traits {
 		t.provides
 	}
