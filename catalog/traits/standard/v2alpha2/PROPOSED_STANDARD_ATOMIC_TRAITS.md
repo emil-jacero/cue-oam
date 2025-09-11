@@ -13,7 +13,7 @@ This document outlines all proposed atomic traits for the CUE-OAM system, organi
 
 ---
 
-## P0 - Critical Priority Traits (11 traits)
+## P0 - Critical Priority Traits
 
 ### Must Have - Core functionality required for production workloads
 
@@ -33,7 +33,7 @@ This document outlines all proposed atomic traits for the CUE-OAM system, organi
 
 ---
 
-## P1 - High Priority Traits (19 traits)
+## P1 - High Priority Traits
 
 ### Should Have - Important features for enhanced functionality
 
@@ -41,8 +41,6 @@ This document outlines all proposed atomic traits for the CUE-OAM system, organi
 |-------|--------|-------------|---------------|--------------|
 | **HorizontalAutoscaler** | operational | Configures horizontal pod autoscaling based on metrics | Enables dynamic scaling to handle variable load, improving cost efficiency and availability. | Requires Replica |
 | **VerticalAutoscaler** | operational | Automatically adjusts resource requests/limits based on usage | Optimizes resource allocation without manual tuning, reducing waste and improving performance. | Requires ResourceLimits |
-| **Sidecar** | structural | Injects additional containers alongside the main container | Common pattern for service meshes, logging agents, and proxy containers. Enables separation of concerns. | Requires ContainerSet |
-| **InitContainer** | operational | Defines initialization containers that run before main containers | Critical for setup tasks like database migrations, volume permissions, and dependency checks. | Requires ContainerSet |
 | **Lifecycle** | behavioral | Configures container lifecycle hooks (postStart/preStop) | Enables graceful startup and shutdown procedures, important for stateful applications and clean resource management. | Requires ContainerSet |
 | **Certificate** | resource | Manages TLS certificates for secure communication | Essential for HTTPS endpoints and secure service-to-service communication. | None |
 | **Snapshot** | resource | Creates and manages volume snapshots | Enables point-in-time recovery and data migration scenarios. | Requires Volume |
@@ -63,13 +61,12 @@ This document outlines all proposed atomic traits for the CUE-OAM system, organi
 
 ---
 
-## P2 - Medium Priority Traits (23 traits)
+## P2 - Medium Priority Traits
 
 ### Nice to Have - Features that improve developer experience
 
 | Trait | Domain | Description | Justification | Dependencies |
 |-------|--------|-------------|---------------|--------------|
-| **Schedule** | operational | Unified trait for both Job and CronJob functionality | Simplifies the API by combining related scheduling concepts into a single trait. | None |
 | **Probe** | behavioral | Unified health checking trait for all probe types | Separates health checking concerns from ContainerSet, providing more flexibility and reusability. | Requires ContainerSet |
 | **RollingUpdate** | operational | Detailed rolling update strategy configuration | Provides fine-grained control over deployment strategies beyond basic UpdateStrategy. | Requires UpdateStrategy |
 | **BlueGreenDeploy** | operational | Blue-green deployment strategy configuration | Enables zero-downtime deployments for critical applications. | Requires Replica |
@@ -101,7 +98,7 @@ This document outlines all proposed atomic traits for the CUE-OAM system, organi
 
 ---
 
-## P3 - Low Priority Traits (14 traits)
+## P3 - Low Priority Traits
 
 ### Optional - Specialized features for specific use cases
 

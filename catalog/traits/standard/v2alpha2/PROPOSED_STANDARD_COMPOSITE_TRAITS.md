@@ -12,7 +12,7 @@ This document outlines all proposed composite traits for the CUE-OAM system, org
 
 ---
 
-## L1 - Simple Composite Traits (15 traits)
+## L1 - Simple Composite Traits
 
 ### Basic patterns combining 2-3 atomic traits
 
@@ -27,7 +27,7 @@ This document outlines all proposed composite traits for the CUE-OAM system, org
 
 ---
 
-## L2 - Standard Composite Traits (20 traits)
+## L2 - Standard Composite Traits
 
 ### Production-ready patterns combining 4-6 traits
 
@@ -35,8 +35,7 @@ This document outlines all proposed composite traits for the CUE-OAM system, org
 |-------|--------|----------|-------------|---------------|
 | **WebService** | operational | ContainerSet + Replica + Expose + Route + HealthCheck + Metrics | Complete web service with monitoring | Standard pattern for production web services, provides everything needed for a basic HTTP service. |
 | **APIService** | operational | WebService + RateLimiter + Autoscaler + Certificate | Production-ready API with rate limiting and auto-scaling | APIs need additional protection and scaling capabilities beyond basic web services. |
-| **SecureWebService** | contractual | WebService + Certificate + SecurityPolicy + RBAC | Web service with enhanced security | Required for services handling sensitive data or exposed to the internet. |
-| **StatefulService** | resource | ContainerSet + Volume + ServiceDiscovery + BackupPolicy + Replica | Stateful service with discovery and persistence | Standard pattern for databases, caches, and other stateful services. |
+| **StatefulService** | operational | ContainerSet + Volume + ServiceDiscovery + BackupPolicy + Replica | Stateful service with discovery and persistence | Standard pattern for databases, caches, and other stateful services. |
 | **DatabaseService** | resource | StatefulService + Migration + Schema + Snapshot | Managed database with migrations and snapshots | Databases need additional capabilities for schema management and point-in-time recovery. |
 | **CacheService** | resource | ContainerSet + Volume + ServiceDiscovery + Cache + Metrics | Caching layer with monitoring | Caching services need specific configuration and monitoring for effectiveness. |
 | **Microservice** | structural | ContainerSet + ServiceDiscovery + HealthCheck + Metrics + Tracing + Logging | Observable microservice | Production microservices need full observability for debugging distributed systems. |
@@ -56,7 +55,7 @@ This document outlines all proposed composite traits for the CUE-OAM system, org
 
 ---
 
-## L3 - Complex Composite Traits (20 traits)
+## L3 - Complex Composite Traits
 
 ### Enterprise patterns combining 7+ traits or other composites
 
