@@ -3,6 +3,9 @@
 ## Nearterm
 
 - [x] Refactor the Domain concept. It works fine for atomic traits, but for composite traits it faulters. Composite traits belong to multiple domains. Perhaps a redesigned architecture should define #AtomicTrait and #CompositeTrait and som logic to compile all domains for composite traits.
+- [ ] Implement standard status definition for component.
+- [ ] Implement standard status definition for application, should perhaps inherit from components in some way.
+- [ ] Investiage adding dependecy handling in components.
 - [ ] Add a way to specify how a trait is applied. One could be "native", which has to be implemented directly in a transformer. The other could be "patch" which allows developers to create traits that behaves as patches but still rely on CUE's type safety.
 - [ ] Support the provider Docker Compose
 - [ ] Support the provider TrueNAS (Docker compose like)

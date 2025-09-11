@@ -86,108 +86,47 @@ All traits in CUE-OAM belong to one of eight fundamental categories:
 ### Trait Metadata Structure
 
 ```cue
-#TraitObject: {
-    #apiVersion: "core.oam.dev/v2alpha1"
-    #kind:       string
+#TraitTypes: "atomic" | "composite" | "modifier" | "custom"
+#TraitDomain: "operational" | "structural" | "behavioral" | "resource" | "contractual" | "security" | "observability" | "integration"
+#TraitScopes: "component" | "scope"
+
+#TraitMetaBase: {
+    #apiVersion:      string | *"core.oam.dev/v2alpha2"
+    #kind:            string
+    #combinedVersion: "\(#apiVersion).\(#kind)"
 
     // Human-readable description of the trait
     description?: string
 
-    // The type of this trait
-    // Can be one of "atomic" or "composite"
-    type: #TraitTypes
+    // Optional metadata labels and annotations
+    labels?:      #LabelsType
+    annotations?: #AnnotationsType
 
-    // Primary category - what this trait mainly does
-    domain!: #TraitDomain
+    // The type of this trait
+    // Can be one of "atomic", "composite", "modifier", "custom"
+    type!: #TraitTypes
 
     // Where can this trait be applied
     // Can be one or more of "component", "scope"
-    scope!: [...#TraitScope]
-
-    // Composition - list of traits this trait is built from
-    // Presence of this field makes it a composite trait
-    // Absence makes it an atomic trait
-    composes?: [...#TraitObject]
-    
-    // External dependencies (not composition)
-    // For atomic traits: manually specified
-    // For composite traits: automatically computed from composed traits
-    // for custom traits: optional
-    requiredCapabilities?: [...string]
+    scope!: [...#TraitScopes]
 
     // Fields this trait provides to a component, scope, or promise
-    provides: {...}
-    
-    // Computed requirements for composite traits
-    #computedRequiredCapabilities: {}
-
-    // Composition depth tracking and validation
-    #compositionDepth: {
-        if composes == _|_ {
-            // Atomic trait has depth 0
-            depth: 0
-        }
-        if composes != _|_ {
-            if len(composes) == 0 {
-                // Empty composes list - treat as atomic
-                depth: 0
-            }
-            if len(composes) > 0 {
-                // Composite trait - maximum depth of composed traits + 1
-                composedDepths: [for trait in composes {trait.#compositionDepth.depth}]
-                maxDepth: list.Max(composedDepths)
-                depth: maxDepth + 1
-            }
-        }
-    }
-
-    // Circular dependency detection
-    #circularDependencyCheck: {
-        if composes == _|_ {
-            // Atomic traits cannot have circular dependencies
-            valid: true
-        }
-        if composes != _|_ {
-            if len(composes) == 0 {
-                // Empty composes - no circular dependencies
-                valid: true
-            }
-            if len(composes) > 0 {
-                // For now, we perform basic validation that doesn't create circular references
-                // This is a simplified check that ensures structural soundness
-                // More sophisticated cycle detection would require a different approach
-                valid: true
-            }
-        }
-    }
-    
-    if composes != _|_  {
-        // Validation: if type is "atomic", composes must be absent
-        type == "composite"
-
-        // Validation: composite traits should not manually specify requiredCapabilities
-        if len(composes) > 0 && requiredCapabilities != _|_ {
-            error("Composite traits should not manually specify 'requiredCapabilities' - they are computed automatically")
-        }
-
-        // Validation: composition depth cannot exceed 3 (atomic=0, max composite=3)
-        if len(composes) > 0 {
-            if #compositionDepth.depth > 3 {
-                error("Composition depth cannot exceed 3. Current depth: \(#compositionDepth.depth)")
-            }
-        }
-
-        // Validation: circular dependency detection
-        if len(composes) > 0 {
-            if !#circularDependencyCheck.valid {
-                error("Circular dependency detected in trait composition. Trait '\(#kind)' creates a cycle in the composition chain.")
-            }
-        }
-    }
+    provides!: {...}
+    ...
 }
 
-#TraitScope: "component" | "scope"
-#TraitTypes: "atomic" | "composite"
+#TraitMetaAtomic: #TraitMetaBase & {
+    #apiVersion:      string
+    #kind:            string
+    #combinedVersion: "\(#apiVersion).\(#kind)"
+    type:  "atomic"
+
+    // The domain of this trait
+    // Can be one of "operational", "structural", "behavioral", "resource", "contractual", "security", "observability", "integration"
+    domain!: #TraitDomain
+
+    requiredCapability?: string | *#combinedVersion
+}
 ```
 
 ### Trait Composition Model
@@ -311,43 +250,6 @@ Traits are either **atomic** (fundamental building blocks) or **composite** (bui
                 }
                 env: "MYSQL_DATABASE": {name: "MYSQL_DATABASE", value: #metadata.name}
             }
-        }
-    }
-
-    // Inherited fields. Useful for validation or defaults.
-    for t in #metadata.#traits.Database.composes {
-        t.provides
-    }
-}
-```
-
-### Trait Validation
-
-The validation is built into the `#TraitObject` structure using CUE's `error()` builtin:
-
-```cue
-// Built into #TraitObject - automatic validation
-
-if composes != _|_  {
-    // Validation: type must be "composite" when composes is present
-    type == "composite"
-
-    // Validation: composite traits should not manually specify requiredCapabilities
-    if len(composes) > 0 && requiredCapabilities != _|_ {
-        error("Composite traits should not manually specify 'requiredCapabilities' - they are computed automatically")
-    }
-
-    // Validation: composition depth cannot exceed 3 (atomic=0, max composite=3)
-    if len(composes) > 0 {
-        if #compositionDepth.depth > 3 {
-            error("Composition depth cannot exceed 3. Current depth: \(#compositionDepth.depth)")
-        }
-    }
-
-    // Validation: circular dependency detection
-    if len(composes) > 0 {
-        if !#circularDependencyCheck.valid {
-            error("Circular dependency detected in trait composition")
         }
     }
 }

@@ -47,6 +47,12 @@ import (
 #TraitDomain: #TraitDomainOperational | #TraitDomainStructural | #TraitDomainBehavioral | #TraitDomainResource | #TraitDomainContractual | #TraitDomainSecurity | #TraitDomainObservability | #TraitDomainIntegration
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
+//// Policy Trait Domains
+////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+#PolicyTraitDomain: "security" | "contractual" | "compliance" | "operational"
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////
 //// Trait Scopes
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 //// Description: Trait scopes define where a trait can be applied within the system.
@@ -71,7 +77,7 @@ import (
 		#id:  #NameType
 		name: #NameType | *#id
 		#traits: [traitName=string]: {
-			#kind: traitName
+			#kind!: traitName
 			...
 		}
 	}
@@ -82,7 +88,7 @@ import (
 
 #TraitMetaAtomic: #TraitMetaBase & {
 	#apiVersion:      string
-	#kind:            string
+	#kind!:            string
 	#combinedVersion: "\(#apiVersion).\(#kind)"
 	type:  "atomic"
 
@@ -90,11 +96,13 @@ import (
 	// Can be one of "operational", "structural", "behavioral", "resource", "contractual", "security", "observability", "integration"
 	domain!: #TraitDomain
 
-	requiredCapability?: string | *#combinedVersion
+	requiredCapability: string | *#combinedVersion
 }
 
 #TraitMetaComposite: #TraitMetaBase & {
-	#kind: string
+	#apiVersion:      string
+	#kind!: string
+	#combinedVersion: "\(#apiVersion).\(#kind)"
 	type:  "composite"
 
 	// Composition - list of traits this trait is built from
@@ -136,48 +144,67 @@ import (
 
 
 	///////////////////////////////////////////////////////////////////////
+	// Validations
+	///////////////////////////////////////////////////////////////////////
+	
+	// Validation 1: Ensure composes list is not empty
+	#validateComposesNotEmpty: len(composes) > 0 | error("Composite trait must compose at least one trait")
+	
+	// Validation 2: Calculate composition depth
+	#compositionDepth: {
+		let depths = [
+			for trait in composes {
+				if trait.type == "atomic" { 1 }
+				if trait.type == "composite" && trait._compositionDepth != _|_ { trait._compositionDepth + 1 }
+				if trait.type == "composite" && trait._compositionDepth == _|_ { 2 }
+			},
+		]
+		if len(depths) > 0 { list.Max(depths) }
+		if len(depths) == 0 { 0 }
+	}
+	
+	// Validation 3: Ensure composition depth doesn't exceed 3
+	#validateCompositionDepth: #compositionDepth <= 3 | error("Composition depth cannot exceed 3 levels. Current depth: \(#compositionDepth)")
+	
+	// Collect all directly composed trait combinedVersions
+	_directComposedCombinedVersions: [
+		for trait in composes {
+			trait.#combinedVersion
+		},
+	]
 
-	// Composition depth tracking and validation
-	// #compositionDepth: {
-	// 	if len(composes) > 0 {
-	// 		// Composite trait - maximum depth of composed traits + 1
-	// 		composedDepths: [for trait in composes {trait.#compositionDepth.depth}]
-	// 		maxDepth: list.Max(composedDepths)
-	// 		depth:    maxDepth + 1
-	// 	}
-	// }
+	// Build a set of all trait combinedVersions in the composition hierarchy
+	_allComposedCombinedVersions: {
+		// Start with direct compositions
+		let direct = _directComposedCombinedVersions
 
-	// // Circular dependency detection
-	// #circularDependencyCheck: {
-	// 	if len(composes) == 0 {
-	// 		// Empty composes - no circular dependencies
-	// 		valid: true
-	// 	}
-	// 	if len(composes) > 0 {
-	// 		// For now, we perform basic validation that doesn't create circular references
-	// 		// This is a simplified check that ensures structural soundness
-	// 		// More sophisticated cycle detection would require a different approach
-	// 		valid: true
-	// 	}
-	// }
+		// Add nested compositions for composite traits
+		let nested = [
+			for trait in composes if trait.type == "composite" && trait._allComposedCombinedVersions != _|_ {
+				for k in trait._allComposedCombinedVersions { k }
+			},
+		]
+		
+		// Combine and deduplicate
+		let all = list.Concat([direct, nested])
+		let set = { for k in all { (k): _ } }
+		[for k, _ in set { k }]
+	}
+	
+	// Validation 4: Ensure this trait doesn't compose itself (direct or indirect circular dependency)
+	// Note: This only validates if the trait references are already defined and can form a cycle
+	// In practice, CUE will prevent actual circular references at evaluation time
+	#validateNoCircularDependency: {
+		// Only check if we can determine the kind
+		let hasCircular = list.Contains(_allComposedCombinedVersions, #combinedVersion)
+		!hasCircular | error("Circular dependency detected: trait '\(#combinedVersion)' cannot compose itself directly or indirectly")
+		if #combinedVersion == _|_ { true }
+	}
 
-	// // Validation: composition depth cannot exceed 3 (atomic=0, max composite=3)
-	// if len(composes) > 0 {
-	// 	if #compositionDepth.depth > 3 {
-	// 		error("Composition depth cannot exceed 3. Current depth: \(#compositionDepth.depth)")
-	// 	}
-	// }
-
-	// // Validation: circular dependency detection
-	// if len(composes) > 0 {
-	// 	if !#circularDependencyCheck.valid {
-	// 		error("Circular dependency detected in trait composition. Trait '\(#kind)' creates a cycle in the composition chain.")
-	// 	}
-	// }
 }
 
 #TraitMetaModifier: #TraitMetaBase & {
-	#kind: string
+	#kind!: string
 	type: "modifier"
 
 	// The domains of this trait
@@ -193,7 +220,7 @@ import (
 
 #TraitMetaBase: {
 	#apiVersion:      string | *"core.oam.dev/v2alpha2"
-	#kind:            string
+	#kind!:            string
 	#combinedVersion: "\(#apiVersion).\(#kind)"
 
 	// Human-readable description of the trait

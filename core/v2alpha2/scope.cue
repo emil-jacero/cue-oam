@@ -11,7 +11,7 @@ package v2alpha2
 		annotations?: #AnnotationsType
 	}
 	// A list of components affected by this scope
-	affects: [...#Component]
+	appliesTo: [...#Component]
 
 	#Trait
 }
