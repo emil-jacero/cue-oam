@@ -1,10 +1,10 @@
 package compose
 
 import (
-	corev2 "jacero.io/oam/core/v2alpha1"
+	core "jacero.io/oam/core/v2alpha2"
 )
 
-#ProviderCompose: corev2.#Provider & {
+#ProviderCompose: core.#Provider & {
 	#metadata: {
 		name:        "Compose"
 		description: "Provider for Docker Compose applications"
@@ -29,11 +29,11 @@ import (
 	}
 }
 
-#WorkloadTransformer: corev2.#Transformer & {
+#WorkloadTransformer: core.#Transformer & {
 	accepts: "Workload"
 	transform: {
 		input:   _
-		context: corev2.#ProviderContext
-		output:  corev2.#ResourceOutput
+		context: core.#ProviderContext
+		output:  core.#ResourceOutput
 	}
 }

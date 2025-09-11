@@ -1,14 +1,14 @@
 package schema
 
 import (
-	"jacero.io/oam/catalog/traits/kubernetes/schema/meta"
-	"jacero.io/oam/catalog/traits/kubernetes/schema/workload"
-	"jacero.io/oam/catalog/traits/kubernetes/schema/networking"
-	"jacero.io/oam/catalog/traits/kubernetes/schema/storage"
-	"jacero.io/oam/catalog/traits/kubernetes/schema/configuration"
-	"jacero.io/oam/catalog/traits/kubernetes/schema/scaling"
-	"jacero.io/oam/catalog/traits/kubernetes/schema/security"
-	"jacero.io/oam/catalog/traits/kubernetes/schema/observability"
+	"jacero.io/oam/catalog/traits/platforms/kubernetes/v2alpha2/schema/meta"
+	"jacero.io/oam/catalog/traits/platforms/kubernetes/v2alpha2/schema/workload"
+	"jacero.io/oam/catalog/traits/platforms/kubernetes/v2alpha2/schema/networking"
+	"jacero.io/oam/catalog/traits/platforms/kubernetes/v2alpha2/schema/storage"
+	"jacero.io/oam/catalog/traits/platforms/kubernetes/v2alpha2/schema/configuration"
+	"jacero.io/oam/catalog/traits/platforms/kubernetes/v2alpha2/schema/scaling"
+	"jacero.io/oam/catalog/traits/platforms/kubernetes/v2alpha2/schema/security"
+	"jacero.io/oam/catalog/traits/platforms/kubernetes/v2alpha2/schema/observability"
 )
 
 // Kubernetes API Object Schemas
