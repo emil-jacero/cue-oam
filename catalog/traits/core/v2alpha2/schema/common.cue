@@ -103,4 +103,13 @@ import (
 			}
 		}
 	}
+
+	// Resource claims (K8s 1.31+)
+	resourceClaims?: [...{
+		name: string
+		source: {
+			resourceClaimName?:         string
+			resourceClaimTemplateName?: string
+		}
+	}]
 }

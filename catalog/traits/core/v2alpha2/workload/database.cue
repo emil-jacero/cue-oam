@@ -13,7 +13,7 @@ import (
 	#metadata: #traits: Database: core.#TraitMetaComposite & {
 		#kind:       "Database"
 		description: "Managed database service with persistence support"
-		domain:      "operational"
+		domain:      "workload"
 		scope: ["component"]
 		composes: [
 			#ContainerSetMeta,

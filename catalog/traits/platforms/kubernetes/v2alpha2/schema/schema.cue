@@ -123,19 +123,20 @@ import (
 
 // RBAC/v1 resources
 #Role:       security.#Role
-#RoleSpec:  security.#RoleSpec
+#RoleSpec:   security.#RoleSpec
 #PolicyRule: security.#PolicyRule
 
-#RoleBinding: security.#RoleBinding
+#RoleBinding:     security.#RoleBinding
 #RoleBindingSpec: security.#RoleBindingSpec
-#Subject:     security.#Subject
-#RoleRef:     security.#RoleRef
+#Subject:         security.#Subject
+#RoleRef:         security.#RoleRef
 
 #ClusterRole:     security.#ClusterRole
 #ClusterRoleSpec: security.#ClusterRoleSpec
 #AggregationRule: security.#AggregationRule
 
 #ClusterRoleBinding: security.#ClusterRoleBinding
+
 #ClusterRoleBindingSpec: security.#ClusterRoleBindingSpec
 
 //////////////////////////////////////////////
