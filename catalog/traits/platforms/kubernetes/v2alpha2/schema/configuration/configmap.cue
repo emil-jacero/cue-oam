@@ -10,6 +10,10 @@ import (
 	apiVersion: "v1"
 	kind:       "ConfigMap"
 	metadata:   metav1.#ObjectMeta
+	#ConfigMapSpec
+}
+
+#ConfigMapSpec: {
 	data?: [string]:       string
 	binaryData?: [string]: bytes
 	immutable?: bool

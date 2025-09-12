@@ -2,7 +2,7 @@ package examples
 
 import (
 	core "jacero.io/oam/core/v2alpha2"
-	trait "jacero.io/oam/catalog/traits/standard/v2alpha2"
+	trait "jacero.io/oam/catalog/traits/core/v2alpha2"
 )
 
 core.#Application
@@ -132,7 +132,7 @@ components: {
 	"postgres-main": {
 		#metadata: {
 			labels: {
-				"tier": "database"
+				"tier":          "database"
 				"database-type": "postgres"
 			}
 			annotations: {

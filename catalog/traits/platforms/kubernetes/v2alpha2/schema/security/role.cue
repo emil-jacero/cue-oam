@@ -10,7 +10,11 @@ import (
 	apiVersion: "rbac.authorization.k8s.io/v1"
 	kind:       "Role"
 	metadata:   metav1.#ObjectMeta
-	rules?: [...rbacv1.#PolicyRule]
+	#RoleSpec
 }
 
 #PolicyRule: rbacv1.#PolicyRule
+
+#RoleSpec: {
+	rules?: [...rbacv1.#PolicyRule]
+}

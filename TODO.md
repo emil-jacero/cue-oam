@@ -15,9 +15,11 @@
 
 ## Future
 
+- [ ] Support policy traits. The implementation maybe should make use of OPA. An investigation is required.
 - [ ] Support the [OSCAL](https://pages.nist.gov/OSCAL/) model
 - [ ] Ability to bundle several Applications into a Bundle, that can be deployed as a whole into a plattform.
 - [ ] Support Scopes in Bundles. Meant to scope multiple applications or enforce certain policies or mutate resources for multiple applications.
 - [ ] Ability to write workflows/pipelines. Tasks that execute in series, either in combination with Applications and Components or completely separately.
 - [ ] Ability to query the kubernetes cluster. With this ability it would be possible to populate the platform capability list dynamically, meaning it would know exactly which capabilities a certain target platform has.
 - [ ] Add support for trait/component dependecies. Meaning a trait within a component can have a depencency that is external to the application. For example, for a CNPG database trait it would have a dependency on the application that ensures CNPG is deployed into the cluster.
+- [ ] Implmement a runtime query system. The ability to query the platform for extra "not required" data. This data can help in generation but is not required for CUE-OAM to function.

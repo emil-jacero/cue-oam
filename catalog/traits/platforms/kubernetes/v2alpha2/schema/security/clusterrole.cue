@@ -10,8 +10,12 @@ import (
 	apiVersion: "rbac.authorization.k8s.io/v1"
 	kind:       "ClusterRole"
 	metadata:   metav1.#ObjectMeta
-	rules?: [...rbacv1.#PolicyRule]
-	aggregationRule?: rbacv1.#AggregationRule
+	#ClusterRoleSpec
 }
 
 #AggregationRule: rbacv1.#AggregationRule
+
+#ClusterRoleSpec: {
+	rules?: [...rbacv1.#PolicyRule]
+	aggregationRule?: rbacv1.#AggregationRule
+}

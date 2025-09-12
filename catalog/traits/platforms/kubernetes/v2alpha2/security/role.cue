@@ -2,53 +2,19 @@ package security
 
 import (
 	core "jacero.io/oam/core/v2alpha2"
-	schema "jacero.io/oam/catalog/traits/kubernetes/schema"
+	schema "jacero.io/oam/catalog/traits/platforms/kubernetes/v2alpha2/schema"
 )
 
-// RoleTrait defines the properties and behaviors of a Kubernetes Role
-#RoleTrait: core.#TraitObject & {
-	#apiVersion: "core.oam.dev/v2alpha2"
-	#kind:       "Role"
-
-	description: "Kubernetes Role contains rules that represent a set of permissions within a namespace"
-
-	type:   "atomic"
-	domain: "security"
-	scope: ["component"]
-
-	requiredCapabilities: [
-		"k8s.io/api/rbac/v1.Role",
-	]
-
-	provides: {
-		role: schema.Role
-	}
-}
+// Role defines the properties and behaviors of a Kubernetes Role
 #Role: core.#Trait & {
-	#metadata: #traits: Role: #RoleTrait
-	role: schema.Role
-}
-
-// Roles defines the properties and behaviors of multiple Kubernetes Roles
-#RolesTrait: core.#TraitObject & {
-	#apiVersion: "core.oam.dev/v2alpha2"
-	#kind:       "Roles"
-
-	description: "Kubernetes Roles contains rules that represent a set of permissions within a namespace"
-
-	type:   "atomic"
-	domain: "security"
-	scope: ["component"]
-
-	requiredCapabilities: [
-		"k8s.io/api/rbac/v1.Role",
-	]
-
-	provides: {
-		roles: [string]: schema.Role
+	#metadata: #traits: Role: core.#TraitMetaAtomic & {
+		#kind:       "Role"
+		description: "Kubernetes Role contains rules that represent a set of permissions within a namespace"
+		domain:      "security"
+		scope: ["component"]
+		provides: {roles: [string]: schema.#RoleSpec}
 	}
+	roles: [string]: schema.#RoleSpec
 }
-#Roles: core.#Trait & {
-	#metadata: #traits: Roles: #RolesTrait
-	roles: [string]: schema.Role
-}
+
+#RoleMeta: #Role.#metadata.#traits.Role

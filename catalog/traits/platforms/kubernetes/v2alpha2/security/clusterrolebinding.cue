@@ -2,53 +2,19 @@ package security
 
 import (
 	core "jacero.io/oam/core/v2alpha2"
-	schema "jacero.io/oam/catalog/traits/kubernetes/schema"
+	schema "jacero.io/oam/catalog/traits/platforms/kubernetes/v2alpha2/schema"
 )
 
-// ClusterRoleBindingTrait defines the properties and behaviors of a Kubernetes ClusterRoleBinding
-#ClusterRoleBindingTrait: core.#TraitObject & {
-	#apiVersion: "core.oam.dev/v2alpha2"
-	#kind:       "ClusterRoleBinding"
-
-	description: "Kubernetes ClusterRoleBinding grants permissions defined in a ClusterRole to a user or set of users cluster-wide"
-
-	type:   "atomic"
-	domain: "security"
-	scope: ["component"]
-
-	requiredCapabilities: [
-		"k8s.io/api/rbac/v1.ClusterRoleBinding",
-	]
-
-	provides: {
-		clusterrolebinding: schema.ClusterRoleBinding
-	}
-}
+// ClusterRoleBinding defines the properties and behaviors of a Kubernetes ClusterRoleBinding
 #ClusterRoleBinding: core.#Trait & {
-	#metadata: #traits: ClusterRoleBinding: #ClusterRoleBindingTrait
-	clusterrolebinding: schema.ClusterRoleBinding
-}
-
-// ClusterRoleBindingsTrait defines the properties and behaviors of multiple Kubernetes ClusterRoleBindings
-#ClusterRoleBindingsTrait: core.#TraitObject & {
-	#apiVersion: "core.oam.dev/v2alpha2"
-	#kind:       "ClusterRoleBindings"
-
-	description: "Kubernetes ClusterRoleBindings grants permissions defined in a ClusterRole to a user or set of users cluster-wide"
-
-	type:   "atomic"
-	domain: "security"
-	scope: ["component"]
-
-	requiredCapabilities: [
-		"k8s.io/api/rbac/v1.ClusterRoleBinding",
-	]
-
-	provides: {
-		clusterrolebindings: [string]: schema.ClusterRoleBinding
+	#metadata: #traits: ClusterRoleBinding: core.#TraitMetaAtomic & {
+		#kind:       "ClusterRoleBinding"
+		description: "Kubernetes ClusterRoleBinding grants permissions defined in a ClusterRole to a user or set of users cluster-wide"
+		domain:      "security"
+		scope: ["component"]
+		provides: {clusterrolebindings: [string]: schema.#ClusterRoleBindingSpec}
 	}
+	clusterrolebindings: [string]: schema.#ClusterRoleBindingSpec
 }
-#ClusterRoleBindings: core.#Trait & {
-	#metadata: #traits: ClusterRoleBindings: #ClusterRoleBindingsTrait
-	clusterrolebindings: [string]: schema.ClusterRoleBinding
-}
+
+#ClusterRoleBindingMeta: #ClusterRoleBinding.#metadata.#traits.ClusterRoleBinding

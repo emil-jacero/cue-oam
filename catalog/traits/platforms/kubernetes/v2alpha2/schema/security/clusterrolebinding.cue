@@ -10,6 +10,10 @@ import (
 	apiVersion: "rbac.authorization.k8s.io/v1"
 	kind:       "ClusterRoleBinding"
 	metadata:   metav1.#ObjectMeta
+	#ClusterRoleBindingSpec
+}
+
+#ClusterRoleBindingSpec: {
 	subjects?: [...rbacv1.#Subject]
 	roleRef: rbacv1.#RoleRef
 }

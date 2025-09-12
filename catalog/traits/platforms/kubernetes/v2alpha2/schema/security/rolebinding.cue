@@ -10,10 +10,14 @@ import (
 	apiVersion: "rbac.authorization.k8s.io/v1"
 	kind:       "RoleBinding"
 	metadata:   metav1.#ObjectMeta
-	subjects?: [...rbacv1.#Subject]
-	roleRef: rbacv1.#RoleRef
+	#RoleBindingSpec
 }
 
 #Subject: rbacv1.#Subject
 
 #RoleRef: rbacv1.#RoleRef
+
+#RoleBindingSpec: {
+	subjects?: [...rbacv1.#Subject]
+	roleRef: rbacv1.#RoleRef
+}

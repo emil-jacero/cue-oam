@@ -10,7 +10,11 @@ import (
 	apiVersion: "v1"
 	kind:       "Secret"
 	metadata:   metav1.#ObjectMeta
-	type?:      corev1.#SecretType
+	#SecretSpec
+}
+
+#SecretSpec: {
+	type?: corev1.#SecretType
 	data?: [string]:       bytes
 	stringData?: [string]: string
 	immutable?: bool

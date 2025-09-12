@@ -2,28 +2,19 @@ package observability
 
 import (
 	core "jacero.io/oam/core/v2alpha2"
-	schema "jacero.io/oam/catalog/traits/kubernetes/schema"
+	schema "jacero.io/oam/catalog/traits/platforms/kubernetes/v2alpha2/schema"
 )
 
-#ServiceMonitorTrait: core.#TraitObject & {
-	#apiVersion: "core.oam.dev/v2alpha2"
-	#kind:       "ServiceMonitor"
-
-	description: "Prometheus ServiceMonitor for scraping metrics from services"
-
-	type:   "atomic"
-	domain: "observability"
-	scope: ["component"]
-
-	requiredCapabilities: [
-		"monitoring.coreos.com/v1.ServiceMonitor",
-	]
-
-	provides: {
-		servicemonitor: schema.ServiceMonitor
-	}
-}
+// ServiceMonitor defines the properties and behaviors of a Kubernetes ServiceMonitor
 #ServiceMonitor: core.#Trait & {
-	#metadata: #traits: ServiceMonitor: #ServiceMonitorTrait
-	servicemonitor: schema.ServiceMonitor
+	#metadata: #traits: ServiceMonitor: core.#TraitMetaAtomic & {
+		#kind:       "ServiceMonitor"
+		description: "Prometheus ServiceMonitor for scraping metrics from services"
+		domain:      "observability"
+		scope: ["component"]
+		provides: {servicemonitor: schema.#ServiceMonitorSpec}
+	}
+	servicemonitor: schema.#ServiceMonitorSpec
 }
+
+#ServiceMonitorMeta: #ServiceMonitor.#metadata.#traits.ServiceMonitor

@@ -1,4 +1,4 @@
-package observability
+package v2alpha2
 
 // Observability traits - How things are monitored and understood
 // This package contains traits for metrics, logging, tracing, and health checks

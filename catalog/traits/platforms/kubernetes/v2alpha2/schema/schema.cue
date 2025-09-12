@@ -81,8 +81,8 @@ import (
 #PersistentVolumeClaimStatus: storage.#PersistentVolumeClaimStatus
 
 // Storage/v1 resources
-#StorageClass:           storage.#StorageClass
-#StorageClassParameters: storage.#StorageClassParameters
+#StorageClass:     storage.#StorageClass
+#StorageClassSpec: storage.#StorageClassSpec
 
 #TopologySelectorTerm: storage.#TopologySelectorTerm
 
@@ -91,9 +91,12 @@ import (
 //////////////////////////////////////////////
 
 // Core/v1 configuration
-#ConfigMap: configuration.#ConfigMap
+#ConfigMap:     configuration.#ConfigMap
+#ConfigMapSpec: configuration.#ConfigMapSpec
 
 #Secret: configuration.#Secret
+
+#SecretSpec: configuration.#SecretSpec
 
 //////////////////////////////////////////////
 // Scaling Schemas
@@ -115,20 +118,25 @@ import (
 //////////////////////////////////////////////
 
 // Core/v1 security
-#ServiceAccount: security.#ServiceAccount
+#ServiceAccount:     security.#ServiceAccount
+#ServiceAccountSpec: security.#ServiceAccountSpec
 
 // RBAC/v1 resources
 #Role:       security.#Role
+#RoleSpec:  security.#RoleSpec
 #PolicyRule: security.#PolicyRule
 
 #RoleBinding: security.#RoleBinding
+#RoleBindingSpec: security.#RoleBindingSpec
 #Subject:     security.#Subject
 #RoleRef:     security.#RoleRef
 
 #ClusterRole:     security.#ClusterRole
+#ClusterRoleSpec: security.#ClusterRoleSpec
 #AggregationRule: security.#AggregationRule
 
 #ClusterRoleBinding: security.#ClusterRoleBinding
+#ClusterRoleBindingSpec: security.#ClusterRoleBindingSpec
 
 //////////////////////////////////////////////
 // Observability Schemas (Prometheus)

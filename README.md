@@ -35,7 +35,7 @@ CUE-OAM implements a hierarchical, trait-based system where **"everything is a t
 ## Features
 
 ✅ **Trait-Based Composition**: Atomic and composite traits with validation  
-✅ **Five-Domain System**: Operational, Structural, Behavioral, Resource, Contractual  
+✅ **Six-Domain System**: Workload, Data, Connectivity, Security, Observability, Governance  
 ✅ **Provider System**: Pluggable providers for Kubernetes, Docker Compose  
 ✅ **Hierarchical Metadata**: Application → Component → Resource inheritance  
 ✅ **Capability Verification**: Automatic validation of core vs modifier traits  
@@ -69,13 +69,27 @@ cue-oam/
 │   ├── application.cue   # Application structure
 │   ├── scope.cue        # Scope definitions
 │   └── provider.cue     # Provider interfaces
-├── catalog/             # Standard trait implementations
-│   └── traits/standard/
-│       └── v2alpha2/
-│           ├── workload.cue    # Workload trait
-│           ├── database.cue    # Database trait
-│           ├── volume.cue      # Volume trait
-│           └── schema/         # Common schemas
+├── catalog/             # Trait implementations
+│   └── traits/
+│       ├── core/        # Platform-agnostic core traits
+│       │   └── v2alpha2/
+│       │       ├── workload/       # Runtime and execution traits
+│       │       ├── data/           # Storage and configuration traits
+│       │       ├── connectivity/   # Networking and integration traits
+│       │       ├── security/       # Protection and auth traits
+│       │       ├── observability/  # Monitoring and visibility traits
+│       │       ├── governance/     # Policy and constraint traits
+│       │       └── schema/         # Common schemas and types
+│       └── platforms/   # Platform-specific traits
+│           └── kubernetes/
+│               └── v2alpha2/
+│                   ├── workload/       # Deployment, StatefulSet, Job, etc.
+│                   ├── data/           # ConfigMap, PVC, StorageClass
+│                   ├── connectivity/   # Service, Ingress, NetworkPolicy
+│                   ├── security/       # RBAC, ServiceAccount, SecurityContext
+│                   ├── observability/  # ServiceMonitor, PodMonitor
+│                   ├── governance/     # ResourceQuota, PriorityClass
+│                   └── schema/         # K8s-specific schemas
 ├── providers/           # Provider implementations
 │   ├── kubernetes/      # Kubernetes provider
 │   └── compose/        # Docker Compose provider
@@ -112,7 +126,7 @@ cue mod tidy
 
     import (
         core "jacero.io/oam/core/v2alpha2"
-        trait "jacero.io/oam/catalog/traits/standard"
+        trait "jacero.io/oam/catalog/traits/core/v2alpha2"
         k8s "jacero.io/oam/providers/kubernetes"
     )
 
@@ -185,17 +199,18 @@ cue mod tidy
 
 ### Traits
 
-Traits are the fundamental building blocks in CUE-OAM. Every trait belongs to one of five domains:
+Traits are the fundamental building blocks in CUE-OAM. Every trait belongs to one of six domains:
 
 #### Trait Domains
 
 | Domain | Purpose | Examples |
 |--------|---------|----------|
-| **Operational** | Runtime behavior and workload management | Workload, Task, Scaling |
-| **Structural** | Organization and relationships | Network, ServiceMesh |
-| **Behavioral** | Logic and patterns | Retry, CircuitBreaker |
-| **Resource** | State and data management | Volume, Config, Database |
-| **Contractual** | Constraints and policies | Policy, SLA, Security |
+| **Workload** | Application runtime and execution models | ContainerSet, Replica, RestartPolicy, Deployment, Job |
+| **Data** | State management, configuration, and persistence | Volume, Config, Secret, Database, Cache |
+| **Connectivity** | Networking, service discovery, and integration | Service, Ingress, NetworkPolicy, ServiceMesh, APIGateway |
+| **Security** | Protection, authentication, and authorization | ServiceAccount, Role, SecurityContext, TLS, Encryption |
+| **Observability** | Monitoring, logging, tracing, and visibility | ServiceMonitor, Logging, Tracing, HealthCheck, Alerts |
+| **Governance** | Policies, constraints, and compliance | ResourceQuota, NamespaceQuota, SLA, CompliancePolicy, RetentionPolicy |
 
 #### Trait Types
 
@@ -268,24 +283,64 @@ ecommerce: #Application & {
 
 ## Trait Catalog
 
-### Standard Traits Available
+### Core Traits (Platform-Agnostic)
 
-| Trait | Category | Type | Description |
-|-------|----------|------|-------------|
-| `#Workload` | Operational | Composite | Generic workload trait for containerized applications |
-| `#Database` | Operational | Composite | Managed database service with persistence support |
-| `#ContainerSet` | Operational | Atomic | Container specification with main and init containers |
-| `#Replica` | Operational | Atomic | Specifies the number of replicas to run |
-| `#RestartPolicy` | Operational | Atomic | Defines restart behavior for containers |
-| `#UpdateStrategy` | Operational | Atomic | Defines how updates are applied to running instances |
-| `#Volume` | Resource | Atomic | Describes a set of volumes to be used by containers |
-| `#Secret` | Resource | Atomic | Describes a set of secrets to be used by containers |
-| `#Config` | Resource | Atomic | Describes configurations to be used by containers |
-| `#Expose` | Structural | Atomic | Marks a component as exposable for external access |
-| `#NetworkIsolationScope` | Structural | Atomic | Manages network boundaries for components or scopes |
-| `#SharedNetwork` | Structural | Atomic | Defines a shared network policy for all components |
-| `#NamespaceIsolationScope` | Contractual | Atomic | Enforces namespace boundaries and isolation |
-| `#NamespaceQuota` | Contractual | Atomic | Sets resource limits for all components in namespace |
+| Trait | Domain | Type | Description |
+|-------|--------|------|-------------|
+| **Workload** | | | |
+| `#ContainerSet` | Workload | Atomic | Container specification with main and init containers |
+| `#Replica` | Workload | Atomic | Specifies the number of replicas to run |
+| `#RestartPolicy` | Workload | Atomic | Defines restart behavior for containers |
+| `#UpdateStrategy` | Workload | Atomic | Defines how updates are applied to running instances |
+| **Data** | | | |
+| `#Volume` | Data | Atomic | Describes a set of volumes to be used by containers |
+| `#Secret` | Data | Atomic | Describes a set of secrets to be used by containers |
+| `#Config` | Data | Atomic | Describes configurations to be used by containers |
+| **Connectivity** | | | |
+| `#Expose` | Connectivity | Atomic | Marks a component as exposable for external access |
+| `#NetworkIsolation` | Connectivity | Atomic | Manages network boundaries for components or scopes |
+| `#SharedNetwork` | Connectivity | Atomic | Defines a shared network policy for all components |
+| **Security** | | | |
+| *(Platform-agnostic security traits in development)* | Security | - | Authentication, authorization, and protection |
+| **Observability** | | | |
+| *(Platform-agnostic observability traits in development)* | Observability | - | Monitoring, logging, and tracing |
+| **Governance** | | | |
+| `#NamespaceQuota` | Governance | Atomic | Sets resource limits for all components in namespace |
+| `#NamespaceIsolation` | Governance | Atomic | Enforces namespace boundaries and isolation |
+
+### Platform-Specific Traits (Kubernetes)
+
+| Trait | Domain | Type | Description |
+|-------|--------|------|-------------|
+| **Workload** | | | |
+| `#Deployment` | Workload | Composite | Kubernetes Deployment workload |
+| `#StatefulSet` | Workload | Composite | Stateful workload with persistent storage |
+| `#DaemonSet` | Workload | Composite | Runs on every node in the cluster |
+| `#Job` | Workload | Composite | One-time execution workload |
+| `#CronJob` | Workload | Composite | Scheduled recurring workload |
+| `#HorizontalPodAutoscaler` | Workload | Atomic | Auto-scales pods based on metrics |
+| `#VerticalPodAutoscaler` | Workload | Atomic | Auto-adjusts resource requests/limits |
+| **Data** | | | |
+| `#ConfigMap` | Data | Atomic | Configuration data for pods |
+| `#PersistentVolumeClaim` | Data | Atomic | Storage provisioning request |
+| `#StorageClass` | Data | Atomic | Storage tier definition |
+| **Connectivity** | | | |
+| `#Service` | Connectivity | Atomic | Kubernetes Service for load balancing |
+| `#Ingress` | Connectivity | Atomic | HTTP/HTTPS routing to services |
+| `#NetworkPolicy` | Connectivity | Atomic | Fine-grained network access control |
+| **Security** | | | |
+| `#ServiceAccount` | Security | Atomic | Identity for pods |
+| `#Role` | Security | Atomic | Namespace-scoped permissions |
+| `#ClusterRole` | Security | Atomic | Cluster-wide permissions |
+| `#RoleBinding` | Security | Atomic | Permission assignments |
+| `#ClusterRoleBinding` | Security | Atomic | Cluster-wide permission assignments |
+| **Observability** | | | |
+| `#ServiceMonitor` | Observability | Atomic | Prometheus service discovery |
+| `#PodMonitor` | Observability | Atomic | Prometheus pod discovery |
+| **Governance** | | | |
+| `#ResourceQuota` | Governance | Atomic | Resource consumption limits |
+| `#PriorityClass` | Governance | Atomic | Workload prioritization |
+| `#PodDisruptionBudget` | Governance | Atomic | Availability guarantees |
 
 ### Creating Custom Traits
 
@@ -517,28 +572,6 @@ cue eval examples/example-application.cue -e "k8sManifests.output" --out yaml
 cue export examples/example-application-file.cue --out yaml
 ```
 
-### Testing
-
-```bash
-# Run validation tests
-cue vet ./...
-
-# Test standard application example
-cue eval examples/example-application.cue -e myApp > /dev/null && echo "✓ Standard example valid"
-
-# Test flattened application example
-cue export examples/example-application-file.cue > /dev/null && echo "✓ Flattened example valid"
-
-# Export and validate all examples
-for f in examples/*.cue; do
-    echo "Testing $f"
-    cue export "$f" > /dev/null || exit 1
-done
-
-# Test Kubernetes provider rendering
-cue eval examples/example-application.cue -e "k8sManifests.output" > /dev/null && echo "✓ Kubernetes rendering works"
-```
-
 ## Roadmap
 
 ### ✅ Completed
@@ -597,7 +630,6 @@ We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) f
 - [Open Application Model Specification](https://oam.dev)
 - [CUE Language Documentation](https://cuelang.org/docs/)
 - [Design Proposals](./design/proposals/)
-- [Trait Architecture Rules](./design/trait-rules.md)
 
 ## License
 
@@ -605,9 +637,35 @@ This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENS
 
 ## Acknowledgments
 
-- The OAM community for the specification
-- The CUE team for the powerful configuration language
-- Contributors and early adopters
+This project draws inspiration from and builds upon the work of many excellent projects in the cloud-native ecosystem:
+
+### Core Inspirations
+
+- **[Open Application Model (OAM)](https://oam.dev)** - The foundational specification that defines the application model
+- **[CUE Language](https://cuelang.org)** - The powerful configuration language that enables type-safe, composable definitions
+- **[KubeVela](https://kubevela.io)** - Reference implementation of OAM that pioneered many patterns for application delivery
+- **[Crossplane](https://crossplane.io)** - Infrastructure composition patterns and provider-based architecture
+- **[Rudr](https://github.com/oam-dev/rudr)** - Early OAM runtime implementation that validated core concepts
+
+### Design Influences
+
+- **[Timoni](https://timoni.sh)** - CUE-based Kubernetes package manager demonstrating advanced CUE patterns
+- **[DevX](https://github.com/stakpak/devx)** - Developer experience patterns and stack composition using CUE
+- **[Helm](https://helm.sh)** - Chart structure and templating patterns for Kubernetes applications
+
+### Technical Foundations
+
+- **[Kubernetes](https://kubernetes.io)** - Container orchestration platform and API patterns
+- **[Docker Compose](https://docs.docker.com/compose/)** - Multi-container application definitions
+- **[CNCF Projects](https://www.cncf.io)** - Cloud-native ecosystem standards and best practices
+- **[OpenTelemetry](https://opentelemetry.io)** - Observability trait patterns and instrumentation
+- **[Open Policy Agent](https://www.openpolicyagent.org)** - Policy framework influencing contractual traits
+
+### Community & Standards
+
+- **OAM Specification Contributors** - For creating and evolving the Open Application Model
+- **CUE Community** - For guidance on idiomatic CUE patterns and best practices
+- **Cloud Native Computing Foundation** - For fostering the ecosystem these tools operate within
 
 ---
 

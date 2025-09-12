@@ -1,46 +1,47 @@
 package v2alpha2
 
-// Core traits organized by domain according to the 8 categories
+// Core traits organized by domain according to the 6 categories
 
 import (
-	// 1. Operational - How things execute (runtime behavior)
-	operational "jacero.io/oam/catalog/traits/core/v2alpha2/operational"
+	// 1. Workload - Application runtime and execution models
+	workload "jacero.io/oam/catalog/traits/core/v2alpha2/workload"
 
-	// 2. Structural - How things are organized and related
-	structural "jacero.io/oam/catalog/traits/core/v2alpha2/structural"
+	// 2. Data - State management, configuration, and persistence
+	data "jacero.io/oam/catalog/traits/core/v2alpha2/data"
 
-	// 3. Behavioral - How things act and react (logic and patterns)
-	// behavioral "jacero.io/oam/catalog/traits/core/v2alpha2/behavioral"
+	// 3. Connectivity - Networking, service discovery, and integration
+	connectivity "jacero.io/oam/catalog/traits/core/v2alpha2/connectivity"
 
-	// 4. Resource - What things have and need (state and data)
-	resource "jacero.io/oam/catalog/traits/core/v2alpha2/resource"
-
-	// 5. Contractual - What things must guarantee (constraints and policies)
-	contractual "jacero.io/oam/catalog/traits/core/v2alpha2/contractual"
-
-	// 6. Security - How things are protected and controlled
+	// 4. Security - Protection, authentication, and authorization
 	// security "jacero.io/oam/catalog/traits/core/v2alpha2/security"
 
-	// 7. Observability - How things are monitored and understood
+	// 5. Observability - Monitoring, logging, tracing, and visibility
 	// observability "jacero.io/oam/catalog/traits/core/v2alpha2/observability"
 
-	// 8. Integration - How things connect and communicate
-	// integration "jacero.io/oam/catalog/traits/core/v2alpha2/integration"
+	// 6. Governance - Policies, constraints, and compliance
+	governance "jacero.io/oam/catalog/traits/core/v2alpha2/governance"
 )
 
 // Export all traits for convenience
-#ContainerSet:   operational.#ContainerSet
-#Replica:        operational.#Replica
-#RestartPolicy:  operational.#RestartPolicy
-#UpdateStrategy: operational.#UpdateStrategy
 
-#Expose:                  structural.#Expose
-#NetworkIsolationScope:   structural.#NetworkIsolationScope
-#NamespaceIsolationScope: structural.#NamespaceIsolationScope
-#SharedNetwork:           structural.#SharedNetwork
+// Workload domain traits
+#ContainerSet:   workload.#ContainerSet
+#Replica:        workload.#Replica
+#RestartPolicy:  workload.#RestartPolicy
+#UpdateStrategy: workload.#UpdateStrategy
+#Workload:       workload.#Workload
+#Database:       workload.#Database
 
-#Volume: resource.#Volume
-#Secret: resource.#Secret
-#Config: resource.#Config
+// Data domain traits
+#Volume: data.#Volume
+#Secret: data.#Secret
+#Config: data.#Config
 
-#NamespaceQuota: contractual.#NamespaceQuota
+// Connectivity domain traits
+#Expose:           connectivity.#Expose
+#NetworkIsolation: connectivity.#NetworkIsolation
+#SharedNetwork:    connectivity.#SharedNetwork
+
+// Governance domain traits
+#NamespaceQuota:     governance.#NamespaceQuota
+#NamespaceIsolation: governance.#NamespaceIsolation

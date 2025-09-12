@@ -10,6 +10,10 @@ import (
 	apiVersion: "v1"
 	kind:       "ServiceAccount"
 	metadata:   metav1.#ObjectMeta
+	#ServiceAccountSpec
+}
+
+#ServiceAccountSpec: {
 	secrets?: [...corev1.#ObjectReference]
 	imagePullSecrets?: [...corev1.#LocalObjectReference]
 	automountServiceAccountToken?: bool

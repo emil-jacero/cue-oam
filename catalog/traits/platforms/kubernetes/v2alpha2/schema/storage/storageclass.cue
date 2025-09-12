@@ -16,3 +16,8 @@ import (
 }
 
 #TopologySelectorTerm: corev1.#TopologySelectorTerm
+
+#StorageClassSpec: {
+	allowVolumeExpansion?: bool
+	allowedTopologies?: [storagev1.#TopologySelectorTerm]
+}
