@@ -301,7 +301,7 @@ import (
 				}
 			}
 		}
-		
+
 		// DaemonSet specific settings
 		if deploymentType == "DaemonSet" {
 			daemonSet?: {

@@ -1,9 +1,6 @@
 package kubernetes
 
 import (
-	"list"
-	"strings"
-
 	core "jacero.io/oam/core/v2alpha2"
 )
 
@@ -107,102 +104,69 @@ import (
 		name:        "Kubernetes"
 		description: "Provider that renders resources for Kubernetes."
 		minVersion:  "v1.31.0" // Minimum supported Kubernetes version
-		capabilities: [
-			// Supported OAM atomic traits
-			"core.oam.dev/v2alpha2.ContainerSet",
-			"core.oam.dev/v2alpha2.Replica",
-			"core.oam.dev/v2alpha2.RestartPolicy",
-			"core.oam.dev/v2alpha2.UpdateStrategy",
-			"core.oam.dev/v2alpha2.Expose",
-			"core.oam.dev/v2alpha2.Volume",
-			"core.oam.dev/v2alpha2.Secret",
-			"core.oam.dev/v2alpha2.Config",
-			"core.oam.dev/v2alpha2.NetworkIsolationScope",
-			"core.oam.dev/v2alpha1.Labels",
-			"core.oam.dev/v2alpha1.Annotations",
-
-			// Supported Kubernetes resources
-			"k8s.io/api/core/v1.Pod",
-			"k8s.io/api/core/v1.Service",
-			"k8s.io/api/apps/v1.Deployment",
-			"k8s.io/api/apps/v1.StatefulSet",
-			"k8s.io/api/apps/v1.DaemonSet",
-			"k8s.io/api/batch/v1.Job",
-			"k8s.io/api/batch/v1.CronJob",
-			"k8s.io/api/rbac/v1.Role",
-			"k8s.io/api/rbac/v1.RoleBinding",
-			"k8s.io/api/networking/v1.Ingress",
-			"k8s.io/api/networking/v1.NetworkPolicy",
-			"k8s.io/api/core/v1.ConfigMap",
-			"k8s.io/api/core/v1.Secret",
-			"k8s.io/api/core/v1.PersistentVolumeClaim",
-		]
-
-		// Core traits that create primary resources - MUST be supported
-		// If these are missing transformers, the provider should error
-		coreTraits: [
-			"core.oam.dev/v2alpha2.ContainerSet",
-			"core.oam.dev/v2alpha2.Expose",
-			"core.oam.dev/v2alpha2.Volume",
-			"core.oam.dev/v2alpha2.Secret",
-			"core.oam.dev/v2alpha2.Config",
-			"core.oam.dev/v2alpha2.NetworkIsolationScope",
-		]
-
-		// Modifier traits that depend on other traits - can be safely ignored if unsupported
-		// These traits modify resources created by core traits
-		modifierTraits: [
-			"core.oam.dev/v2alpha2.Replica",
-			"core.oam.dev/v2alpha2.RestartPolicy",
-			"core.oam.dev/v2alpha2.UpdateStrategy",
-			"core.oam.dev/v2alpha1.Labels",
-			"core.oam.dev/v2alpha1.Annotations",
-		]
 	}
 
+	// Transformers define which traits this provider supports.
+	// Supported traits have transformer definitions, unsupported traits can be:
+	// - Set to null (explicit unsupported)
+	// - Omitted entirely (implicit unsupported)
 	transformers: {
-		// Primary trait transformers (handle modifier traits internally)
-		"core.oam.dev/v2alpha2.ContainerSet":          #ContainerSetTransformer
-		"core.oam.dev/v2alpha2.Expose":                #ExposeTransformer
-		"core.oam.dev/v2alpha2.Volume":                #VolumeTransformer
-		"core.oam.dev/v2alpha2.Secret":                #SecretTransformer
-		"core.oam.dev/v2alpha2.Config":                #ConfigTransformer
+		// Supported OAM atomic traits - provider has transformers for these
+		"core.oam.dev/v2alpha2.ContainerSet": #ContainerSetTransformer
+		"core.oam.dev/v2alpha2.Expose":       #ExposeTransformer
+		"core.oam.dev/v2alpha2.Volume":       #VolumeTransformer
+		"core.oam.dev/v2alpha2.Secret":       #SecretTransformer
+		"core.oam.dev/v2alpha2.Config":       #ConfigTransformer
+
+		// Kubernetes platform-specific traits
+		"k8s.io/api/core/v1.Namespace": #NamespaceTransformer
+
+		// OAM traits not yet supported (handled internally by other transformers or not implemented)
+		// These are explicitly marked as null, but could also be omitted entirely
+		"core.oam.dev/v2alpha2.Replica":               null
+		"core.oam.dev/v2alpha2.RestartPolicy":         null
+		"core.oam.dev/v2alpha2.UpdateStrategy":        null
+		"core.oam.dev/v2alpha2.NetworkIsolationScope": null
+		"core.oam.dev/v2alpha1.Labels":                null
+		"core.oam.dev/v2alpha1.Annotations":           null
+
+		// Kubernetes resources - not yet implemented
+		// Using null to explicitly indicate these are recognized but not supported
+		"k8s.io/api/core/v1.Pod":                            null
+		"k8s.io/api/core/v1.Service":                        null
+		"k8s.io/api/core/v1.ConfigMap":                      null
+		"k8s.io/api/core/v1.Secret":                         null
+		"k8s.io/api/core/v1.PersistentVolumeClaim":          null
+		"k8s.io/api/core/v1.ServiceAccount":                 null
+		"k8s.io/api/apps/v1.Deployment":                     null
+		"k8s.io/api/apps/v1.StatefulSet":                    null
+		"k8s.io/api/apps/v1.DaemonSet":                      null
+		"k8s.io/api/batch/v1.Job":                           null
+		"k8s.io/api/batch/v1.Jobs":                          null
+		"k8s.io/api/batch/v1.CronJob":                       null
+		"k8s.io/api/rbac/v1.Role":                           null
+		"k8s.io/api/rbac/v1.RoleBinding":                    null
+		"k8s.io/api/rbac/v1.ClusterRole":                    null
+		"k8s.io/api/rbac/v1.ClusterRoleBinding":             null
+		"k8s.io/api/networking/v1.Ingress":                  null
+		"k8s.io/api/networking/v1.NetworkPolicy":            null
+		"k8s.io/api/autoscaling/v2.HorizontalPodAutoscaler": null
+		"k8s.io/api/autoscaling/v2.VerticalPodAutoscaler":   null
+		"k8s.io/api/policy/v1.PodDisruptionBudget":          null
+		"k8s.io/api/policy/v1.PodSecurityPolicy":            null
+		"k8s.io/api/storage/v1.StorageClass":                null
+		"k8s.io/api/storage/v1.VolumeAttachment":            null
+		"k8s.io/api/scheduling/v1.PriorityClass":            null
+		"monitoring.coreos.com/v1.PodMonitor":               null
+		"monitoring.coreos.com/v1.ServiceMonitor":           null
+		"gateway.networking.k8s.io/v1.HTTPRoute":            null
+		"gateway.networking.k8s.io/v1.GRPCRoute":            null
 	}
 
 	render: {
 		app: core.#Application
 
-		// Capability verification - check all traits used in the application
-		#traitVerification: {
-			// Collect all trait types used in the application
-			usedTraits: [
-				for componentName, comp in app.components
-				for traitName, trait in comp.#metadata.#traits {
-					trait.#combinedVersion
-				},
-			]
-
-			// Check for unsupported core traits (these should error)
-			unsupportedCoreTraits: [
-				for usedTrait in usedTraits
-				if list.Contains(#metadata.coreTraits, usedTrait) && transformers[usedTrait] == _|_ {
-					usedTrait
-				},
-			]
-
-			// Check for unsupported modifier traits (these are safely ignored)
-			unsupportedModifierTraits: [
-				for usedTrait in usedTraits
-				if list.Contains(#metadata.modifierTraits, usedTrait) && transformers[usedTrait] == _|_ {
-					usedTrait
-				},
-			]
-
-			// Error if core traits are unsupported
-			if len(unsupportedCoreTraits) > 0 {
-				error("Core traits not supported by Kubernetes provider: \(strings.Join(unsupportedCoreTraits, ", ")). These traits create primary resources and must have transformers implemented.")
-			}
-		}
+		// Process all components and traits
 
 		output: {
 			// Kubernetes List object format
@@ -216,18 +180,22 @@ import (
 				// Flatten all transformer outputs into a single array
 				for componentName, comp in app.components
 				for traitName, trait in comp.#metadata.#traits
-				if transformers[trait.#combinedVersion] != _|_ {
-					// Verify transformer accepts the trait (additional safety check)
-					if transformers[trait.#combinedVersion].accepts != trait.#combinedVersion {
-						error("Transformer mismatch: trait \(trait.#combinedVersion) cannot be handled by its assigned transformer")
+				// Only process atomic traits that have valid transformers
+				if trait.type == "atomic" && transformers[trait.requiredCapability] != _|_ {
+					let t = transformers[trait.requiredCapability]
+
+					// Verify transformer accepts the trait
+					if t.accepts != trait.requiredCapability {
+						error("Transformer mismatch: trait \(trait.requiredCapability) cannot be handled by its assigned transformer")
 					}
 
-					for resource in (transformers[trait.#combinedVersion].transform & {
+					for resource in (t.transform & {
 						input: comp
 						context: core.#ProviderContext & {
-							name:         app.#metadata.name
-							namespace:    app.#metadata.namespace
-							capabilities: #metadata.capabilities
+							name:      app.#metadata.name
+							namespace: app.#metadata.namespace
+							// Only include traits that have valid transformers (not null or undefined)
+							capabilities: [for trait, transformer in transformers if transformer != null && transformer != _|_ {trait}]
 
 							metadata: {
 								application: {

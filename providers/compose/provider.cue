@@ -9,28 +9,27 @@ import (
 		name:        "Compose"
 		description: "Provider for Docker Compose applications"
 		minVersion:  "v3.8" // Minimum Docker Compose version supported
-		capabilities: [
-			// Supported OAM core types
-			"core.oam.dev/v2alpha1.Workload",
-			"core.oam.dev/v2alpha1.Database",
-			"core.oam.dev/v2alpha1.Volume",
-			"core.oam.dev/v2alpha1.Secret",
-			"core.oam.dev/v2alpha1.Config",
-			"core.oam.dev/v2alpha1.Route",
-			"core.oam.dev/v2alpha1.Scaling",
-		]
 	}
 
+	// Transformers define which traits this provider supports.
+	// Supported traits have transformer definitions, unsupported traits can be:
+	// - Set to null (explicit unsupported)
+	// - Omitted entirely (implicit unsupported)
 	transformers: {
-		"Workload": #WorkloadTransformer
-		// "Volume":   #VolumeTransformer
-		// "Secret":   #SecretTransformer
-		// "Config":   #ConfigTransformer
+		// Supported traits
+		"core.oam.dev/v2alpha2.ContainerSet": #ContainerSetTransformer
+
+		// Unsupported traits - explicitly marked as null
+		// These could also be omitted entirely
+		"core.oam.dev/v2alpha2.Expose": null
+		"core.oam.dev/v2alpha2.Volume": null
+		"core.oam.dev/v2alpha2.Secret": null
+		"core.oam.dev/v2alpha2.Config": null
 	}
 }
 
-#WorkloadTransformer: core.#Transformer & {
-	accepts: "Workload"
+#ContainerSetTransformer: core.#Transformer & {
+	accepts: "core.oam.dev/v2alpha2/ContainerSet"
 	transform: {
 		input:   _
 		context: core.#ProviderContext
