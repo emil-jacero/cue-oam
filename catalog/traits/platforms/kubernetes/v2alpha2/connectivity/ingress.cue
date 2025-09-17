@@ -8,6 +8,7 @@ import (
 // Ingress defines the properties and behaviors of a Kubernetes Ingress
 #Ingress: core.#Trait & {
 	#metadata: #traits: Ingress: core.#TraitMetaAtomic & {
+		#apiVersion: "k8s.io/api/networking/v1"
 		#kind:       "Ingress"
 		description: "Kubernetes Ingress for HTTP and HTTPS access to services from outside the cluster"
 		domain:      "connectivity"

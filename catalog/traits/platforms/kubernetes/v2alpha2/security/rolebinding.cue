@@ -8,6 +8,7 @@ import (
 // RoleBinding defines the properties and behaviors of a Kubernetes RoleBinding
 #RoleBinding: core.#Trait & {
 	#metadata: #traits: RoleBinding: core.#TraitMetaAtomic & {
+		#apiVersion: "k8s.io/api/rbac/v1"
 		#kind:       "RoleBinding"
 		description: "Kubernetes RoleBinding grants permissions defined in a Role to a user or set of users"
 		domain:      "security"

@@ -8,6 +8,7 @@ import (
 // ConfigMap defines the properties and behaviors of a Kubernetes ConfigMap
 #ConfigMap: core.#Trait & {
 	#metadata: #traits: ConfigMap: core.#TraitMetaAtomic & {
+		#apiVersion: "k8s.io/api/core/v1"
 		#kind:       "ConfigMap"
 		description: "Kubernetes ConfigMap for storing configuration data as key-value pairs"
 		domain:      "data"

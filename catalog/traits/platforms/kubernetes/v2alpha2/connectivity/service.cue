@@ -8,6 +8,7 @@ import (
 // Service defines the properties and behaviors of a Kubernetes Service
 #Service: core.#Trait & {
 	#metadata: #traits: Service: core.#TraitMetaAtomic & {
+		#apiVersion: "k8s.io/api/core/v1"
 		#kind:       "Service"
 		description: "Kubernetes Service for exposing an application running on a set of Pods as a network service"
 		domain:      "connectivity"

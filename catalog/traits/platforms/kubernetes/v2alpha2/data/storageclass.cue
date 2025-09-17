@@ -8,6 +8,7 @@ import (
 // StorageClass defines the properties and behaviors of a Kubernetes StorageClass
 #StorageClass: core.#Trait & {
 	#metadata: #traits: StorageClass: core.#TraitMetaAtomic & {
+		#apiVersion: "k8s.io/api/storage/v1"
 		#kind:       "StorageClass"
 		description: "Kubernetes StorageClass for defining classes of storage"
 		domain:      "data"

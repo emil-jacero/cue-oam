@@ -8,6 +8,7 @@ import (
 // HorizontalPodAutoscaler defines the properties and behaviors of a Kubernetes HorizontalPodAutoscaler
 #HorizontalPodAutoscaler: core.#Trait & {
 	#metadata: #traits: HorizontalPodAutoscaler: core.#TraitMetaAtomic & {
+		#apiVersion: "k8s.io/api/autoscaling/v2"
 		#kind:       "HorizontalPodAutoscaler"
 		description: "Kubernetes HorizontalPodAutoscaler for automatic scaling of pods based on observed CPU utilization or custom metrics"
 		domain:      "workload"

@@ -8,6 +8,7 @@ import (
 // ClusterRole defines the properties and behaviors of a Kubernetes ClusterRole
 #ClusterRole: core.#Trait & {
 	#metadata: #traits: ClusterRole: core.#TraitMetaAtomic & {
+		#apiVersion: "k8s.io/api/rbac/v1"
 		#kind:       "ClusterRole"
 		description: "Kubernetes ClusterRole contains rules that represent a set of permissions at the cluster level"
 		domain:      "security"

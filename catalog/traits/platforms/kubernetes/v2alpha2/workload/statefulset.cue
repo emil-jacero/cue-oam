@@ -8,6 +8,7 @@ import (
 // StatefulSet defines the properties and behaviors of a Kubernetes StatefulSet
 #StatefulSet: core.#Trait & {
 	#metadata: #traits: StatefulSet: core.#TraitMetaAtomic & {
+		#apiVersion: "k8s.io/api/apps/v1"
 		#kind:       "StatefulSet"
 		description: "Kubernetes StatefulSet for stateful workloads with stable network identities and persistent storage"
 		domain:      "workload"

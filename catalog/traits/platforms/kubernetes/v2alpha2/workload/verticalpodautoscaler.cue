@@ -8,6 +8,7 @@ import (
 // VerticalPodAutoscaler defines the properties and behaviors of a Kubernetes VerticalPodAutoscaler
 #VerticalPodAutoscaler: core.#Trait & {
 	#metadata: #traits: VerticalPodAutoscaler: core.#TraitMetaAtomic & {
+		#apiVersion: "k8s.io/api/autoscaling/v1"
 		#kind:       "VerticalPodAutoscaler"
 		description: "Kubernetes VerticalPodAutoscaler for automatic adjustment of resource requests based on usage"
 		domain:      "workload"

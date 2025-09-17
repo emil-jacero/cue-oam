@@ -8,6 +8,7 @@ import (
 // PersistentVolumeClaim defines the properties and behaviors of a Kubernetes PersistentVolumeClaim
 #PersistentVolumeClaim: core.#Trait & {
 	#metadata: #traits: PersistentVolumeClaim: core.#TraitMetaAtomic & {
+		#apiVersion: "k8s.io/api/core/v1"
 		#kind:       "PersistentVolumeClaim"
 		description: "Kubernetes PersistentVolumeClaim for requesting persistent storage"
 		domain:      "data"

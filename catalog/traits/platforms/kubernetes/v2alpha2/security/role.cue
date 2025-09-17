@@ -8,6 +8,7 @@ import (
 // Role defines the properties and behaviors of a Kubernetes Role
 #Role: core.#Trait & {
 	#metadata: #traits: Role: core.#TraitMetaAtomic & {
+		#apiVersion: "k8s.io/api/rbac/v1"
 		#kind:       "Role"
 		description: "Kubernetes Role contains rules that represent a set of permissions within a namespace"
 		domain:      "security"

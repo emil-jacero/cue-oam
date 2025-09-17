@@ -8,6 +8,7 @@ import (
 // ServiceAccount defines the properties and behaviors of a Kubernetes ServiceAccount
 #ServiceAccount: core.#Trait & {
 	#metadata: #traits: ServiceAccount: core.#TraitMetaAtomic & {
+		#apiVersion: "k8s.io/api/core/v1"
 		#kind:       "ServiceAccount"
 		description: "Kubernetes ServiceAccount provides an identity for processes that run in a Pod"
 		domain:      "data"

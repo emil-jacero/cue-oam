@@ -8,6 +8,7 @@ import (
 // PodMonitor defines the properties and behaviors of a Kubernetes PodMonitor
 #PodMonitor: core.#Trait & {
 	#metadata: #traits: PodMonitor: core.#TraitMetaAtomic & {
+		#apiVersion: "monitoring.coreos.com/v1"
 		#kind:       "PodMonitor"
 		description: "Prometheus PodMonitor for scraping metrics directly from pods"
 		domain:      "observability"

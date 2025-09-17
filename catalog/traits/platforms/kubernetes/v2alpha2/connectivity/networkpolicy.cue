@@ -8,6 +8,7 @@ import (
 // NetworkPolicy defines the properties and behaviors of a Kubernetes NetworkPolicy
 #NetworkPolicy: core.#Trait & {
 	#metadata: #traits: NetworkPolicy: core.#TraitMetaAtomic & {
+		#apiVersion: "k8s.io/api/networking/v1"
 		#kind:       "NetworkPolicy"
 		description: "Kubernetes NetworkPolicy for controlling network traffic to and from pods"
 		domain:      "security"

@@ -8,6 +8,7 @@ import (
 // Job defines the properties and behaviors of a Kubernetes Job
 #Job: core.#Trait & {
 	#metadata: #traits: Job: core.#TraitMetaAtomic & {
+		#apiVersion: "k8s.io/api/batch/v1"
 		#kind:       "Job"
 		description: "Kubernetes Job for running batch or one-time tasks"
 		domain:      "workload"
@@ -22,6 +23,7 @@ import (
 // Jobs defines the properties and behaviors of multiple Kubernetes Jobs
 #Jobs: core.#Trait & {
 	#metadata: #traits: Jobs: core.#TraitMetaAtomic & {
+		#apiVersion: "k8s.io/api/batch/v1"
 		#kind:       "Jobs"
 		description: "Kubernetes Jobs for running batch or one-time tasks"
 		domain:      "workload"

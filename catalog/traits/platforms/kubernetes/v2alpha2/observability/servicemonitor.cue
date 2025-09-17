@@ -8,6 +8,7 @@ import (
 // ServiceMonitor defines the properties and behaviors of a Kubernetes ServiceMonitor
 #ServiceMonitor: core.#Trait & {
 	#metadata: #traits: ServiceMonitor: core.#TraitMetaAtomic & {
+		#apiVersion: "monitoring.coreos.com/v1"
 		#kind:       "ServiceMonitor"
 		description: "Prometheus ServiceMonitor for scraping metrics from services"
 		domain:      "observability"

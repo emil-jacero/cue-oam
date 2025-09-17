@@ -8,6 +8,7 @@ import (
 // CronJob defines the properties and behaviors of a Kubernetes CronJob
 #CronJob: core.#Trait & {
 	#metadata: #traits: CronJob: core.#TraitMetaAtomic & {
+		#apiVersion: "k8s.io/api/batch/v1"
 		#kind:       "CronJob"
 		description: "Kubernetes CronJob for running jobs on a scheduled basis"
 		domain:      "workload"

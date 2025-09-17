@@ -94,9 +94,10 @@ import (
 #ConfigMap:     configuration.#ConfigMap
 #ConfigMapSpec: configuration.#ConfigMapSpec
 
-#Secret: configuration.#Secret
-
+#Secret:     configuration.#Secret
 #SecretSpec: configuration.#SecretSpec
+
+#Namespace: configuration.#Namespace
 
 //////////////////////////////////////////////
 // Scaling Schemas
