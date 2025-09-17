@@ -3,6 +3,7 @@
 ## Nearterm
 
 - [x] Refactor the Domain concept. It works fine for atomic traits, but for composite traits it faulters. Composite traits belong to multiple domains. Perhaps a redesigned architecture should define #AtomicTrait and #CompositeTrait and som logic to compile all domains for composite traits.
+- [ ] Start writing design documentation. Use RFC2119
 - [ ] Implement standard status definition for component.
 - [ ] Implement standard status definition for application, should perhaps inherit from components in some way.
 - [ ] Investiage adding dependecy handling in components.

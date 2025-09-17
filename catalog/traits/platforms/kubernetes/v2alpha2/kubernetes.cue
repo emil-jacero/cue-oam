@@ -18,6 +18,9 @@ import (
 
 	// 6. Governance - Policies, constraints, and compliance
 	// governance "jacero.io/oam/catalog/traits/platforms/kubernetes/v2alpha2/governance"
+
+	// Composite Traits - Higher-level patterns combining multiple atomic traits
+	composite "jacero.io/oam/catalog/traits/platforms/kubernetes/v2alpha2/composite"
 )
 
 // Kubernetes Atomic Traits Catalog
@@ -120,3 +123,10 @@ import (
 // #ResourceQuota: governance.#ResourceQuota
 // #PriorityClass: governance.#PriorityClass
 // #PodDisruptionBudget: governance.#PodDisruptionBudget
+
+//////////////////////////////////////////////
+// Composite Traits
+//////////////////////////////////////////////
+
+// Webservice combines Deployment and Service for basic stateless workloads with service exposure
+#Webservice: composite.#Webservice

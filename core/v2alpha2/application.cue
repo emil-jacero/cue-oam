@@ -22,15 +22,6 @@ package v2alpha2
 	#status?: {
 		componentCount: len(components)
 		scopeCount:     len(scopes)
-
-		// Deployment readiness
-		ready: bool | *true
-
-		// Validation results
-		validation?: {
-			dependencies: "valid" | "invalid"
-			policies:     "compliant" | "non-compliant"
-			resources:    "within-limits" | "exceeds-limits"
-		}
+		...
 	}
 }

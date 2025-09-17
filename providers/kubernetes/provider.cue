@@ -167,7 +167,6 @@ import (
 		"core.oam.dev/v2alpha2.Volume":                #VolumeTransformer
 		"core.oam.dev/v2alpha2.Secret":                #SecretTransformer
 		"core.oam.dev/v2alpha2.Config":                #ConfigTransformer
-		"core.oam.dev/v2alpha2.NetworkIsolationScope": #NetworkIsolationScopeTransformer
 	}
 
 	render: {

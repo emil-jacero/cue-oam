@@ -13,7 +13,7 @@ package v2alpha2
 	#Trait
 
 	// Add fields from all traits applied to this component
-	// Merges the 'provides' fields from each trait
+	// Unifies the 'provides' fields from each trait
 	for traitName, t in #metadata.#traits {
 		t.provides
 	}

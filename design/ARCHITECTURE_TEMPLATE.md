@@ -27,6 +27,8 @@ Brief description of what this component/feature does and why it exists.
 
 ## API Design
 
+Examples below
+
 ### CUE Definitions
 
 #### Core Types
@@ -75,16 +77,7 @@ exampleApplication: #Application & {
 
 ## Implementation Details
 
-### Module Structure
-
-```shell
-/path/to/files/
-├── core_definition.cue     // Core type definitions
-├── validation.cue          // Validation rules
-├── composition.cue         // Composition helpers
-└── examples/              // Usage examples
-    └── example.cue
-```
+Examples below
 
 ### Key Algorithms
 
