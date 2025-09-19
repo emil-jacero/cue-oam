@@ -14,7 +14,7 @@ import (
 		description: "Container specification with main and init containers support"
 		domain:      "workload"
 		scope: ["component"]
-		provides: {containerSet: #ContainerSet.containerSet}
+		provides: containerSet: #ContainerSet.containerSet
 	}
 
 	containerSet: {

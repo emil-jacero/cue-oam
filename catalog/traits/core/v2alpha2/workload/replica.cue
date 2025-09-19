@@ -15,10 +15,8 @@ import (
 		scope: ["component"]
 		// This trait modifies resources created by ContainerSet
 		dependencies: [#ContainerSetMeta]
-		provides: {replica: #Replica.replica}
+		provides: replica: #Replica.replica
 	}
 
-	replica: {
-		count: uint | *1
-	}
+	replica: uint | *1
 }

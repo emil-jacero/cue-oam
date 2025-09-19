@@ -22,10 +22,10 @@ import (
 			data.#VolumeMeta,
 			data.#SecretMeta,
 		]
-		provides: {database: #Database.database}
+		provides: database: #Database.database
 	}
 
-	database: {
+	D=database: {
 		type!:    "postgres" | "mysql"
 		version!: string
 		persistence: {
@@ -38,16 +38,16 @@ import (
 		}
 	}
 
-	secrets: {
-		if database.credentials.username != _|_ || database.credentials.password != _|_ {
+	secrets: data.#Secret.secrets & {
+		if D.credentials.username != _|_ || D.credentials.password != _|_ {
 			dbCredentials: {
 				type: "Opaque"
 				data: {
-					if database.credentials.username != _|_ {
-						username: database.credentials.username
+					if D.credentials.username != _|_ {
+						username: D.credentials.username
 					}
-					if database.credentials.password != _|_ {
-						password: database.credentials.password
+					if D.credentials.password != _|_ {
+						password: D.credentials.password
 					}
 				}
 			}
@@ -55,19 +55,19 @@ import (
 	}
 
 	// Configure replica count
-	replica: #Replica.replica & {count: 123}
+	replica: #Replica.replica & 2
 
 	// Configure restart policy
-	restartPolicy: #RestartPolicy.restartPolicy & {"Always"}
+	restartPolicy: #RestartPolicy.restartPolicy & "Always"
 
 	// Configure containers based on database type
 	containerSet: #ContainerSet.containerSet & {
 		containers: main: {
-			if database.type == "postgres" {
+			if D.type == "postgres" {
 				name: "postgres"
 				image: {
 					repository: "postgres"
-					tag:        database.version
+					tag:        D.version
 				}
 				ports: [{
 					name:       "postgres"
@@ -79,15 +79,15 @@ import (
 					{name: "POSTGRES_USER", value: "admin"},
 					{name: "POSTGRES_PASSWORD", value: "password"},
 				]
-				if database.persistence.enabled {
+				if D.persistence.enabled {
 					volumeMounts: [volumes.dbData]
 				}
 			}
-			if database.type == "mysql" {
+			if D.type == "mysql" {
 				name: "mysql"
 				image: {
 					repository: "mysql"
-					tag:        database.version
+					tag:        D.version
 				}
 				ports: [{
 					name:       "mysql"
@@ -99,19 +99,19 @@ import (
 					{name: "MYSQL_USER", value: "admin"},
 					{name: "MYSQL_PASSWORD", value: "password"},
 				]
-				if database.persistence.enabled {
+				if D.persistence.enabled {
 					volumeMounts: [volumes.dbData]
 				}
 			}
 		}
 	}
 	// Volume configuration
-	volumes: {
-		if database.persistence.enabled {
+	volumes: data.#Volume.volumes & {
+		if D.persistence.enabled {
 			dbData: {
-				type:      "volume"
 				name:      "db-data"
-				size:      database.persistence.size
+				type:      "volume"
+				size:      D.persistence.size
 				mountPath: string | *"/var/lib/data"
 			}
 		}

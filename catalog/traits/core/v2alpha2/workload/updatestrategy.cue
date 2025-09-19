@@ -15,18 +15,16 @@ import (
 		scope: ["component"]
 		// This trait modifies Deployment/StatefulSet created by ContainerSet
 		dependencies: [#ContainerSetMeta]
-		provides: {updateStrategy: #UpdateStrategy.updateStrategy}
+		provides: updateStrategy: #UpdateStrategy.updateStrategy
 	}
 
 	updateStrategy: {
 		type: *"RollingUpdate" | "Recreate"
 
 		// Only applicable when type is "RollingUpdate"
-		if type == "RollingUpdate" {
-			rollingUpdate?: {
-				maxSurge?:       uint | *1
-				maxUnavailable?: uint | *0
-			}
+		rollingUpdate?: {
+			maxSurge?:       uint | *1
+			maxUnavailable?: uint | *0
 		}
 	}
 }

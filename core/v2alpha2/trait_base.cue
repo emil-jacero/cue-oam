@@ -38,7 +38,9 @@ package v2alpha2
 	scope!: [...#TraitScopes]
 
 	// Fields this trait provides to a component, scope, or promise
-	provides!: {...}
+	// Must be compatible with OpenAPIv3 schema
+	// TODO: Add validation to only allow one named struct per trait
+	provides!: [string]: _
 	...
 }
 

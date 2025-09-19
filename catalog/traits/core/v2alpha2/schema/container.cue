@@ -13,7 +13,7 @@ import (
 	name: string & strings.MinRunes(1) & strings.MaxRunes(253)
 
 	// The container image to use.
-	image: #Image & {
+	image: #ImageSchema & {
 		repository: _ | *""
 		tag:        _ | *""
 		digest:     _ | *""

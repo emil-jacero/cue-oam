@@ -13,7 +13,7 @@ import (
 		description: "Manages network boundaries for components or scopes"
 		domain:      "connectivity"
 		scope: ["scope"]
-		provides: {network: #NetworkIsolation.network}
+		provides: network: #NetworkIsolation.network
 	}
 
 	network: {

@@ -23,19 +23,6 @@ myApp: core.#Application & {
 		}
 	}
 
-	scopes: {
-		frontend: {
-			trait.#SharedNetwork
-			appliesTo: [components.web, components.api]
-			sharedNetwork: {}
-		}
-		backend: {
-			trait.#SharedNetwork
-			appliesTo: [components.api, components.db]
-			sharedNetwork: {}
-		}
-	}
-
 	components: {
 		// Frontend component with its own metadata
 		web: {
@@ -137,6 +124,15 @@ myApp: core.#Application & {
 					targetPort:  3000
 					exposedPort: 3000
 				}]
+			}
+
+			trait.#Volume
+			volumes: {
+				data: {
+					name: "data"
+					type: "volume"
+					size: "10Gi"
+				}
 			}
 		}
 

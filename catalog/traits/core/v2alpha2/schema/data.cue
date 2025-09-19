@@ -4,6 +4,7 @@ package schema
 //// Trait schemas
 //////////////////////////////////////////////
 
+// OpenAPIv3 compatible schema for a config
 #ConfigSpec: {
 	// Immutable, if true, ensures that data stored in the ConfigMap cannot be updated (only object metadata can be modified).
 	immutable?: bool
@@ -14,6 +15,7 @@ package schema
 	binaryData?: [string]: string
 }
 
+// OpenAPIv3 compatible schema for a secret
 #SecretSpec: {
 	// The type of the secret, used to determine how to interpret the data.
 	// Default is "Opaque".
@@ -23,19 +25,4 @@ package schema
 	data: [string]: string
 	// Unencoded raw string data
 	stringData?: [string]: string
-
-	if type == "kubernetes.io/dockerconfigjson" {
-		data: ".dockerconfigjson":        string
-		stringData?: ".dockerconfigjson": string
-	}
-	if type == "kubernetes.io/ssh-auth" {
-		data: "ssh-privatekey":        string
-		stringData?: "ssh-privatekey": string
-	}
-	if type == "kubernetes.io/tls" {
-		data: "tls.crt":        string
-		data: "tls.key":        string
-		stringData?: "tls.crt": string
-		stringData?: "tls.key": string
-	}
 }

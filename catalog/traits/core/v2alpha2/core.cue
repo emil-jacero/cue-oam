@@ -19,7 +19,7 @@ import (
 	// observability "jacero.io/oam/catalog/traits/core/v2alpha2/observability"
 
 	// 6. Governance - Policies, constraints, and compliance
-	governance "jacero.io/oam/catalog/traits/core/v2alpha2/governance"
+	// governance "jacero.io/oam/catalog/traits/core/v2alpha2/governance"
 )
 
 // Export all traits for convenience
@@ -43,5 +43,3 @@ import (
 #SharedNetwork:    connectivity.#SharedNetwork
 
 // Governance domain traits
-#NamespaceQuota:     governance.#NamespaceQuota
-#NamespaceIsolation: governance.#NamespaceIsolation

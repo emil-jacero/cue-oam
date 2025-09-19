@@ -1,5 +1,6 @@
 oam-schema
 out.cue
+out.yaml
 memory
 usermemory
 CLAUDE.md

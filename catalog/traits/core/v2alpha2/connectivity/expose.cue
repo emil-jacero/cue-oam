@@ -14,7 +14,7 @@ import (
 		description: "Marks a component as exposable for external access"
 		domain:      "connectivity"
 		scope: ["component"]
-		provides: {expose: #Expose.expose}
+		provides: expose: #Expose.expose
 	}
 
 	expose: {

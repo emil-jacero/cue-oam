@@ -32,84 +32,50 @@ import (
 	// The type of the storage volume.
 	type!: #PersistenceTypes
 
+	#emptyDir | #configMap | #secret | #hostPath | #volume
+
 	// The actual mount path in the filesystem.
 	// Sets the target directory in the container where the volume will be mounted.
 	mountPath?: string
-
-	// emptyDir represents a temporary directory that shares a pod's lifetime.
-	if type == "emptyDir" {
-
-		// medium specifies the medium type of the emptyDir volume.
-		// If not specified, defaults to "" (disk).
-		// Valid values are "Memory" for memory-backed volumes.
-		medium?: string & "Memory"
-		// sizeLimit specifies the maximum size of the emptyDir volume.
-		// If not specified, defaults to "" (no limit).
-		sizeLimit?: string & #StorageQuantity
-	}
-
-	// config represents a ConfigMap that should populate this volume.
-	if type == "configMap" {
-		// config is the ConfigMap to treat as a volume.
-		config!: #ConfigSpec
-	}
-
-	// secret represents a Secret that should populate this volume.
-	if type == "secret" {
-		// secret is the secret to treat as a volume.
-		secret!: #SecretSpec
-	}
-
-	// hostPath represents a pre-existing file or directory on the host machine that is directly exposed to the container.
-	if type == "hostPath" {
-		// Path of the directory on the host.
-		hostPath!: string & strings.MaxRunes(1024)
-		// Type of the hostPath volume.
-		// Valid values are "Directory", "File", "Socket", "CharDevice", "BlockDevice", "DirectoryOrCreate", "FileOrCreate".
-		// If not specified, defaults to "".
-		hostPathType: #HostPathType
-	}
-
-	// volume represents a persistent volume that should populate this volume.
-	// This is mostly used for Kubernetes workloads but does represent a persistent volume in Docker Compose as well.
-	if type == "volume" {#PersistentVolumeSpec}
 }
 
-#VolumeMountOptions: {
-	// mountPropagation determines how mounts are propagated from the host
-	// to container and the other way around.
-	// When not set, MountPropagationNone is used.
-	// This field is beta in 1.10.
-	// When RecursiveReadOnly is set to IfPossible or to Enabled, MountPropagation must be None or unspecified
-	// (which defaults to None).
-	mountPropagation?: *"None" | "HostToContainer" | "Bidirectional"
-	// Expanded path within the volume from which the container's volume should be mounted.
-	// Behaves similarly to SubPath but environment variable references $(VAR_NAME) are expanded using the container's environment.
-	// Defaults to "" (volume's root).
-	// SubPathExpr and SubPath are mutually exclusive.
-	subPathExpr?: string & strings.MaxRunes(1024)
-	// RecursiveReadOnly specifies whether read-only mounts should be handled recursively.
-	//
-	// If ReadOnly is false, this field has no meaning and must be unspecified.
-	//
-	// If ReadOnly is true, and this field is set to Disabled, the mount is not made
-	// recursively read-only.  If this field is set to IfPossible, the mount is made
-	// recursively read-only, if it is supported by the container runtime.  If this
-	// field is set to Enabled, the mount is made recursively read-only if it is
-	// supported by the container runtime, otherwise the pod will not be started and
-	// an error will be generated to indicate the reason.
-	//
-	// If this field is set to IfPossible or Enabled, MountPropagation must be set to
-	// None (or be unspecified, which defaults to None).
-	//
-	// If this field is not specified, it is treated as an equivalent of Disabled.
-	RecursiveReadOnly: string | *"Disabled" | "IfPossible" | "Enabled"
-	// mountOptions is the list of mount options, e.g. ["ro", "soft"]. Not validated - mount will
-	// simply fail if one is invalid.
-	extraMountOptions: [...string]
+#emptyDir: {
+	type: "emptyDir"
+	// medium specifies the medium type of the emptyDir volume.
+	// If not specified, defaults to "" (disk).
+	// Valid values are "Memory" for memory-backed volumes.
+	medium?: string & "Memory"
+	// sizeLimit specifies the maximum size of the emptyDir volume.
+	// If not specified, defaults to "" (no limit).
+	sizeLimit?: string & #StorageQuantity
 }
+
+#configMap: {
+	type: "configMap"
+	// config is the config to treat as a volume.
+	config!: #ConfigSpec
+}
+
+#secret: {
+	type: "secret"
+	// secret is the secret to treat as a volume.
+	secret!: #SecretSpec
+}
+
+#hostPath: {
+	type: "hostPath"
+	// Path of the directory on the host.
+	hostPath!: string & strings.MaxRunes(1024)
+	// Type of the hostPath volume.
+	// Valid values are "Directory", "File", "Socket", "CharDevice", "BlockDevice", "DirectoryOrCreate", "FileOrCreate".
+	// If not specified, defaults to "".
+	hostPathType: #HostPathType
+}
+
+#volume: #PersistentVolumeSpec
 
 #PersistentVolumeSpec: {
+	type: "volume"
 	// The size of the volume, e.g. "1Gi".
 	// Converted for docker compose to "1G" or "1GiB".
 	size!: string & #StorageQuantity
@@ -153,6 +119,40 @@ import (
 	// labels?: matchN(1, [close({
 	// 	{[=~".+"]: null | bool | number | string}
 	// }), list.UniqueItems() & [...string]])
+}
+
+#VolumeMountOptions: {
+	// mountPropagation determines how mounts are propagated from the host
+	// to container and the other way around.
+	// When not set, MountPropagationNone is used.
+	// This field is beta in 1.10.
+	// When RecursiveReadOnly is set to IfPossible or to Enabled, MountPropagation must be None or unspecified
+	// (which defaults to None).
+	mountPropagation?: *"None" | "HostToContainer" | "Bidirectional"
+	// Expanded path within the volume from which the container's volume should be mounted.
+	// Behaves similarly to SubPath but environment variable references $(VAR_NAME) are expanded using the container's environment.
+	// Defaults to "" (volume's root).
+	// SubPathExpr and SubPath are mutually exclusive.
+	subPathExpr?: string & strings.MaxRunes(1024)
+	// RecursiveReadOnly specifies whether read-only mounts should be handled recursively.
+	//
+	// If ReadOnly is false, this field has no meaning and must be unspecified.
+	//
+	// If ReadOnly is true, and this field is set to Disabled, the mount is not made
+	// recursively read-only.  If this field is set to IfPossible, the mount is made
+	// recursively read-only, if it is supported by the container runtime.  If this
+	// field is set to Enabled, the mount is made recursively read-only if it is
+	// supported by the container runtime, otherwise the pod will not be started and
+	// an error will be generated to indicate the reason.
+	//
+	// If this field is set to IfPossible or Enabled, MountPropagation must be set to
+	// None (or be unspecified, which defaults to None).
+	//
+	// If this field is not specified, it is treated as an equivalent of Disabled.
+	RecursiveReadOnly: string | *"Disabled" | "IfPossible" | "Enabled"
+	// mountOptions is the list of mount options, e.g. ["ro", "soft"]. Not validated - mount will
+	// simply fail if one is invalid.
+	extraMountOptions: [...string]
 }
 
 #HostPathType: string | *"" | "Directory" | "File" | "Socket" | "CharDevice" | "BlockDevice" | "DirectoryOrCreate" | "FileOrCreate"

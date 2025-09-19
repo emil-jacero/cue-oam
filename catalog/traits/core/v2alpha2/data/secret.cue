@@ -15,9 +15,25 @@ import (
 		description: "Describes a set of secrets to be used by containers"
 		domain:      "data"
 		scope: ["component"]
-		provides: {secrets: #Secret.secrets}
+		provides: secrets: [string]: schema.#SecretSpec
 	}
 
 	// Secrets to be created
-	secrets: [string]: schema.#SecretSpec
+	secrets: [string]: schema.#SecretSpec & {
+		type: schema.#SecretSpec.type
+		if type == "kubernetes.io/dockerconfigjson" {
+			data: ".dockerconfigjson":        string
+			stringData?: ".dockerconfigjson": string
+		}
+		if type == "kubernetes.io/ssh-auth" {
+			data: "ssh-privatekey":        string
+			stringData?: "ssh-privatekey": string
+		}
+		if type == "kubernetes.io/tls" {
+			data: "tls.crt":        string
+			data: "tls.key":        string
+			stringData?: "tls.crt": string
+			stringData?: "tls.key": string
+		}
+	}
 }

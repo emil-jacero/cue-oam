@@ -102,8 +102,8 @@ import (
 #ProviderKubernetes: core.#Provider & {
 	#metadata: {
 		name:        "Kubernetes"
-		description: "Provider that renders resources for Kubernetes."
-		minVersion:  "v1.31.0" // Minimum supported Kubernetes version
+		description: "Renders resources for Kubernetes."
+		minVersion:  "v1.27.0" // Minimum supported Kubernetes version
 	}
 
 	// Transformers define which traits this provider supports.
@@ -127,6 +127,7 @@ import (
 		"core.oam.dev/v2alpha2.RestartPolicy":         null
 		"core.oam.dev/v2alpha2.UpdateStrategy":        null
 		"core.oam.dev/v2alpha2.NetworkIsolationScope": null
+		"core.oam.dev/v2alpha2.Affinity":              null
 		"core.oam.dev/v2alpha1.Labels":                null
 		"core.oam.dev/v2alpha1.Annotations":           null
 
@@ -183,6 +184,10 @@ import (
 				// Only process atomic traits that have valid transformers
 				if trait.type == "atomic" && transformers[trait.requiredCapability] != _|_ {
 					let t = transformers[trait.requiredCapability]
+
+					// if t == null {
+					// 	error("Unsupported trait: \(trait.requiredCapability) has no transformer in provider \(#metadata.name)")
+					// }
 
 					// Verify transformer accepts the trait
 					if t.accepts != trait.requiredCapability {
