@@ -1,27 +1,23 @@
 package v2alpha2
 
 // Central trait registry - traits self-register here
-// Each trait adds itself to this list during package loading
-#TraitRegistry: [...#Trait]
+// Collects all traits from #RegisteredTraits
+// #TraitRegistry: {
+// 	[string]: #Trait
+// }
+#TraitRegistry: [...#TraitMetaBase]
 
 // Helper to resolve trait schema by name from registry
 #ResolveTraitSchema: {
 	traitName: string
+	_registry: #TraitRegistry
 
-	// Find trait in registry by fullyQualifiedName
-	let matchingTraits = [
-		for trait in #TraitRegistry
-		if trait.#metadata.#traits != _|_ {
-			for _, traitMeta in trait.#metadata.#traits
-			if traitMeta.#fullyQualifiedName == traitName {
-				traitMeta.schema
-			}
-		}
-	]
-
-	schema: {
-		if len(matchingTraits) > 0 {
-			matchingTraits[0]
+	// Look up directly in #TraitRegistry
+	schema: _
+	for trait in _registry {
+		if trait.#fullyQualifiedName == traitName {
+			_t:     trait
+			schema: _t.schema
 		}
 	}
 }

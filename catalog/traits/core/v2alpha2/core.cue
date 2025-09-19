@@ -26,20 +26,49 @@ import (
 
 // Workload domain traits
 #ContainerSet:   workload.#ContainerSet
-#Replica:        workload.#Replica
+#ContainerSetMeta: workload.#ContainerSetMeta
+#Replicas:        workload.#Replicas
+#ReplicasMeta:     workload.#ReplicasMeta
 #RestartPolicy:  workload.#RestartPolicy
+#RestartPolicyMeta: workload.#RestartPolicyMeta
 #UpdateStrategy: workload.#UpdateStrategy
+#UpdateStrategyMeta: workload.#UpdateStrategyMeta
 #Workload:       workload.#Workload
+#WorkloadMeta:    workload.#WorkloadMeta
 #Database:       workload.#Database
+#DatabaseMeta:    workload.#DatabaseMeta
 
 // Data domain traits
 #Volume: data.#Volume
+#VolumeMeta: data.#VolumeMeta
 #Secret: data.#Secret
+#SecretMeta: data.#SecretMeta
 #Config: data.#Config
+#ConfigMeta: data.#ConfigMeta
 
 // Connectivity domain traits
 #Expose:           connectivity.#Expose
+#ExposeMeta:        connectivity.#ExposeMeta
 #NetworkIsolation: connectivity.#NetworkIsolation
+#NetworkIsolationMeta: connectivity.#NetworkIsolationMeta
 #SharedNetwork:    connectivity.#SharedNetwork
+#SharedNetworkMeta: connectivity.#SharedNetworkMeta
 
 // Governance domain traits
+
+// Export registration entry for the trait registry
+#TraitRegistry: [
+	#WorkloadMeta,
+	#ContainerSetMeta,
+	#ReplicasMeta,
+	#RestartPolicyMeta,
+	#UpdateStrategyMeta,
+	#DatabaseMeta,
+	#VolumeMeta,
+	#SecretMeta,
+	#ConfigMeta,
+	#ExposeMeta,
+	#NetworkIsolationMeta,
+	#SharedNetworkMeta,
+	...
+]
