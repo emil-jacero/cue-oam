@@ -17,7 +17,7 @@ import (
 		scope: ["component"]
 		composes: [
 			#ContainerSetMeta,
-			#ReplicaMeta,
+			#ReplicasMeta,
 			#RestartPolicyMeta,
 			data.#VolumeMeta,
 			data.#SecretMeta,
@@ -55,7 +55,7 @@ import (
 	}
 
 	// Configure replica count
-	replica: #Replica.replica & 2
+	replicas: #Replicas.replicas | *1
 
 	// Configure restart policy
 	restartPolicy: #RestartPolicy.restartPolicy & "Always"

@@ -5,18 +5,18 @@ import (
 )
 
 // Replica - Controls the number of instances
-#ReplicaMeta: #Replica.#metadata.#traits.Replica
+#ReplicasMeta: #Replicas.#metadata.#traits.Replicas
 
-#Replica: core.#Trait & {
-	#metadata: #traits: Replica: core.#TraitMetaAtomic & {
-		#kind:       "Replica"
+#Replicas: core.#Trait & {
+	#metadata: #traits: Replicas: core.#TraitMetaAtomic & {
+		#kind:       "Replicas"
 		description: "Specifies the number of replicas to run"
 		domain:      "workload"
 		scope: ["component"]
-		// This trait modifies resources created by ContainerSet
-		dependencies: [#ContainerSetMeta]
-		provides: replica: #Replica.replica
+		provides: replicas: #ReplicasSchema
 	}
 
-	replica: uint | *1
+	replicas: #ReplicasSchema
 }
+
+#ReplicasSchema: uint | *1
