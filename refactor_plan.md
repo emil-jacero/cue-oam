@@ -908,13 +908,13 @@ k8sError3: k8s.#ProviderKubernetes.render & {
 
 ## Checklist
 
-1. [ ] Central trait registry with self-registration pattern
-   - [ ] Commit: `git commit -m "Add central trait registry with #ResolveTraitSchema helper"`
-2. [ ] Rename #combinedVersion to #fullyQualifiedName and simplify capabilities
-   - [ ] Remove requiredCapability from atomic traits (use #fullyQualifiedName)
-   - [ ] Remove requiredCapabilities from composite traits (collect from composes)
-   - [ ] Update #atomicTraits helper to use #fullyQualifiedName
-   - [ ] Commit: `git commit -m "Rename #combinedVersion to #fullyQualifiedName and simplify capabilities"`
+1. [x] Central trait registry with self-registration pattern
+   - [x] Commit: `git commit -m "Add central trait registry with #ResolveTraitSchema helper"`
+2. [x] Rename #combinedVersion to #fullyQualifiedName and simplify capabilities
+   - [x] Remove requiredCapability from atomic traits (use #fullyQualifiedName)
+   - [x] Remove requiredCapabilities from composite traits (collect from composes)
+   - [x] Update #atomicTraits helper to use #fullyQualifiedName
+   - [x] Commit: `git commit -m "Rename #combinedVersion to #fullyQualifiedName and simplify capabilities"`
 3. [ ] DeploymentType trait created and self-registers in registry
    - [ ] Commit: `git commit -m "Add DeploymentType atomic trait with OpenAPIv3 schema"`
 4. [ ] Component #atomicTraits helper computes correctly
