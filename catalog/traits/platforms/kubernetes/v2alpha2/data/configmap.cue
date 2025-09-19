@@ -13,7 +13,7 @@ import (
 		description: "Kubernetes ConfigMap for storing configuration data as key-value pairs"
 		domain:      "data"
 		scope: ["component"]
-		provides: {configmaps: [string]: schema.#ConfigMapSpec}
+		schema: {configmaps: [string]: schema.#ConfigMapSpec}
 	}
 	configmaps: [string]: schema.#ConfigMapSpec
 }

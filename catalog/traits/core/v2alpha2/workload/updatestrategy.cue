@@ -13,7 +13,7 @@ import (
 		description: "Defines how updates are applied to running instances"
 		domain:      "workload"
 		scope: ["component"]
-		provides: updateStrategy: #UpdateStrategySchema
+		schema: updateStrategy: #UpdateStrategySchema
 	}
 
 	updateStrategy: #UpdateStrategySchema & {

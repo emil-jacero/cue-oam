@@ -22,7 +22,7 @@ import (
 			data.#VolumeMeta,
 			data.#SecretMeta,
 		]
-		provides: database: #Database.database
+		schema: database: #Database.database
 	}
 
 	D=database: {

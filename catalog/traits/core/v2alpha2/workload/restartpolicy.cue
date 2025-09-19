@@ -13,7 +13,7 @@ import (
 		description: "Defines restart behavior for containers"
 		domain:      "workload"
 		scope: ["component"]
-		provides: restartPolicy: #RestartPolicy.restartPolicy
+		schema: restartPolicy: #RestartPolicy.restartPolicy
 	}
 
 	restartPolicy: string | *"Always" | "OnFailure" | "Never"

@@ -15,7 +15,7 @@ import (
 		description: "Describes one or more configurations to be used by containers"
 		domain:      "data"
 		scope: ["component"]
-		provides: configMap: [string]: schema.#ConfigSpec
+		schema: configMap: [string]: schema.#ConfigSpec
 	}
 
 	// Configurations to be created

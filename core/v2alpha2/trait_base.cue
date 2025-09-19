@@ -18,9 +18,9 @@ package v2alpha2
 }
 
 #TraitMetaBase: {
-	#apiVersion:      string | *"core.oam.dev/v2alpha2"
-	#kind!:           string
-	#combinedVersion: "\(#apiVersion).\(#kind)"
+	#apiVersion:         string | *"core.oam.dev/v2alpha2"
+	#kind!:              string
+	#fullyQualifiedName: "\(#apiVersion).\(#kind)"
 
 	// Human-readable description of the trait
 	description?: string
@@ -40,7 +40,7 @@ package v2alpha2
 	// Fields this trait provides to a component, scope, or promise
 	// Must be compatible with OpenAPIv3 schema
 	// TODO: Add validation to only allow one named struct per trait
-	provides!: [string]: _
+	schema!: [string]: _
 	...
 }
 

@@ -13,7 +13,7 @@ import (
 		description: "Kubernetes ClusterRole contains rules that represent a set of permissions at the cluster level"
 		domain:      "security"
 		scope: ["component"]
-		provides: {clusterroles: [string]: schema.#ClusterRoleSpec}
+		schema: {clusterroles: [string]: schema.#ClusterRoleSpec}
 	}
 	clusterroles: [string]: schema.#ClusterRoleSpec
 }

@@ -13,7 +13,7 @@ import (
 		description: "Kubernetes StorageClass for defining classes of storage"
 		domain:      "data"
 		scope: ["component"]
-		provides: {storageclass: schema.#StorageClassSpec}
+		schema: {storageclass: schema.#StorageClassSpec}
 	}
 	storageclass: schema.#StorageClassSpec
 }

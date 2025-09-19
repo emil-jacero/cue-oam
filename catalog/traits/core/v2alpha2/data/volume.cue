@@ -16,7 +16,7 @@ import (
 		description: "Describes a set of volumes to be used by containers"
 		domain:      "data"
 		scope: ["component"]
-		provides: volumes: [string]: schema.#VolumeSpec
+		schema: volumes: [string]: schema.#VolumeSpec
 	}
 
 	// Volumes to be created

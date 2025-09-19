@@ -13,7 +13,7 @@ import (
 		description: "Kubernetes Service for exposing an application running on a set of Pods as a network service"
 		domain:      "connectivity"
 		scope: ["component"]
-		provides: {services: [string]: schema.#ServiceSpec}
+		schema: {services: [string]: schema.#ServiceSpec}
 	}
 	services: [string]: schema.#ServiceSpec
 }

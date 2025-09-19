@@ -15,7 +15,7 @@ import (
 		description: "Describes a set of secrets to be used by containers"
 		domain:      "data"
 		scope: ["component"]
-		provides: secrets: [string]: schema.#SecretSpec
+		schema: secrets: [string]: schema.#SecretSpec
 	}
 
 	// Secrets to be created

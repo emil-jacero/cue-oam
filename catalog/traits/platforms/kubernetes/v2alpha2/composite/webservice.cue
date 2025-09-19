@@ -18,7 +18,7 @@ import (
 			workload.#DeploymentMeta,
 			connectivity.#ServiceMeta,
 		]
-		provides: {webservice: #Webservice.webservice}
+		schema: {webservice: #Webservice.webservice}
 	}
 
 	// Labels for selectors

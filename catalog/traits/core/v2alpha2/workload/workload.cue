@@ -15,7 +15,7 @@ import (
 		description: "Comprehensive workload specification with containers, scaling, and lifecycle management"
 		domain:      "workload"
 		scope: ["component"]
-		provides: workload: #WorkloadSchema
+		schema: workload: #WorkloadSchema
 	}
 
 	workload: #WorkloadSchema & {

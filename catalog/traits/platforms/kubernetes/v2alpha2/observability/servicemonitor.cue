@@ -13,7 +13,7 @@ import (
 		description: "Prometheus ServiceMonitor for scraping metrics from services"
 		domain:      "observability"
 		scope: ["component"]
-		provides: {servicemonitor: schema.#ServiceMonitorSpec}
+		schema: {servicemonitor: schema.#ServiceMonitorSpec}
 	}
 	servicemonitor: schema.#ServiceMonitorSpec
 }

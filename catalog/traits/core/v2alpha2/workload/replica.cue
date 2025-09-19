@@ -13,7 +13,7 @@ import (
 		description: "Specifies the number of replicas to run"
 		domain:      "workload"
 		scope: ["component"]
-		provides: replicas: #ReplicasSchema
+		schema: replicas: #ReplicasSchema
 	}
 
 	replicas: #ReplicasSchema

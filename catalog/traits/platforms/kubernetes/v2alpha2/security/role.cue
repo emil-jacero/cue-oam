@@ -13,7 +13,7 @@ import (
 		description: "Kubernetes Role contains rules that represent a set of permissions within a namespace"
 		domain:      "security"
 		scope: ["component"]
-		provides: {roles: [string]: schema.#RoleSpec}
+		schema: {roles: [string]: schema.#RoleSpec}
 	}
 	roles: [string]: schema.#RoleSpec
 }

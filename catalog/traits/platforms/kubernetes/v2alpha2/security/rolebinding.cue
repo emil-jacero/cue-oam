@@ -13,7 +13,7 @@ import (
 		description: "Kubernetes RoleBinding grants permissions defined in a Role to a user or set of users"
 		domain:      "security"
 		scope: ["component"]
-		provides: {rolebindings: [string]: schema.#RoleBindingSpec}
+		schema: {rolebindings: [string]: schema.#RoleBindingSpec}
 	}
 	rolebindings: [string]: schema.#RoleBindingSpec
 }

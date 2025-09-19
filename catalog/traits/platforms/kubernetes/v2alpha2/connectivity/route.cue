@@ -12,7 +12,7 @@ import (
 		description: "Kubernetes HTTPRoute for HTTP and HTTPS access to services from outside the cluster"
 		domain:      "connectivity"
 		scope: ["component"]
-		provides: {routes: [string]: schema.#RouteSpec}
+		schema: {routes: [string]: schema.#RouteSpec}
 	}
 	routes: [string]: schema.#RouteSpec
 }
@@ -26,7 +26,7 @@ import (
 		description: "Kubernetes GRPCRoute for gRPC access to services from outside the cluster"
 		domain:      "connectivity"
 		scope: ["component"]
-		provides: {routes: [string]: schema.#RouteSpec}
+		schema: {routes: [string]: schema.#RouteSpec}
 	}
 	routes: [string]: schema.#RouteSpec
 }

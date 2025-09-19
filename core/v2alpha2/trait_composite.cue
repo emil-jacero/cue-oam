@@ -5,10 +5,10 @@ import (
 )
 
 #TraitMetaComposite: #TraitMetaBase & {
-	#apiVersion:      string
-	#kind!:           string
-	#combinedVersion: "\(#apiVersion).\(#kind)"
-	type:             "composite"
+	#apiVersion:         string
+	#kind!:              string
+	#fullyQualifiedName: "\(#apiVersion).\(#kind)"
+	type:                "composite"
 
 	// Composition - list of traits this trait is built from
 	composes!: [...#TraitMetaAtomic | #TraitMetaComposite] & [_, ...]
@@ -30,22 +30,7 @@ import (
 		list.SortStrings([for k, _ in set {k}])
 	}
 
-	// External dependencies (not composition)
-	// For composite traits: automatically computed from composed traits
-	// Computed as the union of requiredCapabilities of composed traits
-	requiredCapabilities: {
-		// Gather items from both sources, only if they exist
-		let items = [
-			for trait in composes if trait.type == "atomic" {trait.requiredCapability},
-			for trait in composes if trait.type == "composite" {
-				for rc in trait.requiredCapabilities {rc}
-			},
-		]
-
-		// Deduplicate via map-keys, then sort for stable output
-		let set = {for v in items {(v): _}}
-		list.SortStrings([for k, _ in set {k}])
-	}
+	// No longer need requiredCapabilities - collect #fullyQualifiedName from composed traits
 
 	///////////////////////////////////////////////////////////////////////
 	// Validations
@@ -70,22 +55,22 @@ import (
 	// Validation 3: Ensure composition depth doesn't exceed 3
 	#validateCompositionDepth: #compositionDepth <= 3 | error("Composition depth cannot exceed 3 levels. Current depth: \(#compositionDepth)")
 
-	// Collect all directly composed trait combinedVersions
-	_directComposedCombinedVersions: [
+	// Collect all directly composed trait fullyQualifiedNames
+	_directComposedFullyQualifiedNames: [
 		for trait in composes {
-			trait.#combinedVersion
+			trait.#fullyQualifiedName
 		},
 	]
 
-	// Build a set of all trait combinedVersions in the composition hierarchy
-	_allComposedCombinedVersions: {
+	// Build a set of all trait fullyQualifiedNames in the composition hierarchy
+	_allComposedFullyQualifiedNames: {
 		// Start with direct compositions
-		let direct = _directComposedCombinedVersions
+		let direct = _directComposedFullyQualifiedNames
 
 		// Add nested compositions for composite traits
 		let nested = [
-			for trait in composes if trait.type == "composite" && trait._allComposedCombinedVersions != _|_ {
-				for k in trait._allComposedCombinedVersions {k}
+			for trait in composes if trait.type == "composite" && trait._allComposedFullyQualifiedNames != _|_ {
+				for k in trait._allComposedFullyQualifiedNames {k}
 			},
 		]
 
@@ -100,9 +85,9 @@ import (
 	// In practice, CUE will prevent actual circular references at evaluation time
 	#validateNoCircularDependency: {
 		// Only check if we can determine the kind
-		let hasCircular = list.Contains(_allComposedCombinedVersions, #combinedVersion)
-		!hasCircular | error("Circular dependency detected: trait '\(#combinedVersion)' cannot compose itself directly or indirectly")
-		if #combinedVersion == _|_ {true}
+		let hasCircular = list.Contains(_allComposedFullyQualifiedNames, #fullyQualifiedName)
+		!hasCircular | error("Circular dependency detected: trait '\(#fullyQualifiedName)' cannot compose itself directly or indirectly")
+		if #fullyQualifiedName == _|_ {true}
 	}
 
 }

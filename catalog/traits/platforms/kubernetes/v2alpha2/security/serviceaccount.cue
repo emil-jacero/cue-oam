@@ -13,7 +13,7 @@ import (
 		description: "Kubernetes ServiceAccount provides an identity for processes that run in a Pod"
 		domain:      "data"
 		scope: ["component"]
-		provides: {serviceaccounts: [string]: schema.#ServiceAccountSpec}
+		schema: {serviceaccounts: [string]: schema.#ServiceAccountSpec}
 	}
 	serviceaccounts: [string]: schema.#ServiceAccountSpec
 }

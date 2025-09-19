@@ -13,7 +13,7 @@ import (
 		description: "Kubernetes NetworkPolicy for controlling network traffic to and from pods"
 		domain:      "security"
 		scope: ["component"]
-		provides: {networkpolicies: [string]: schema.#NetworkPolicySpec}
+		schema: {networkpolicies: [string]: schema.#NetworkPolicySpec}
 	}
 	networkpolicies: [string]: schema.#NetworkPolicySpec
 }
