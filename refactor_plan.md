@@ -279,22 +279,16 @@ package v2alpha2
 }
 ```
 
-### Step 4: Enhance Existing Transformer Interface
+### Step 4: Enhance Existing Transformer Interface ✅
 
-**File:** `providers/kubernetes/transformer.cue`
+**Refactoring Note**: Generic transformer logic has been moved to `core/v2alpha2/provider.cue` to make it reusable across all providers. Provider-specific implementations now inherit from the core interface.
+
+**File:** `core/v2alpha2/provider.cue` (Generic transformer interface)
 
 ```cue
-package kubernetes
-
-import (
-    core "jacero.io/oam/core/v2alpha2"
-    "list"
-    "strings"
-)
-
-// Enhanced transformer structure for Kubernetes resources
+// Enhanced transformer interface - generic for all providers
 #Transformer: {
-    // Resource type this transformer creates (replaces 'accepts')
+    // Resource type this transformer creates
     creates: string
 
     // Required OAM traits for this transformer to work
@@ -303,11 +297,20 @@ import (
     // Optional OAM traits
     optional?: [...string]
 
+    // Trait registry - must be populated by provider implementation
+    registry: #TraitRegistry
+
     // Auto-generated defaults from optional trait schemas
     defaults: {
         // Resolve schemas from optional traits only
-        for traitName in (optional | []) {
-            (core.#ResolveTraitSchema & {traitName: traitName}).schema
+        for traitName in (optional | *[]) {
+            let resolvedSchema = #ResolveTraitSchema & {
+                name: traitName
+                _registry: registry
+            }
+            if resolvedSchema.schema != _|_ {
+                resolvedSchema.schema
+            }
         }
 
         // Allow transformer-specific additional defaults
@@ -316,51 +319,40 @@ import (
 
     // Validation rules (e.g., deploymentType must match)
     validates?: {
-        deploymentType?: string
         [string]: _
     }
 
     // Transform function
     transform: {
         component: #Component
-        context:   core.#ProviderContext
-        output:    [..._]  // Kubernetes resources
+        context:   #ProviderContext
+        output:    _ // Provider-specific output format
     }
 }
+```
 
-// Helper function to validate component against transformer
-#ValidateTransformer: {
-    component:    #Component
-    transformer:  #Transformer
+**File:** `providers/kubernetes/transformer_core_config.cue` (Example updated transformer)
 
-    let componentTraits = component.#metadata.#atomicTraits
-
-    // Check required traits
-    missingRequired: [
-        for req in transformer.required
-        if !list.Contains(componentTraits, req) {req}
+```cue
+// Config Transformer - Creates ConfigMap resources
+#ConfigTransformer: core.#Transformer & {
+    creates: "k8s.io/api/core/v1.ConfigMap"
+    
+    required: [
+        "core.oam.dev/v2alpha2.Config",
     ]
-
-    // Check validation rules
-    validationErrors: [...string]
-    if transformer.validates != _|_ {
-        if transformer.validates.deploymentType != _|_ {
-            if component.deploymentType.type != transformer.validates.deploymentType {
-                validationErrors: [...validationErrors,
-                    "DeploymentType mismatch: expected \(transformer.validates.deploymentType), got \(component.deploymentType.type)"
-                ]
-            }
+    
+    registry: trait.#TraitRegistry
+    
+    transform: {
+        component: core.#Component
+        context:   core.#ProviderContext
+        output: {
+            // Implementation uses component instead of input
+            let configSpec = component.configMap
+            let meta = component.#metadata
+            // ... rest of implementation
         }
-    }
-
-    valid: len(missingRequired) == 0 && len(validationErrors) == 0
-
-    if !valid {
-        error: """
-            Component '\(component.#metadata.name)' cannot use transformer '\(transformer.creates)':
-            \(if len(missingRequired) > 0 {"Missing required traits: " + strings.Join(missingRequired, ", ")})
-            \(if len(validationErrors) > 0 {strings.Join(validationErrors, "\n")})
-            """
     }
 }
 ```
@@ -999,8 +991,8 @@ k8sError3: k8s.#ProviderKubernetes.render & {
    - [x] Commit: `git commit -m "Add DeploymentType atomic trait with OpenAPIv3 schema"`
 4. [x] Component #atomicTraits helper computes correctly
    - [x] Commit: `git commit -m "Add #atomicTraits helper to Component for recursive trait resolution"`
-5. [ ] Enhanced #Transformer interface with auto-generated defaults
-   - [ ] Commit: `git commit -m "Enhance #Transformer interface with registry-based defaults"`
+5. [x] Enhanced #Transformer interface with auto-generated defaults
+   - [x] Commit: `git commit -m "Enhance #Transformer interface with registry-based defaults"`
 6. [ ] Each Kubernetes resource has a transformer with requirements
    - [ ] Commit: `git commit -m "Add Kubernetes resource transformers with validation"`
 7. [ ] Provider validates components against transformer requirements
@@ -1018,13 +1010,14 @@ k8sError3: k8s.#ProviderKubernetes.render & {
 
 ## Key Files to Modify/Create
 
-1. `core/v2alpha2/trait_registry.cue` - Central trait registry with self-registration
-2. `catalog/traits/core/v2alpha2/workload/deploymenttype.cue` - New trait that self-registers
-3. `core/v2alpha2/component.cue` - Add #atomicTraits helper and rename provides→schema
-4. `providers/kubernetes/transformer.cue` - Enhanced #Transformer with registry-based defaults
-5. `providers/kubernetes/transformer_k8s_*.cue` - One per K8s resource type with auto-defaults
-6. `providers/kubernetes/provider.cue` - Update render logic with validation
-7. `catalog/traits/core/v2alpha2/workload/composites.cue` - Update to use schema field
+1. ~~`core/v2alpha2/trait_registry.cue`~~ - Central trait registry *(Note: Registry implemented in `catalog/traits/core/v2alpha2/core.cue`)*
+2. `catalog/traits/core/v2alpha2/workload/deploymenttype.cue` - New trait ✅
+3. `core/v2alpha2/component.cue` - Add #atomicTraits helper ✅
+4. `core/v2alpha2/provider.cue` - Enhanced generic #Transformer interface ✅
+5. `providers/kubernetes/transformer.cue` - Kubernetes-specific transformer (commented out, using core) ✅
+6. `providers/kubernetes/transformer_*.cue` - Updated existing transformers to new schema ✅
+7. `providers/kubernetes/provider.cue` - Update render logic with validation
+8. `catalog/traits/core/v2alpha2/workload/composites.cue` - Update to use schema field
 
 ## Success Criteria
 
