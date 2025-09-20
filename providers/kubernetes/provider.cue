@@ -112,14 +112,11 @@ import (
 	// - Omitted entirely (implicit unsupported)
 	transformers: {
 		// Supported OAM atomic traits - provider has transformers for these
-		"core.oam.dev/v2alpha2.ContainerSet": #ContainerSetTransformer
-		"core.oam.dev/v2alpha2.Expose":       #ExposeTransformer
-		"core.oam.dev/v2alpha2.Volume":       #VolumeTransformer
-		"core.oam.dev/v2alpha2.Secret":       #SecretTransformer
-		"core.oam.dev/v2alpha2.Config":       #ConfigTransformer
-
-		// Kubernetes platform-specific traits
-		"k8s.io/api/core/v1.Namespace": #NamespaceTransformer
+		// "core.oam.dev/v2alpha2.ContainerSet": #ContainerSetTransformer
+		// "core.oam.dev/v2alpha2.Expose":       #ExposeTransformer
+		// "core.oam.dev/v2alpha2.Volume":       #VolumeTransformer
+		// "core.oam.dev/v2alpha2.Secret":       #SecretTransformer
+		// "core.oam.dev/v2alpha2.Config":       #ConfigTransformer
 
 		// OAM traits not yet supported (handled internally by other transformers or not implemented)
 		// These are explicitly marked as null, but could also be omitted entirely
@@ -131,20 +128,27 @@ import (
 		"core.oam.dev/v2alpha1.Labels":                null
 		"core.oam.dev/v2alpha1.Annotations":           null
 
+		// Kubernetes workload transformers
+		"k8s.io/api/apps/v1.Deployment":     #DeploymentTransformer
+		"k8s.io/api/apps/v1.StatefulSet":    #StatefulSetTransformer
+		"k8s.io/api/apps/v1.DaemonSet":      #DaemonSetTransformer
+		"k8s.io/api/batch/v1.Job":           #JobTransformer
+		"k8s.io/api/batch/v1.CronJob":       #CronJobTransformer
+		
+		// Kubernetes storage and networking transformers
+		"k8s.io/api/core/v1.PersistentVolumeClaim": #PersistentVolumeClaimTransformer
+		"k8s.io/api/core/v1.Service":               #ServiceTransformer
+
+		// Kubernetes Namespace transformer
+		"k8s.io/api/core/v1.Namespace": #NamespaceTransformer
+
 		// Kubernetes resources - not yet implemented
 		// Using null to explicitly indicate these are recognized but not supported
 		"k8s.io/api/core/v1.Pod":                            null
-		"k8s.io/api/core/v1.Service":                        null
 		"k8s.io/api/core/v1.ConfigMap":                      null
 		"k8s.io/api/core/v1.Secret":                         null
-		"k8s.io/api/core/v1.PersistentVolumeClaim":          null
 		"k8s.io/api/core/v1.ServiceAccount":                 null
-		"k8s.io/api/apps/v1.Deployment":                     null
-		"k8s.io/api/apps/v1.StatefulSet":                    null
-		"k8s.io/api/apps/v1.DaemonSet":                      null
-		"k8s.io/api/batch/v1.Job":                           null
 		"k8s.io/api/batch/v1.Jobs":                          null
-		"k8s.io/api/batch/v1.CronJob":                       null
 		"k8s.io/api/rbac/v1.Role":                           null
 		"k8s.io/api/rbac/v1.RoleBinding":                    null
 		"k8s.io/api/rbac/v1.ClusterRole":                    null

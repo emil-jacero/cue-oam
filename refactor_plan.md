@@ -993,7 +993,7 @@ k8sError3: k8s.#ProviderKubernetes.render & {
    - [x] Commit: `git commit -m "Add #atomicTraits helper to Component for recursive trait resolution"`
 5. [x] Enhanced #Transformer interface with auto-generated defaults
    - [x] Commit: `git commit -m "Enhance #Transformer interface with registry-based defaults"`
-6. [ ] Each Kubernetes resource has a transformer with requirements
+6. [ ] Each Kubernetes resource has a transformer with requirements. Refactor all kubernetes transformers to reprecent each kuberntes core resource (e.g. Deployment, StatefulSet, PersistentVolumeClaim, Secret, ConfigMap, etc).
    - [ ] Commit: `git commit -m "Add Kubernetes resource transformers with validation"`
 7. [ ] Provider validates components against transformer requirements
    - [ ] Commit: `git commit -m "Update Kubernetes provider with component validation"`

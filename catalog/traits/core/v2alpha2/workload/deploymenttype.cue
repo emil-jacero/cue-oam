@@ -5,6 +5,10 @@ import (
 )
 
 // DeploymentType - Specifies the deployment pattern for the workload
+// This is a validation trait, meaning it is referenced in the transformer but not
+// directly applied to the workload.
+// It will validate that the component has the correct deploymentType and fields set.
+#DeploymentTypeMeta: #DeploymentType.#metadata.#traits.DeploymentType
 #DeploymentType: core.#Trait & {
 	#metadata: #traits: DeploymentType: core.#TraitMetaAtomic & {
 		#kind:       "DeploymentType"
@@ -19,143 +23,86 @@ import (
 		type: #DeploymentTypes
 
 		// Type-specific configuration with defaults and validation
-		if type == "Deployment" {
-			revisionHistoryLimit?:    uint | *10
-			progressDeadlineSeconds?: uint | *600
-			// Deployment uses 'strategy' (not updateStrategy)
-			strategy?: {
-				type: "RollingUpdate" | "Recreate" | *"RollingUpdate"
-				if type == "RollingUpdate" {
-					rollingUpdate?: {
-						maxSurge?:       uint | string | *"25%"
-						maxUnavailable?: uint | string | *"25%"
-					}
-				}
-			}
-		}
+		if type == "Deployment" {#TypeDeployment}
 
-		if type == "StatefulSet" {
-			serviceName!:          string // Required for StatefulSet
-			podManagementPolicy?:  "OrderedReady" | "Parallel" | *"OrderedReady"
-			revisionHistoryLimit?: uint | *10
-			// StatefulSet uses 'updateStrategy'
-			updateStrategy?: {
-				type: "RollingUpdate" | "OnDelete" | *"RollingUpdate"
-				if type == "RollingUpdate" {
-					rollingUpdate?: {
-						partition?:      int | *0
-						maxUnavailable?: uint | string
-					}
-				}
-			}
-			persistentVolumeClaimRetentionPolicy?: {
-				whenDeleted?: "Retain" | "Delete" | *"Retain"
-				whenScaled?:  "Retain" | "Delete" | *"Retain"
-			}
-		}
+		if type == "StatefulSet" {#TypeStatefulSet}
 
-		if type == "DaemonSet" {
-			revisionHistoryLimit?: uint | *10
-			// DaemonSet uses 'updateStrategy'
-			updateStrategy?: {
-				type: "RollingUpdate" | "OnDelete" | *"RollingUpdate"
-				if type == "RollingUpdate" {
-					rollingUpdate?: {
-						maxSurge?:       uint | string | *0
-						maxUnavailable?: uint | string | *1
-					}
-				}
-			}
-			minReadySeconds?: uint | *0
-		}
+		if type == "DaemonSet" {#TypeDaemonSet}
 
-		if type == "Job" {
-			completions?:             uint | *1
-			parallelism?:             uint | *1
-			backoffLimit?:            uint | *6
-			ttlSecondsAfterFinished?: uint
-			activeDeadlineSeconds?:   uint
-			suspend?:                 bool | *false
-			completionMode?:          "NonIndexed" | "Indexed" | *"NonIndexed"
-		}
+		if type == "Job" {#TypeJob}
 
-		if type == "CronJob" {
-			schedule!:                   string // Required for CronJob (e.g., "0 2 * * *")
-			successfulJobsHistoryLimit?: uint | *3
-			failedJobsHistoryLimit?:     uint | *1
-			startingDeadlineSeconds?:    uint
-			concurrencyPolicy?:          "Allow" | "Forbid" | "Replace" | *"Allow"
-			suspend?:                    bool | *false
-			timeZone?:                   string // Kubernetes 1.25+
-		}
+		if type == "CronJob" {#TypeCronJob}
 
-		if type == "Pod" {
-			// Pod doesn't have deployment-level configuration
-			// It's a single instance workload
-			restartPolicy?: "Always" | "OnFailure" | "Never" | *"Always"
-		}
+		if type == "Pod" {#TypePod}
+
+		if type == "ReplicaSet" {#TypeReplicaSet}
 	}
 }
 
 #DeploymentTypeSchema: {
 	type: #DeploymentTypes
 
-	// All possible type-specific configuration fields (all optional in schema)
+	#TypeDeployment | #TypeStatefulSet | #TypeDaemonSet | #TypeJob | #TypeCronJob | #TypePod | #TypeReplicaSet
+}
 
-	// Deployment fields
-	revisionHistoryLimit?:    uint
-	progressDeadlineSeconds?: uint
-	// Deployment uses 'strategy'
-	strategy?: {
-		type: "RollingUpdate" | "Recreate"
-		rollingUpdate?: {
-			maxSurge?:       uint | string
-			maxUnavailable?: uint | string
-		}
-	}
+#DeploymentTypes: string | *"Deployment" | "StatefulSet" | "DaemonSet" | "Job" | "CronJob" | "Pod" | "ReplicaSet"
 
-	// StatefulSet and DaemonSet use 'updateStrategy'
-	updateStrategy?: {
-		type: "RollingUpdate" | "OnDelete"
-		rollingUpdate?: {
-			partition?:      int
-			maxUnavailable?: uint | string
-			maxSurge?:       uint | string
-		}
-	}
+// Deployment specific fields
+#TypeDeployment: {
+	type:                     "Deployment"
+	revisionHistoryLimit?:    uint | *10
+	progressDeadlineSeconds?: uint | *600
+}
 
-	// StatefulSet specific fields
-	serviceName?:         string
-	podManagementPolicy?: "OrderedReady" | "Parallel"
+// StatefulSet specific fields
+#TypeStatefulSet: {
+	type:                     "StatefulSet"
+	serviceName!:          string // Required for StatefulSet
+	podManagementPolicy?:  "OrderedReady" | "Parallel" | *"OrderedReady"
+	revisionHistoryLimit?: uint | *10
 	persistentVolumeClaimRetentionPolicy?: {
 		whenDeleted?: "Retain" | "Delete"
 		whenScaled?:  "Retain" | "Delete"
 	}
-
-	// DaemonSet specific fields
-	minReadySeconds?: uint
-
-	// Job fields
-	completions?:             uint
-	parallelism?:             uint
-	backoffLimit?:            uint
-	ttlSecondsAfterFinished?: uint
-	activeDeadlineSeconds?:   uint
-	suspend?:                 bool
-	completionMode?:          "NonIndexed" | "Indexed"
-
-	// CronJob fields
-	schedule?:                   string
-	successfulJobsHistoryLimit?: uint
-	failedJobsHistoryLimit?:     uint
-	startingDeadlineSeconds?:    uint
-	concurrencyPolicy?:          "Allow" | "Forbid" | "Replace"
-	timeZone?:                   string
-
-	// Pod fields
-	restartPolicy?: "Always" | "OnFailure" | "Never"
+	rollingUpdate?: {
+		partition?: uint | *0
+	}
 }
 
-#DeploymentTypes: "Deployment" | "StatefulSet" | "DaemonSet" | "Job" | "CronJob" | "Pod"
+// DaemonSet specific fields
+#TypeDaemonSet: {
+	type:                     "DaemonSet"
+}
 
-#DeploymentTypeMeta: #DeploymentType.#metadata.#traits.DeploymentType
+// Job specific fields
+#TypeJob: {
+	type:                     "Job"
+	completions?:             uint | *1
+	parallelism?:             uint | *1
+	backoffLimit?:            uint | *6
+	ttlSecondsAfterFinished?: uint
+	activeDeadlineSeconds?:   uint
+	suspend?:                 bool | *false
+	completionMode?:          "NonIndexed" | "Indexed" | *"NonIndexed"
+}
+
+// CronJob specific fields
+#TypeCronJob: {
+	schedule!:                   string // Required for CronJob (e.g., "0 2 * * *")
+	successfulJobsHistoryLimit?: uint | *3
+	failedJobsHistoryLimit?:     uint | *1
+	startingDeadlineSeconds?:    uint
+	concurrencyPolicy?:          "Allow" | "Forbid" | "Replace" | *"Allow"
+	suspend?:                    bool | *false
+	timeZone?:                   string // Kubernetes 1.25+
+}
+
+// Pod specific fields
+#TypePod: {
+	type: "Pod"
+}
+
+// ReplicaSet specific fields
+#TypeReplicaSet: {
+	type: "ReplicaSet"
+}

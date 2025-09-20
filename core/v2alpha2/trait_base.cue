@@ -24,8 +24,8 @@ package v2alpha2
 	description?: string
 
 	// Optional metadata labels and annotations
-	labels?:      #LabelsType
-	annotations?: #AnnotationsType
+	// labels?:      #LabelsType
+	// annotations?: #AnnotationsType
 
 	// The type of this trait
 	// Can be one of "atomic", "composite", "modifier", "custom"
