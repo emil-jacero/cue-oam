@@ -5,14 +5,12 @@ package v2alpha2
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 #Trait: {
 	#metadata: {
-		#id:  #NameType
-		name: #NameType | *#id
 		#traits: [traitName=string]: {
 			#kind!: traitName
 			...
 		}
+		...
 	}
-
 	// Trait-specific fields
 	...
 }
