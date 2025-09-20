@@ -13,7 +13,7 @@ import (
 		description: "Kubernetes Job for running batch or one-time tasks"
 		domain:      "workload"
 		scope: ["component"]
-		provides: {job: schema.#JobSpec}
+		schema: {job: schema.#JobSpec}
 	}
 	job: schema.#JobSpec
 }
@@ -28,7 +28,7 @@ import (
 		description: "Kubernetes Jobs for running batch or one-time tasks"
 		domain:      "workload"
 		scope: ["component"]
-		provides: {jobs: schema.#JobSpec}
+		schema: {jobs: schema.#JobSpec}
 	}
 	jobs: [string]: schema.#JobSpec
 }

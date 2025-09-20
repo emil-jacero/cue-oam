@@ -13,7 +13,7 @@ import (
 		description: "Kubernetes Deployment for stateless workloads with rolling updates"
 		domain:      "workload"
 		scope: ["component"]
-		provides: {deployment: schema.#DeploymentSpec}
+		schema: {deployment: schema.#DeploymentSpec}
 	}
 	deployment: schema.#DeploymentSpec
 }

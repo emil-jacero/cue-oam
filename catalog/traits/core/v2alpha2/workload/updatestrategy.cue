@@ -13,12 +13,10 @@ import (
 		description: "Defines how updates are applied to running instances"
 		domain:      "workload"
 		scope: ["component"]
-		// This trait modifies Deployment/StatefulSet created by ContainerSet
-		dependencies: [#ContainerSetMeta]
-		provides: updateStrategy: #UpdateStrategy.updateStrategy
+		schema: updateStrategy: #UpdateStrategySchema
 	}
 
-	updateStrategy: {
+	updateStrategy: #UpdateStrategySchema & {
 		type: *"RollingUpdate" | "Recreate"
 
 		// Only applicable when type is "RollingUpdate"
@@ -26,5 +24,15 @@ import (
 			maxSurge?:       uint | *1
 			maxUnavailable?: uint | *0
 		}
+	}
+}
+
+#UpdateStrategySchema: {
+	type: *"RollingUpdate" | "Recreate"
+
+	// Only applicable when type is "RollingUpdate"
+	rollingUpdate?: {
+		maxSurge?:       uint | *1
+		maxUnavailable?: uint | *0
 	}
 }

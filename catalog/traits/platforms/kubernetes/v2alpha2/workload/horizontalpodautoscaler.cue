@@ -13,7 +13,7 @@ import (
 		description: "Kubernetes HorizontalPodAutoscaler for automatic scaling of pods based on observed CPU utilization or custom metrics"
 		domain:      "workload"
 		scope: ["component"]
-		provides: {horizontalpodautoscaler: schema.#HorizontalPodAutoscalerSpec}
+		schema: {horizontalpodautoscaler: schema.#HorizontalPodAutoscalerSpec}
 	}
 	horizontalpodautoscaler: schema.#HorizontalPodAutoscalerSpec
 }

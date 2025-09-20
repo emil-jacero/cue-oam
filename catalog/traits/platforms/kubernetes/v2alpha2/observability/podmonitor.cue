@@ -13,7 +13,7 @@ import (
 		description: "Prometheus PodMonitor for scraping metrics directly from pods"
 		domain:      "observability"
 		scope: ["component"]
-		provides: {podmonitor: schema.#PodMonitorSpec}
+		schema: {podmonitor: schema.#PodMonitorSpec}
 	}
 	podmonitor: schema.#PodMonitorSpec
 }

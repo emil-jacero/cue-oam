@@ -13,9 +13,7 @@ import (
 		description: "Defines restart behavior for containers"
 		domain:      "workload"
 		scope: ["component"]
-		// This trait modifies Pod spec created by ContainerSet
-		dependencies: [#ContainerSetMeta]
-		provides: restartPolicy: #RestartPolicy.restartPolicy
+		schema: restartPolicy: #RestartPolicy.restartPolicy
 	}
 
 	restartPolicy: string | *"Always" | "OnFailure" | "Never"

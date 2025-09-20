@@ -13,7 +13,7 @@ import (
 		description: "Kubernetes ClusterRoleBinding grants permissions defined in a ClusterRole to a user or set of users cluster-wide"
 		domain:      "security"
 		scope: ["component"]
-		provides: {clusterrolebindings: [string]: schema.#ClusterRoleBindingSpec}
+		schema: {clusterrolebindings: [string]: schema.#ClusterRoleBindingSpec}
 	}
 	clusterrolebindings: [string]: schema.#ClusterRoleBindingSpec
 }

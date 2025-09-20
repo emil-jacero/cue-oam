@@ -14,7 +14,7 @@ import (
 		description: "Defines a shared network policy for all components in the scope"
 		domain:      "connectivity"
 		scope: ["scope"]
-		provides: sharedNetwork: #SharedNetwork.sharedNetwork
+		schema: sharedNetwork: #SharedNetwork.sharedNetwork
 	}
 
 	sharedNetwork: {

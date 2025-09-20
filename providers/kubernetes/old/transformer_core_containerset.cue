@@ -9,13 +9,26 @@ import (
 
 // ContainerSet Transformer - Creates Deployment with containers
 #ContainerSetTransformer: core.#Transformer & {
-	accepts: "core.oam.dev/v2alpha2.ContainerSet"
+	creates: "k8s.io/api/apps/v1.Deployment"
+	
+	required: [
+		"core.oam.dev/v2alpha2.ContainerSet",
+	]
+	
+	optional: [
+		"core.oam.dev/v2alpha2.Replicas",
+		"core.oam.dev/v2alpha2.UpdateStrategy", 
+		"core.oam.dev/v2alpha2.RestartPolicy",
+	]
+	
+	registry: trait.#TraitRegistry
+	
 	transform: {
-		input:   trait.#ContainerSet
-		context: core.#ProviderContext
+		component: core.#Component
+		context:   core.#ProviderContext
 		output: {
-			let containerSetSpec = input.containerSet
-			let meta = input.#metadata
+			let containerSetSpec = component.containerSet
+			let meta = component.#metadata
 			let ctx = context
 
 			resources: [
@@ -31,9 +44,9 @@ import (
 					}
 					spec: {
 						// Check for Replica trait and use its count if present
-						let replicaTrait = {for n, t in input.#metadata.#traits if t.#kind == "Replica" {t}}
+						let replicaTrait = {for n, t in component.#metadata.#traits if t.#kind == "Replica" {t}}
 						if len(replicaTrait) > 0 {
-							let replicaSpec = {for n, t in replicaTrait {input.replica}}
+							let replicaSpec = {for n, t in replicaTrait {component.replica}}
 							replicas: {for n, r in replicaSpec {r.count}}[0]
 						}
 						if len(replicaTrait) == 0 {
@@ -45,9 +58,9 @@ import (
 						}
 
 						// Check for UpdateStrategy trait and configure deployment strategy
-						let updateStrategyTrait = {for n, t in input.#metadata.#traits if t.#kind == "UpdateStrategy" {t}}
+						let updateStrategyTrait = {for n, t in component.#metadata.#traits if t.#kind == "UpdateStrategy" {t}}
 						if len(updateStrategyTrait) > 0 {
-							let strategySpec = {for n, t in updateStrategyTrait {input.updateStrategy}}
+							let strategySpec = {for n, t in updateStrategyTrait {component.updateStrategy}}
 							strategy: {
 								for n, s in strategySpec {
 									type: s.type
@@ -156,9 +169,9 @@ import (
 								}
 
 								// Check for RestartPolicy trait and configure restart policy
-								let restartPolicyTrait = {for n, t in input.#metadata.#traits if t.#kind == "RestartPolicy" {t}}
+								let restartPolicyTrait = {for n, t in component.#metadata.#traits if t.#kind == "RestartPolicy" {t}}
 								if len(restartPolicyTrait) > 0 {
-									let policy = {for n, t in restartPolicyTrait {input.restartPolicy}}
+									let policy = {for n, t in restartPolicyTrait {component.restartPolicy}}
 									restartPolicy: policy
 								}
 								if len(restartPolicyTrait) == 0 {
@@ -166,10 +179,10 @@ import (
 								}
 
 								// Check for Volume trait and add volumes to pod spec
-								let volumeTrait = {for n, t in input.#metadata.#traits if t.#kind == "Volume" {t}}
+								let volumeTrait = {for n, t in component.#metadata.#traits if t.#kind == "Volume" {t}}
 								if len(volumeTrait) > 0 {
 									volumes: [
-										for volumeName, volume in input.volumes {
+										for volumeName, volume in component.volumes {
 											if volume.type == "volume" {
 												{
 													name: volume.name

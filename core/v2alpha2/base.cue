@@ -12,9 +12,9 @@ import (
 
 // Base OAM object that all types extend
 #Object: {
-	#apiVersion:      string | *"core.oam.dev/v2alpha2"
-	#kind:            string & strings.MinRunes(1) & strings.MaxRunes(254)
-	#combinedVersion: "\(#apiVersion).\(#kind)"
+	#apiVersion:         string | *"core.oam.dev/v2alpha2"
+	#kind:               string & strings.MinRunes(1) & strings.MaxRunes(254)
+	#fullyQualifiedName: "\(#apiVersion).\(#kind)"
 	#metadata: {
 		#id:  #NameType
 		name: #NameType | *#id

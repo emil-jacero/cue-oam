@@ -13,7 +13,7 @@ import (
 		description: "Kubernetes Secret for storing sensitive configuration data"
 		domain:      "data"
 		scope: ["component"]
-		provides: {secrets: [string]: schema.#SecretSpec}
+		schema: {secrets: [string]: schema.#SecretSpec}
 	}
 	secrets: [string]: schema.#SecretSpec
 }

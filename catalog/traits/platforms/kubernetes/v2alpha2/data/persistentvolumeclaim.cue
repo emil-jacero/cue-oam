@@ -13,7 +13,7 @@ import (
 		description: "Kubernetes PersistentVolumeClaim for requesting persistent storage"
 		domain:      "data"
 		scope: ["component"]
-		provides: {persistentvolumeclaims: [string]: schema.#PersistentVolumeClaimSpec}
+		schema: {persistentvolumeclaims: [string]: schema.#PersistentVolumeClaimSpec}
 	}
 	persistentvolumeclaims: [string]: schema.#PersistentVolumeClaimSpec
 }

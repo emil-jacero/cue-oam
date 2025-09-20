@@ -13,7 +13,7 @@ import (
 		description: "Kubernetes VerticalPodAutoscaler for automatic adjustment of resource requests based on usage"
 		domain:      "workload"
 		scope: ["component"]
-		provides: {verticalpodautoscaler: schema.#VerticalPodAutoscaler}
+		schema: {verticalpodautoscaler: schema.#VerticalPodAutoscaler}
 	}
 	verticalpodautoscaler: schema.#VerticalPodAutoscaler
 }

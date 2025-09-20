@@ -13,7 +13,7 @@ import (
 		description: "Kubernetes CronJob for running jobs on a scheduled basis"
 		domain:      "workload"
 		scope: ["component"]
-		provides: {cronjob: schema.#CronJobSpec}
+		schema: {cronjob: schema.#CronJobSpec}
 	}
 	cronjob: schema.#CronJobSpec
 }

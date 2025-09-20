@@ -5,29 +5,27 @@ package v2alpha2
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 #Trait: {
 	#metadata: {
-		#id:  #NameType
-		name: #NameType | *#id
 		#traits: [traitName=string]: {
 			#kind!: traitName
 			...
 		}
+		...
 	}
-
 	// Trait-specific fields
 	...
 }
 
 #TraitMetaBase: {
-	#apiVersion:      string | *"core.oam.dev/v2alpha2"
-	#kind!:           string
-	#combinedVersion: "\(#apiVersion).\(#kind)"
+	#apiVersion:         string | *"core.oam.dev/v2alpha2"
+	#kind!:              string
+	#fullyQualifiedName: "\(#apiVersion).\(#kind)"
 
 	// Human-readable description of the trait
 	description?: string
 
 	// Optional metadata labels and annotations
-	labels?:      #LabelsType
-	annotations?: #AnnotationsType
+	// labels?:      #LabelsType
+	// annotations?: #AnnotationsType
 
 	// The type of this trait
 	// Can be one of "atomic", "composite", "modifier", "custom"
@@ -40,7 +38,7 @@ package v2alpha2
 	// Fields this trait provides to a component, scope, or promise
 	// Must be compatible with OpenAPIv3 schema
 	// TODO: Add validation to only allow one named struct per trait
-	provides!: [string]: _
+	schema!: [string]: _
 	...
 }
 

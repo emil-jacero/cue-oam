@@ -8,13 +8,20 @@ import (
 
 // Config Transformer - Creates ConfigMap resources
 #ConfigTransformer: core.#Transformer & {
-	accepts: "core.oam.dev/v2alpha2.Config"
+	creates: "k8s.io/api/core/v1.ConfigMap"
+	
+	required: [
+		"core.oam.dev/v2alpha2.Config",
+	]
+	
+	registry: trait.#TraitRegistry
+	
 	transform: {
-		input:   trait.#Config
-		context: core.#ProviderContext
+		component: core.#Component
+		context:   core.#ProviderContext
 		output: {
-			let configSpec = input.configMap
-			let meta = input.#metadata
+			let configSpec = component.configMap
+			let meta = component.#metadata
 			let ctx = context
 
 			resources: [

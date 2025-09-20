@@ -14,7 +14,7 @@ import (
 		domain:      "workload"
 		scope: ["component"]
 
-		provides: {daemonset: schema.#DaemonSetSpec}
+		schema: {daemonset: schema.#DaemonSetSpec}
 	}
 	daemonset: schema.#DaemonSetSpec
 }

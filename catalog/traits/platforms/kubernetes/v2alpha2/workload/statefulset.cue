@@ -13,7 +13,7 @@ import (
 		description: "Kubernetes StatefulSet for stateful workloads with stable network identities and persistent storage"
 		domain:      "workload"
 		scope: ["component"]
-		provides: {statefulset: schema.#StatefulSetSpec}
+		schema: {statefulset: schema.#StatefulSetSpec}
 	}
 	statefulset: schema.#StatefulSetSpec
 }

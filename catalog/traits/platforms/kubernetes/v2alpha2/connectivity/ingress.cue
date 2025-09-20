@@ -13,7 +13,7 @@ import (
 		description: "Kubernetes Ingress for HTTP and HTTPS access to services from outside the cluster"
 		domain:      "connectivity"
 		scope: ["component"]
-		provides: {ingresses: [string]: schema.#IngressSpec}
+		schema: {ingresses: [string]: schema.#IngressSpec}
 	}
 	ingresses: [string]: schema.#IngressSpec
 }

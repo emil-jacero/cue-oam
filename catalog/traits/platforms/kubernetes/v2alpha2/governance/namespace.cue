@@ -12,7 +12,7 @@ import (
 		description: "Creates a Kubernetes Namespace for resource isolation and organization"
 		domain:      "governance"
 		scope: ["component"]
-		provides: {namespace: #Namespace.namespace}
+		schema: {namespace: #Namespace.namespace}
 	}
 
 	namespace: {
