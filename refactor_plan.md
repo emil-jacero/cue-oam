@@ -997,8 +997,8 @@ k8sError3: k8s.#ProviderKubernetes.render & {
    - [x] Commit: `git commit -m "Rename #combinedVersion to #fullyQualifiedName and simplify capabilities"`
 3. [x] DeploymentType trait created and self-registers in registry
    - [x] Commit: `git commit -m "Add DeploymentType atomic trait with OpenAPIv3 schema"`
-4. [ ] Component #atomicTraits helper computes correctly
-   - [ ] Commit: `git commit -m "Add #atomicTraits helper to Component for recursive trait resolution"`
+4. [x] Component #atomicTraits helper computes correctly
+   - [x] Commit: `git commit -m "Add #atomicTraits helper to Component for recursive trait resolution"`
 5. [ ] Enhanced #Transformer interface with auto-generated defaults
    - [ ] Commit: `git commit -m "Enhance #Transformer interface with registry-based defaults"`
 6. [ ] Each Kubernetes resource has a transformer with requirements
